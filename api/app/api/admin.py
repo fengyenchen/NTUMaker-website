@@ -66,9 +66,16 @@ def create_member(payload: MemberWrite, db: Session = Depends(get_db)) -> AdminU
 
 
 @router.patch("/users/{user_id}", response_model=AdminUserSummary, summary="更新社員資料")
-def update_member(user_id: UUID, payload: MemberUpdate, db: Session = Depends(get_db)) -> AdminUserSummary:
+def update_member(
+    user_id: UUID,
+    payload: MemberUpdate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin),
+) -> AdminUserSummary:
     user = load_user(db, user_id)
     values = payload.model_dump(exclude_unset=True)
+    if user.id == current_admin.id and (values.get("is_active") is False or values.get("is_admin") is False):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不可停用自己的帳號或移除自己的管理員權限")
     if "display_name" in values:
         user.display_name = values["display_name"]
     if "is_active" in values:
