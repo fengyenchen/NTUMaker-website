@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.dependencies import require_member
 from app.db.session import get_db
-from app.models.content import Announcement, CourseSeries, PublishStatus, Resource, Visibility
+from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, Visibility
 from app.models.user import User
-from app.schemas.content import AnnouncementSummary, CourseSeriesSummary, ResourceSummary
+from app.schemas.content import AnnouncementSummary, CourseSeriesCatalogSummary, CourseSeriesSummary, ResourceSummary
 
 router = APIRouter(prefix="/content", tags=["內容"])
 
@@ -31,6 +31,39 @@ def list_courses(db: Session = Depends(get_db)) -> list[CourseSeries]:
             .order_by(CourseSeries.semester.desc())
         ).unique()
     )
+
+
+@router.get("/course-library", response_model=list[CourseSeriesCatalogSummary], summary="取得課程與資源目錄")
+def list_course_library(db: Session = Depends(get_db)) -> list[dict]:
+    series_list = db.scalars(
+        select(CourseSeries)
+        .options(selectinload(CourseSeries.sessions).selectinload(CourseSession.resources))
+        .order_by(CourseSeries.semester.desc())
+    ).unique()
+    return [
+        {
+            "id": series.id,
+            "title": series.title,
+            "semester": series.semester,
+            "track": series.track,
+            "description": series.description,
+            "sessions": [
+                {
+                    "id": session.id,
+                    "title": session.title,
+                    "week_label": session.week_label,
+                    "summary": session.summary,
+                    "starts_at": session.starts_at,
+                    "order_index": session.order_index,
+                    "visibility": session.visibility,
+                    "resources": [resource for resource in session.resources if resource.visibility != Visibility.ADMIN],
+                }
+                for session in sorted(series.sessions, key=lambda item: item.order_index)
+                if session.visibility != Visibility.ADMIN
+            ],
+        }
+        for series in series_list
+    ]
 
 
 @router.get("/resources", response_model=list[ResourceSummary], summary="取得公開資源")

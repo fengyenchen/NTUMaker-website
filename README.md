@@ -191,6 +191,8 @@ pnpm dev
 
 網站位於 `http://localhost:3000`。Next.js 會透過伺服器端 `API_URL` 反向代理 FastAPI，登入 Cookie 不需要暴露給前端程式。
 
+社課頁與課程內容頁會優先讀取 FastAPI；若本機 API 尚未啟動或資料庫尚無課程，則自動使用 `web/data/course-schedule.ts` 的假資料，方便前端持續開發。
+
 ### 5. 上線前檢查
 
 ```cmd

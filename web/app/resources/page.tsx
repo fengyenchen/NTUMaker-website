@@ -3,9 +3,10 @@ import { ArrowRight, BookOpen, CalendarDays, LockKeyhole, Play, Wrench } from "l
 import { PageHero } from "@/components/page-hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { courseTracks } from "@/data/course-schedule";
+import { getCourseTracks } from "@/lib/course-api";
 
-export default function ResourcesPage() {
+export default async function ResourcesPage() {
+  const courseTracks = await getCourseTracks();
   return (
     <main>
       <SiteHeader />

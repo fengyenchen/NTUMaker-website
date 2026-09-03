@@ -21,8 +21,10 @@ class CourseSessionSummary(BaseModel):
 
     id: UUID
     title: str
+    week_label: str
     summary: str
     starts_at: datetime
+    order_index: int
     visibility: Visibility
 
 
@@ -48,3 +50,28 @@ class ResourceSummary(BaseModel):
     url: str | None
     youtube_url: str | None
     visibility: Visibility
+
+
+class ResourceCatalogSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title: str
+    description: str
+    resource_type: str
+    visibility: Visibility
+
+
+class CourseSessionCatalogSummary(CourseSessionSummary):
+    resources: list[ResourceCatalogSummary]
+
+
+class CourseSeriesCatalogSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title: str
+    semester: str
+    track: CourseTrack
+    description: str
+    sessions: list[CourseSessionCatalogSummary]

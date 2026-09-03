@@ -65,6 +65,7 @@ class CourseSeriesWrite(BaseModel):
 class CourseSessionWrite(BaseModel):
     series_id: UUID
     title: str = Field(min_length=1, max_length=200)
+    week_label: str = Field(min_length=1, max_length=30)
     summary: str = Field(min_length=1, max_length=500)
     starts_at: datetime
     order_index: int = Field(default=0, ge=0)

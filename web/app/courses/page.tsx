@@ -2,9 +2,11 @@ import { CalendarDays, Check, MapPin, WalletCards, Wrench } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { courseInfo, courseTracks, type CourseTrack } from "@/data/course-schedule";
+import { courseInfo, type CourseTrack } from "@/data/course-schedule";
+import { getCourseTracks } from "@/lib/course-api";
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const courseTracks = await getCourseTracks();
   return (
     <main>
       <SiteHeader />
