@@ -1,0 +1,26 @@
+# JavaScript
+node_modules/
+.next/
+out/
+dist/
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Environment and credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
