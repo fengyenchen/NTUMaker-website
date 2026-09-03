@@ -104,7 +104,7 @@ Browser
 
 ## 視覺方向
 
-融合 SITCON Hackathon 的深色工程網格、大型標題與高密度資訊卡，以及 OpenHCI 的螢光撞色、數位介面和實驗性排版。首頁以瓶蓋 3D 模型作為 Maker 品牌焦點；模型會延遲載入，並為手機、低效能裝置及 `prefers-reduced-motion` 提供靜態／簡化版本。
+整體採用 NTUMaker 自己的 2.5D 視覺系統：柔和深色空間、斜角與堆疊卡片、實體感硬陰影，以及帶有鮮明材質的零件物件。首頁第一個視窗以既有瓶蓋 3D 模型作為最大品牌焦點；模型會延遲載入，並遵守 `prefers-reduced-motion`。
 
 顏色統一由 CSS 語意變數管理：`primary`、`secondary`、`accent`、`background`、`surface`、`foreground`、`muted`、`border`、`success`、`warning`、`destructive` 與 `focus`。
 
@@ -120,3 +120,77 @@ Browser
 6. Notion 風格 Admin 後台
 7. 整合測試、響應式與無障礙檢查
 8. 社群排程與平台串接（後續版本）
+
+## 資料夾架構
+
+```text
+NTUMaker-website/
+├─ web/                     # Next.js 公開網站、社員區與管理後台
+│  ├─ app/                  # App Router 頁面與 layout
+│  ├─ components/           # 共用元件與 3D 元件
+│  ├─ lib/                  # API client、驗證與共用函式
+│  └─ public/               # 靜態圖片與圖示
+├─ api/                     # FastAPI 後端
+│  ├─ app/
+│  │  ├─ api/               # API routes
+│  │  ├─ core/              # 設定、安全性與權限
+│  │  ├─ models/            # SQLAlchemy 資料模型
+│  │  ├─ schemas/           # 請求與回應格式
+│  │  └─ services/          # 登入、內容與 Email 服務
+│  ├─ alembic/              # Neon PostgreSQL migrations
+│  └─ tests/                # API 測試
+├─ design-system/           # 中文設計規範
+├─ package.json             # 前端 workspace 指令
+└─ docker-compose.yml       # 本機服務（需要時使用）
+```
+
+## 本機啟動
+
+### 1. 安裝前端套件
+
+需要 Node.js 20 以上版本與 pnpm：
+
+```cmd
+pnpm install
+```
+
+### 2. 設定環境變數
+
+複製範例檔並填入 Neon 與前後端網址：
+
+```bat
+copy web\.env.example web\.env
+copy api\.env.example api\.env
+```
+
+後端的 `DATABASE_URL` 使用 Neon 提供的 pooled connection URL，並保留 `sslmode=require`。
+
+### 3. 啟動 FastAPI
+
+```bat
+cd api
+python -m venv .venv
+.venv\Scripts\activate.bat
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
+```
+
+API 文件啟動後位於 `http://localhost:8000/docs`。
+
+### 4. 啟動 Next.js
+
+另開終端機，在專案根目錄執行：
+
+```cmd
+pnpm dev
+```
+
+網站位於 `http://localhost:3000`。Next.js 會透過 `NEXT_PUBLIC_API_URL` 呼叫 FastAPI。
+
+### 5. 上線前檢查
+
+```cmd
+pnpm typecheck
+pnpm build
+```
