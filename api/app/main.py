@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, content
+from app.api import admin, auth, content
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(content.router, prefix=settings.api_prefix)
+app.include_router(admin.router, prefix=settings.api_prefix)
 
 
 @app.get("/api/v1/health", tags=["系統"], summary="健康檢查")

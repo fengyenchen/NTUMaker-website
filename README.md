@@ -173,10 +173,13 @@ python -m venv .venv
 .venv\Scripts\activate.bat
 pip install -r requirements.txt
 alembic upgrade head
+python -m app.db.seed
 uvicorn app.main:app --reload --port 8000
 ```
 
 API 文件啟動後位於 `http://localhost:8000/docs`。
+
+`python -m app.db.seed` 會將社博課程表建立為 115-1 假資料，重複執行不會重複新增。請在 `api/.env` 設定 `ADMIN_EMAIL`，該帳號會取得初始管理員權限。
 
 ### 4. 啟動 Next.js
 

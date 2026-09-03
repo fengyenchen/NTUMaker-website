@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     session_secret: str = "development-only-secret-please-replace"
     email_from: EmailStr = "no-reply@example.com"
     resend_api_key: str | None = None
+    admin_email: EmailStr | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
