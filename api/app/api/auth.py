@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -24,10 +25,10 @@ def request_login_link(payload: LoginRequest) -> LoginRequested:
 
 @router.get("/verify", summary="驗證一次性登入連結")
 def verify_login_link(
-    response: Response,
     token: str = Query(...),
+    return_to: str = Query(default="/learn"),
     db: Session = Depends(get_db),
-) -> dict[str, str]:
+) -> RedirectResponse:
     email = read_login_token(token)
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="登入連結無效或已過期")
@@ -37,6 +38,8 @@ def verify_login_link(
         db.add(user)
         db.commit()
         db.refresh(user)
+    safe_return_to = return_to if return_to.startswith("/") and not return_to.startswith("//") else "/learn"
+    response = RedirectResponse(url=f"{settings.frontend_url}{safe_return_to}", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(
         key="session",
         value=create_session_token(str(user.id)),
@@ -45,7 +48,7 @@ def verify_login_link(
         samesite="lax",
         max_age=60 * 60 * 24 * 14,
     )
-    return {"message": "登入成功"}
+    return response
 
 
 @router.post("/logout", summary="登出")

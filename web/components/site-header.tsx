@@ -13,9 +13,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-18 max-w-[1440px] items-center justify-between px-5 md:px-8">
-        <Link href="/" className="flex min-h-11 items-center gap-3 font-mono font-bold tracking-tight">
-          <span className="grid size-9 -rotate-3 place-items-center bg-primary text-lg text-on-primary">M</span>
-          <span>NTUMaker</span>
+        <Link href="/" className="flex min-h-11 items-center text-xl font-black tracking-[-0.04em]">
+          NTUMaker
         </Link>
         <nav aria-label="主要導覽" className="hidden items-center gap-7 lg:flex">
           {links.map(([label, href]) => (
@@ -24,7 +23,7 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <Link href="/login" className="inline-flex min-h-11 items-center gap-2 bg-primary px-5 font-bold text-on-primary transition-transform hover:-translate-y-0.5 active:translate-y-0">
+        <Link href="/login" className="inline-flex min-h-11 items-center gap-2 font-bold">
           社員登入 <ArrowUpRight size={17} aria-hidden="true" />
         </Link>
       </div>

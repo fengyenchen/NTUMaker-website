@@ -19,9 +19,10 @@
 | 主色文字 | `--color-on-primary` | `#FFFAF0` |
 | 次色 | `--color-secondary` | `#2457D6` |
 | 強調色 | `--color-accent` | `#FFB24A` |
-| 背景 | `--color-background` | `#F3EAD7` |
-| 表面 | `--color-surface` | `#FFF8E8` |
-| 抬升表面 | `--color-surface-raised` | `#E8DCC4` |
+| 大標強調 | `--color-highlight` | `#C92F3F` |
+| 背景 | `--color-background` | `#F8F2E6` |
+| 表面 | `--color-surface` | `#FFFAF0` |
+| 抬升表面 | `--color-surface-raised` | `#EEE4D1` |
 | 主要文字 | `--color-foreground` | `#17263F` |
 | 次要文字 | `--color-muted-foreground` | `#657086` |
 | 邊框 | `--color-border` | `#C9BDA5` |
@@ -45,11 +46,14 @@
 
 - 卡片以細邊框、色塊與編號建立層級，不靠陰影。
 - 所有互動元件必須有 hover、active、focus-visible 與 disabled 狀態。
+- 主要按鈕平時使用米白底、深色描邊與右下藍色硬陰影；hover 時改為藍底白字並向右下位移，active 時壓平陰影。
 - 圖示使用 Lucide SVG，不以 Emoji 代替功能圖示。
 - 一般轉場 150–300ms，只動畫化 `transform` 與 `opacity`。
 - 3D 瓶蓋預設緩慢旋轉，且遵守 `prefers-reduced-motion`。
 - 手機或不支援 WebGL 時顯示簡化或靜態備援內容。
 - 不使用圓形漸層光暈、模糊氤氳或裝飾性發光背景；立體感來自物件、錯位色塊與硬陰影。
+- 橘色只作為半透明細節、描邊與小面積提示，不使用大面積不透明橘色塊；主要硬陰影使用藍色或深墨藍。
+- 紅色只用於大型標語的關鍵短句，避免同一區塊同時出現紅、橘、藍三種高彩度主角。
 
 ## 無障礙交付檢查
 

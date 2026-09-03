@@ -41,6 +41,7 @@ class ResourceSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
+    session_id: UUID | None
     title: str
     description: str
     resource_type: str

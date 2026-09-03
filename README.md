@@ -186,7 +186,7 @@ API 文件啟動後位於 `http://localhost:8000/docs`。
 pnpm dev
 ```
 
-網站位於 `http://localhost:3000`。Next.js 會透過 `NEXT_PUBLIC_API_URL` 呼叫 FastAPI。
+網站位於 `http://localhost:3000`。Next.js 會透過伺服器端 `API_URL` 反向代理 FastAPI，登入 Cookie 不需要暴露給前端程式。
 
 ### 5. 上線前檢查
 

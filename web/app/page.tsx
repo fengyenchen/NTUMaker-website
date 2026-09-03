@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { BottleCapHero } from "@/components/bottle-cap-hero";
 import { SiteHeader } from "@/components/site-header";
+import { courseTracks } from "@/data/course-schedule";
 
 const announcements = [
   { date: "09 / 08", type: "社課", title: "本學期第一次社課與社員說明會", detail: "一起認識課程雙軌與這學期的專案。" },
@@ -28,22 +29,22 @@ export default function HomePage() {
         <div className="hero-glow absolute inset-0 -z-10" aria-hidden="true" />
         <div className="mx-auto grid min-h-[680px] max-w-[1320px] items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative z-10">
-            <div className="mb-7 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border border-foreground/10 bg-surface-raised px-4 py-2 text-sm shadow-[4px_5px_0_var(--color-primary)]">
+            <div className="mb-7 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm shadow-[4px_5px_0_rgba(242,106,46,0.28)]">
               <Sparkles size={16} className="text-primary" aria-hidden="true" />
               2026 秋季社課進行中
             </div>
             <h1 className="text-[clamp(3.7rem,8vw,7.8rem)] font-black leading-[0.9] tracking-[-0.075em]">
               把想法
-              <span className="block text-primary">做成真的。</span>
+              <span className="block text-highlight">做成真的。</span>
             </h1>
             <p className="mt-7 max-w-xl text-lg leading-8 text-muted-foreground md:text-xl">
               從電子、程式、設計到數位製造，和一群喜歡動手的人一起試、一起拆，再做出更好的版本。
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
-              <Link href="/courses" className="button-25d inline-flex min-h-12 items-center gap-3 rounded-xl bg-primary px-6 font-bold text-on-primary">
+              <Link href="/courses" className="button-25d inline-flex min-h-12 items-center gap-3 rounded-xl px-6 font-bold">
                 看本學期社課 <ArrowRight size={18} aria-hidden="true" />
               </Link>
-              <Link href="/about" className="inline-flex min-h-12 items-center rounded-xl border border-border bg-surface px-6 font-bold transition-transform hover:-translate-y-1">
+              <Link href="/about" className="button-25d inline-flex min-h-12 items-center rounded-xl px-6 font-bold">
                 認識我們
               </Link>
             </div>
@@ -51,7 +52,7 @@ export default function HomePage() {
 
           <div className="relative min-h-[500px] lg:min-h-[640px]">
             <div className="absolute inset-[8%] rotate-3 rounded-[2.5rem] border border-foreground/10 bg-surface shadow-[18px_20px_0_rgba(36,87,214,0.82)]" aria-hidden="true" />
-            <div className="absolute inset-[4%] -rotate-2 rounded-[2.5rem] border border-foreground/10 bg-surface-raised shadow-[10px_12px_0_rgba(242,106,46,0.78)]">
+            <div className="absolute inset-[4%] -rotate-2 rounded-[2.5rem] border-2 border-primary/30 bg-surface-raised shadow-[10px_12px_0_rgba(23,38,63,0.18)]">
               <BottleCapHero />
             </div>
             <div className="absolute left-0 top-[12%] -rotate-6 rounded-2xl bg-secondary px-5 py-4 text-on-secondary shadow-[7px_8px_0_rgba(0,0,0,0.45)]">
@@ -93,9 +94,9 @@ export default function HomePage() {
 
       <section className="px-5 py-20 md:px-8 md:py-28">
         <div className="mx-auto grid max-w-[1320px] gap-8 lg:grid-cols-[0.75fr_1.25fr]">
-          <div className="flex min-h-[420px] flex-col justify-between rounded-[2rem] bg-primary p-8 text-on-primary shadow-[12px_14px_0_rgba(36,87,214,0.78)] md:p-10">
+          <div className="flex min-h-[420px] flex-col justify-between rounded-[2rem] border border-primary/40 bg-primary/15 p-8 text-foreground shadow-[12px_14px_0_rgba(36,87,214,0.78)] md:p-10">
             <div>
-              <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-on-primary text-primary"><CalendarDays /></span>
+              <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/20 text-primary"><CalendarDays /></span>
               <h2 className="mt-8 text-4xl font-black leading-tight md:text-5xl">下一次，<br />一起做什麼？</h2>
             </div>
             <Link href="/announcements" className="inline-flex min-h-12 items-center gap-2 font-bold">查看所有公告 <ArrowRight size={18} /></Link>
@@ -115,19 +116,18 @@ export default function HomePage() {
 
       <section className="px-5 py-20 md:px-8 md:py-28">
         <div className="mx-auto max-w-[1320px]">
-          <SectionTitle label="社員教材" title="做過一次，下次就能做得更快。" />
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            <ResourceCard icon={<Play />} type="公開教材" title="從需求到第一版原型" meta="閱讀 12 分鐘" />
-            <ResourceCard icon={<LockKeyhole />} type="社員限定" title="ESP32 感測資料上雲" meta="YouTube · 46 分鐘" locked />
-            <ResourceCard icon={<LockKeyhole />} type="社員限定" title="3D 列印切片與支撐策略" meta="YouTube · 32 分鐘" locked />
+          <SectionTitle label="課程內容" title="每堂課的教材、影片與檔案，都收在一起。" />
+          <div className="mt-12 grid gap-8 lg:grid-cols-2">
+            <CourseLibraryCard day="星期二" title={courseTracks[0].title} description="沿著循線車專案進度學習，每週課程內含講義、上課影片與實作附件。" items={courseTracks[0].sessions.slice(1, 3).map((session) => session.title)} />
+            <CourseLibraryCard day="星期五" title={courseTracks[1].title} description="依主題選擇工作坊，每場的教材、示範影片與範例檔案集中整理。" items={courseTracks[1].sessions.slice(0, 2).map((session) => session.title)} blue />
           </div>
         </div>
       </section>
 
       <section className="px-5 pb-24 pt-12 md:px-8 md:pb-32">
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-8 overflow-hidden rounded-[2rem] bg-secondary p-8 text-on-secondary shadow-[12px_14px_0_rgba(242,106,46,0.78)] md:flex-row md:items-end md:justify-between md:p-12">
-          <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl font-black leading-tight md:text-6xl">做出作品，也把方法分享出去。</h2></div>
-          <a href="https://www.instagram.com/ntu_maker/" target="_blank" rel="noreferrer" className="inline-flex min-h-12 shrink-0 items-center gap-3 rounded-xl bg-primary px-6 font-bold text-on-primary">追蹤 Instagram <ExternalLink size={18} /></a>
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-8 overflow-hidden rounded-[2rem] bg-surface-raised p-8 text-on-secondary shadow-[12px_14px_0_rgba(242,106,46,0.28)] md:flex-row md:items-end md:justify-between md:p-12">
+          <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-secondary font-black leading-tight md:text-6xl">做出作品，也把方法分享出去。</h2></div>
+          <a href="https://www.instagram.com/ntu_maker/" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 shrink-0 items-center gap-3 rounded-xl px-6 font-bold">追蹤 Instagram <ExternalLink size={18} /></a>
         </div>
       </section>
 
@@ -148,8 +148,8 @@ function SectionTitle({ label, title }: { label: string; title: string }) {
 function TrackCard({ day, kicker, description, icon, color, topics }: { day: string; kicker: string; description: string; icon: React.ReactNode; color: "lime" | "blue"; topics: string[] }) {
   const lime = color === "lime";
   return (
-    <article className={`rounded-[2rem] border border-border bg-surface p-7 md:p-10 ${lime ? "shadow-[11px_13px_0_rgba(242,106,46,0.72)]" : "shadow-[11px_13px_0_rgba(36,87,214,0.78)]"}`}>
-      <div className="flex items-start justify-between"><span className={`inline-flex size-14 items-center justify-center rounded-2xl ${lime ? "bg-primary text-on-primary" : "bg-secondary text-on-secondary"}`}>{icon}</span><span className="rounded-full border border-border px-4 py-2 text-sm font-bold">{day}</span></div>
+    <article className={`rounded-[2rem] border border-border bg-surface p-7 md:p-10 ${lime ? "shadow-[11px_13px_0_rgba(242,106,46,0.25)]" : "shadow-[11px_13px_0_rgba(36,87,214,0.78)]"}`}>
+      <div className="flex items-start justify-between"><span className={`inline-flex size-14 items-center justify-center rounded-2xl ${lime ? "border border-primary/40 bg-primary/15 text-primary" : "bg-secondary text-on-secondary"}`}>{icon}</span><span className="rounded-full border border-border px-4 py-2 text-sm font-bold">{day}</span></div>
       <h3 className="mt-9 text-3xl font-black md:text-4xl">{kicker}</h3>
       <p className="mt-5 leading-7 text-muted-foreground">{description}</p>
       <div className="mt-8 flex flex-wrap gap-2">{topics.map((topic) => <span key={topic} className="rounded-full bg-surface-raised px-4 py-2 text-sm">{topic}</span>)}</div>
@@ -158,11 +158,14 @@ function TrackCard({ day, kicker, description, icon, color, topics }: { day: str
   );
 }
 
-function ResourceCard({ icon, type, title, meta, locked = false }: { icon: React.ReactNode; type: string; title: string; meta: string; locked?: boolean }) {
+function CourseLibraryCard({ day, title, description, items, blue = false }: { day: string; title: string; description: string; items: string[]; blue?: boolean }) {
   return (
-    <article className="flex min-h-72 flex-col justify-between rounded-[1.75rem] border border-border bg-surface p-7 transition-transform hover:-translate-y-1">
-      <span className="inline-flex size-12 items-center justify-center rounded-xl bg-surface-raised text-primary">{icon}</span>
-      <div><p className="text-sm text-muted-foreground">{type} · {meta}</p><h3 className="mt-3 text-2xl font-black leading-tight">{title}</h3><Link href={locked ? "/login" : "/resources"} className="mt-6 inline-flex min-h-11 items-center gap-2 font-bold text-primary">{locked ? "登入解鎖" : "開始閱讀"} <ArrowRight size={17} /></Link></div>
+    <article className={`rounded-[1.75rem] border border-border bg-surface p-7 ${blue ? "shadow-[10px_12px_0_rgba(36,87,214,0.76)]" : "shadow-[10px_12px_0_rgba(242,106,46,0.24)]"}`}>
+      <div className="flex items-center justify-between gap-4"><span className="rounded-full bg-surface-raised px-4 py-2 text-sm font-bold">{day}</span><LockKeyhole size={18} aria-label="部分內容限社員" /></div>
+      <h3 className="mt-7 text-3xl font-black leading-tight">{title}</h3>
+      <p className="mt-3 leading-7 text-muted-foreground">{description}</p>
+      <div className="mt-6 space-y-2">{items.map((item) => <div key={item} className="flex items-center gap-3 rounded-xl bg-background p-4"><Play className="text-secondary" size={17} aria-hidden="true" /><span className="font-bold">{item}</span></div>)}</div>
+      <Link href="/resources" className="mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-secondary">查看這條課程的內容 <ArrowRight size={17} /></Link>
     </article>
   );
 }
