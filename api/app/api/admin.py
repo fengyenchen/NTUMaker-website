@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -105,7 +105,10 @@ def list_admin_announcements(db: Session = Depends(get_db)) -> list[Announcement
 def create_announcement(payload: AnnouncementWrite, db: Session = Depends(get_db)) -> Announcement:
     if db.scalar(select(Announcement).where(Announcement.slug == payload.slug)):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="公告網址代稱已存在")
-    item = Announcement(**payload.model_dump())
+    values = payload.model_dump()
+    if payload.status == PublishStatus.PUBLISHED and payload.published_at is None:
+        values["published_at"] = datetime.now(timezone.utc)
+    item = Announcement(**values)
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -117,7 +120,10 @@ def update_announcement(item_id: UUID, payload: AnnouncementWrite, db: Session =
     item = db.get(Announcement, item_id)
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到公告")
-    for key, value in payload.model_dump().items():
+    values = payload.model_dump()
+    if payload.status == PublishStatus.PUBLISHED and payload.published_at is None:
+        values["published_at"] = datetime.now(timezone.utc)
+    for key, value in values.items():
         setattr(item, key, value)
     db.commit()
     db.refresh(item)

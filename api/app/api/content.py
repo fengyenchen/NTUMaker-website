@@ -1,5 +1,7 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.dependencies import require_member
@@ -16,7 +18,10 @@ def list_announcements(db: Session = Depends(get_db)) -> list[Announcement]:
     return list(
         db.scalars(
             select(Announcement)
-            .where(Announcement.status == PublishStatus.PUBLISHED)
+            .where(
+                Announcement.status == PublishStatus.PUBLISHED,
+                or_(Announcement.published_at.is_(None), Announcement.published_at <= datetime.now(timezone.utc)),
+            )
             .order_by(Announcement.published_at.desc())
         )
     )
