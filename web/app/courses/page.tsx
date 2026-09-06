@@ -36,7 +36,7 @@ function CourseTimeline({ track }: { track: CourseTrack }) {
   const orange = track.id === "tuesday";
   const Icon = orange ? CalendarDays : Wrench;
   return (
-    <article className={`rounded-2xl border border-border bg-surface p-7 md:p-10 ${orange ? "shadow-[11px_13px_0_rgba(242,106,46,0.24)]" : "shadow-[11px_13px_0_rgba(36,87,214,0.76)]"}`}>
+    <article className={`rounded-2xl border border-border bg-surface p-7 md:p-10 ${orange ? "shadow-[6px_7px_0_rgba(242,106,46,0.24)]" : "shadow-[6px_7px_0_rgba(36,87,214,0.76)]"}`}>
       <div className="flex items-start justify-between gap-4"><span className={`inline-flex size-14 items-center justify-center rounded-2xl ${orange ? "border border-primary/40 bg-primary/15 text-primary" : "bg-secondary text-on-secondary"}`}><Icon /></span><span className="rounded-full bg-surface-raised px-4 py-2 text-sm font-bold">{track.day} {track.time}</span></div>
       <h2 className="mt-8 text-3xl font-black">{track.title}</h2>
       <p className="mt-3 leading-7 text-muted-foreground">{track.description}</p>

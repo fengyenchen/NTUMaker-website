@@ -33,7 +33,7 @@ export default function LoginPage() {
 
   return (
     <main className="grid min-h-screen place-items-center px-5 py-12">
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-surface p-7 shadow-[12px_14px_0_rgba(36,87,214,0.76)] md:p-10">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-surface p-7 shadow-[6px_7px_0_rgba(36,87,214,0.76)] md:p-10">
         <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-foreground"><ArrowLeft size={17} /> 回首頁</Link>
         <span className="mt-10 grid size-14 place-items-center rounded-2xl bg-secondary text-on-secondary"><Mail /></span>
         <h1 className="mt-7 text-4xl font-black tracking-tight">用 Email 登入</h1>

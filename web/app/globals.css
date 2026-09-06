@@ -7,9 +7,9 @@
   --color-on-secondary: #ffffff;
   --color-accent: #ffb24a;
   --color-highlight: #c92f3f;
-  --color-background: #f8f2e6;
+  --color-background: #fefaf0;
   --color-surface: #fffaf0;
-  --color-surface-raised: #eee4d1;
+  --color-surface-raised: #f4ebdb;
   --color-foreground: #17263f;
   --color-muted-foreground: #657086;
   --color-border: #c9bda5;
@@ -67,14 +67,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
   border: 1px solid var(--color-foreground);
   background: var(--color-surface);
   color: var(--color-foreground);
-  box-shadow: 7px 7px 0 var(--color-secondary);
+  box-shadow: 4px 4px 0 var(--color-secondary);
   transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
 }
 .button-25d:hover {
   transform: translate(4px, 4px);
   background: var(--color-secondary);
   color: var(--color-on-secondary);
-  box-shadow: 3px 3px 0 var(--color-foreground);
+  box-shadow: 2px 2px 0 var(--color-foreground);
 }
 .button-25d:active {
   transform: translate(7px, 7px);
@@ -82,7 +82,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   color: var(--color-on-secondary);
   box-shadow: 0 0 0 var(--color-foreground);
 }
-.button-25d:disabled { transform: none; box-shadow: 4px 4px 0 var(--color-border); }
+.button-25d:disabled { transform: none; box-shadow: 2px 2px 0 var(--color-border); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

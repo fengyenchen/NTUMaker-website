@@ -29,7 +29,7 @@ export default function HomePage() {
         <div className="hero-glow absolute inset-0 -z-10" aria-hidden="true" />
         <div className="mx-auto grid min-h-[680px] max-w-[1320px] items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative z-10">
-            <div className="mb-7 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm shadow-[4px_5px_0_rgba(242,106,46,0.28)]">
+            <div className="mb-7 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm shadow-[2px_3px_0_rgba(242,106,46,0.28)]">
               <Sparkles size={16} className="text-primary" aria-hidden="true" />
               2026 秋季社課進行中
             </div>
@@ -51,15 +51,15 @@ export default function HomePage() {
           </div>
 
           <div className="relative min-h-[500px] lg:min-h-[640px]">
-            <div className="absolute inset-[8%] rotate-3 rounded-[1.25rem] border border-foreground/10 bg-surface shadow-[18px_20px_0_rgba(36,87,214,0.82)]" aria-hidden="true" />
-            <div className="absolute inset-[4%] -rotate-2 rounded-[1.25rem] border-2 border-primary/30 bg-surface-raised shadow-[10px_12px_0_rgba(23,38,63,0.18)]">
+            <div className="absolute inset-[8%] rotate-3 rounded-[1.25rem] border border-foreground/10 bg-surface shadow-[8px_9px_0_rgba(36,87,214,0.82)]" aria-hidden="true" />
+            <div className="absolute inset-[4%] -rotate-2 rounded-[1.25rem] border-2 border-primary/30 bg-surface-raised shadow-[4px_5px_0_rgba(23,38,63,0.18)]">
               <BottleCapHero />
             </div>
-            <div className="absolute left-0 top-[12%] -rotate-6 rounded-2xl bg-secondary px-5 py-4 text-on-secondary shadow-[7px_8px_0_rgba(0,0,0,0.45)]">
+            <div className="absolute left-0 top-[12%] -rotate-6 rounded-2xl bg-secondary px-5 py-4 text-on-secondary shadow-[4px_4px_0_rgba(0,0,0,0.45)]">
               <Shapes size={24} aria-hidden="true" />
               <p className="mt-2 text-sm font-bold">從零件開始</p>
             </div>
-            <div className="absolute bottom-[8%] right-0 rotate-3 rounded-2xl bg-warning px-5 py-4 text-on-primary shadow-[7px_8px_0_rgba(0,0,0,0.45)]">
+            <div className="absolute bottom-[8%] right-0 rotate-3 rounded-2xl bg-warning px-5 py-4 text-on-primary shadow-[4px_4px_0_rgba(0,0,0,0.45)]">
               <p className="text-xs font-bold opacity-70">NEXT CLASS</p>
               <p className="mt-1 font-bold">週二 19:00</p>
               <p className="text-sm">感測器與互動</p>
@@ -94,7 +94,7 @@ export default function HomePage() {
 
       <section className="px-5 py-20 md:px-8 md:py-28">
         <div className="mx-auto grid max-w-[1320px] gap-8 lg:grid-cols-[0.75fr_1.25fr]">
-          <div className="flex min-h-[420px] flex-col justify-between rounded-2xl border border-primary/40 bg-primary/15 p-8 text-foreground shadow-[12px_14px_0_rgba(36,87,214,0.78)] md:p-10">
+          <div className="flex min-h-[420px] flex-col justify-between rounded-2xl border border-primary/40 bg-primary/15 p-8 text-foreground shadow-[6px_7px_0_rgba(36,87,214,0.78)] md:p-10">
             <div>
               <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/20 text-primary"><CalendarDays /></span>
               <h2 className="mt-8 text-4xl font-black leading-tight md:text-5xl">下一次，<br />一起做什麼？</h2>
@@ -125,7 +125,7 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 pb-24 pt-12 md:px-8 md:pb-32">
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-8 overflow-hidden rounded-2xl bg-surface-raised p-8 text-on-secondary shadow-[12px_14px_0_rgba(242,106,46,0.28)] md:flex-row md:items-end md:justify-between md:p-12">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-8 overflow-hidden rounded-2xl bg-surface-raised p-8 text-on-secondary shadow-[6px_7px_0_rgba(242,106,46,0.28)] md:flex-row md:items-end md:justify-between md:p-12">
           <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-secondary font-black leading-tight md:text-6xl">做出作品，也把方法分享出去。</h2></div>
           <a href="https://www.instagram.com/ntu_maker/" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 shrink-0 items-center gap-3 rounded-xl px-6 font-bold">追蹤 Instagram <ExternalLink size={18} /></a>
         </div>
@@ -148,7 +148,7 @@ function SectionTitle({ label, title }: { label: string; title: string }) {
 function TrackCard({ day, kicker, description, icon, color, topics }: { day: string; kicker: string; description: string; icon: React.ReactNode; color: "lime" | "blue"; topics: string[] }) {
   const lime = color === "lime";
   return (
-    <article className={`rounded-2xl border border-border bg-surface p-7 md:p-10 ${lime ? "shadow-[11px_13px_0_rgba(242,106,46,0.25)]" : "shadow-[11px_13px_0_rgba(36,87,214,0.78)]"}`}>
+    <article className={`rounded-2xl border border-border bg-surface p-7 md:p-10 ${lime ? "shadow-[6px_7px_0_rgba(242,106,46,0.25)]" : "shadow-[6px_7px_0_rgba(36,87,214,0.78)]"}`}>
       <div className="flex items-start justify-between"><span className={`inline-flex size-14 items-center justify-center rounded-2xl ${lime ? "border border-primary/40 bg-primary/15 text-primary" : "bg-secondary text-on-secondary"}`}>{icon}</span><span className="rounded-full border border-border px-4 py-2 text-sm font-bold">{day}</span></div>
       <h3 className="mt-9 text-3xl font-black md:text-4xl">{kicker}</h3>
       <p className="mt-5 leading-7 text-muted-foreground">{description}</p>
@@ -160,7 +160,7 @@ function TrackCard({ day, kicker, description, icon, color, topics }: { day: str
 
 function CourseLibraryCard({ day, title, description, items, blue = false }: { day: string; title: string; description: string; items: string[]; blue?: boolean }) {
   return (
-    <article className={`rounded-2xl border border-border bg-surface p-7 ${blue ? "shadow-[10px_12px_0_rgba(36,87,214,0.76)]" : "shadow-[10px_12px_0_rgba(242,106,46,0.24)]"}`}>
+    <article className={`rounded-2xl border border-border bg-surface p-7 ${blue ? "shadow-[5px_6px_0_rgba(36,87,214,0.76)]" : "shadow-[5px_6px_0_rgba(242,106,46,0.24)]"}`}>
       <div className="flex items-center justify-between gap-4"><span className="rounded-full bg-surface-raised px-4 py-2 text-sm font-bold">{day}</span><LockKeyhole size={18} aria-label="部分內容限社員" /></div>
       <h3 className="mt-7 text-3xl font-black leading-tight">{title}</h3>
       <p className="mt-3 leading-7 text-muted-foreground">{description}</p>

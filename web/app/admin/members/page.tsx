@@ -97,7 +97,7 @@ export default function MembersAdminPage() {
         {error && <div role="alert" className="mt-6 border border-destructive bg-destructive/10 p-4 text-sm font-bold text-destructive">{error}</div>}
 
         {showForm && (
-          <section className="mt-7 border border-border bg-surface p-5 shadow-[7px_8px_0_var(--color-secondary)]">
+          <section className="mt-7 border border-border bg-surface p-5 shadow-[4px_5px_0_var(--color-secondary)]">
             <div className="flex items-center justify-between"><div><h2 className="text-xl font-black">新增社員</h2><p className="mt-1 text-sm text-muted-foreground">社員會使用這個 Email 接收登入連結。</p></div><button onClick={() => setShowForm(false)} aria-label="關閉新增社員表單" className="grid size-11 place-items-center"><X size={19} /></button></div>
             <form onSubmit={createMember} className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Email"><input required type="email" autoComplete="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
