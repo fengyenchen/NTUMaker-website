@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """應用程式設定，正式環境由 api/.env 或部署平台注入。"""
+    """應用程式設定，正式環境由 backend/.env 或部署平台注入。"""
 
     app_name: str = "NTUMaker API"
     environment: str = "development"

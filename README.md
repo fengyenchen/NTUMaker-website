@@ -68,8 +68,7 @@ Browser
 /admin
 ├─ Overview
 ├─ 公告管理
-├─ 社課與工作坊
-├─ 教材與影片
+├─ 社課、工作坊與各堂教材／影片
 ├─ 活動與作品
 ├─ 會員與社員期限
 ├─ 社群發布（預留）
@@ -104,7 +103,7 @@ Browser
 
 ## 視覺方向
 
-整體採用 NTUMaker 自己的 2.5D 視覺系統：柔和深色空間、斜角與堆疊卡片、實體感硬陰影，以及帶有鮮明材質的零件物件。首頁第一個視窗以既有瓶蓋 3D 模型作為最大品牌焦點；模型會延遲載入，並遵守 `prefers-reduced-motion`。
+整體採用 NTUMaker 自己的 2.5D 視覺系統：淡米色背景、橘藍主色、斜角與堆疊卡片、克制的實體硬陰影，以及帶有鮮明材質的零件物件。首頁第一個視窗以既有瓶蓋 3D 模型作為最大品牌焦點；模型會預先載入，並遵守 `prefers-reduced-motion`。
 
 顏色統一由 CSS 語意變數管理：`primary`、`secondary`、`accent`、`background`、`surface`、`foreground`、`muted`、`border`、`success`、`warning`、`destructive` 與 `focus`。
 
@@ -125,12 +124,12 @@ Browser
 
 ```text
 NTUMaker-website/
-├─ web/                     # Next.js 公開網站、社員區與管理後台
+├─ frontend/                # Next.js 公開網站、社員區與管理後台
 │  ├─ app/                  # App Router 頁面與 layout
 │  ├─ components/           # 共用元件與 3D 元件
 │  ├─ lib/                  # API client、驗證與共用函式
 │  └─ public/               # 靜態圖片與圖示
-├─ api/                     # FastAPI 後端
+├─ backend/                 # FastAPI 後端
 │  ├─ app/
 │  │  ├─ api/               # API routes
 │  │  ├─ core/              # 設定、安全性與權限
@@ -140,8 +139,7 @@ NTUMaker-website/
 │  ├─ alembic/              # Neon PostgreSQL migrations
 │  └─ tests/                # API 測試
 ├─ design-system/           # 中文設計規範
-├─ package.json             # 前端 workspace 指令
-└─ docker-compose.yml       # 本機服務（需要時使用）
+└─ package.json             # 前端 workspace 指令
 ```
 
 ## 本機啟動
@@ -159,8 +157,8 @@ pnpm install
 複製範例檔並填入 Neon 與前後端網址：
 
 ```bat
-copy web\.env.example web\.env
-copy api\.env.example api\.env
+copy frontend\.env.example frontend\.env
+copy backend\.env.example backend\.env
 ```
 
 後端的 `DATABASE_URL` 可直接貼上 Neon 提供的 pooled connection URL，並保留 `sslmode=require`。程式會自動改用已安裝的 psycopg v3 驅動，不需要另外安裝 `psycopg2`。
@@ -168,18 +166,18 @@ copy api\.env.example api\.env
 ### 3. 啟動 FastAPI
 
 ```bat
-cd api
+cd backend
 python -m venv .venv
 .venv\Scripts\activate.bat
 pip install -r requirements.txt
 alembic upgrade head
 python -m app.db.seed
-uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 API 文件啟動後位於 `http://localhost:8000/docs`。
 
-`python -m app.db.seed` 會將社博課程表建立為 115-1 假資料，重複執行不會重複新增。請在 `api/.env` 設定 `ADMIN_EMAIL`，該帳號會取得初始管理員權限。
+`python -m app.db.seed` 會將社博課程表建立為 115-1 假資料，重複執行不會重複新增。請在 `backend/.env` 設定 `ADMIN_EMAIL`，該帳號會取得初始管理員權限。
 
 ### 4. 啟動 Next.js
 
@@ -191,7 +189,7 @@ pnpm dev
 
 網站位於 `http://localhost:3000`。Next.js 會透過伺服器端 `API_URL` 反向代理 FastAPI，登入 Cookie 不需要暴露給前端程式。
 
-社課頁與課程內容頁會優先讀取 FastAPI；若本機 API 尚未啟動或資料庫尚無課程，則自動使用 `web/data/course-schedule.ts` 的假資料，方便前端持續開發。
+社課頁與課程內容頁會優先讀取 FastAPI；若本機 API 尚未啟動或資料庫尚無課程，則自動使用 `frontend/data/course-schedule.ts` 的假資料，方便前端持續開發。
 
 ### 5. 上線前檢查
 

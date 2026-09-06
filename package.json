@@ -2,11 +2,11 @@
   "name": "ntumaker-website",
   "private": true,
   "packageManager": "pnpm@11.19.0",
-  "workspaces": ["web"],
+  "workspaces": ["frontend"],
   "scripts": {
-    "dev": "pnpm --filter @ntumaker/web dev",
-    "build": "pnpm --filter @ntumaker/web build",
-    "lint": "pnpm --filter @ntumaker/web lint",
-    "typecheck": "pnpm --filter @ntumaker/web typecheck"
+    "dev": "pnpm --filter @ntumaker/frontend dev",
+    "build": "pnpm --filter @ntumaker/frontend build",
+    "lint": "pnpm --filter @ntumaker/frontend lint",
+    "typecheck": "pnpm --filter @ntumaker/frontend typecheck"
   }
 }

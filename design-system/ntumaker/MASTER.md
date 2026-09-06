@@ -20,9 +20,9 @@
 | 次色 | `--color-secondary` | `#2457D6` |
 | 強調色 | `--color-accent` | `#FFB24A` |
 | 大標強調 | `--color-highlight` | `#C92F3F` |
-| 背景 | `--color-background` | `#F8F2E6` |
+| 背景 | `--color-background` | `#FEFAF0` |
 | 表面 | `--color-surface` | `#FFFAF0` |
-| 抬升表面 | `--color-surface-raised` | `#EEE4D1` |
+| 抬升表面 | `--color-surface-raised` | `#F4EBDB` |
 | 主要文字 | `--color-foreground` | `#17263F` |
 | 次要文字 | `--color-muted-foreground` | `#657086` |
 | 邊框 | `--color-border` | `#C9BDA5` |

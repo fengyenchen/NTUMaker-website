@@ -8,7 +8,7 @@ importers:
 
   .: {}
 
-  web:
+  frontend:
     dependencies:
       '@react-three/drei':
         specifier: ^10.7.6

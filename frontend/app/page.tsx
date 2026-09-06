@@ -33,7 +33,7 @@ export default function HomePage() {
               <Sparkles size={16} className="text-primary" aria-hidden="true" />
               2026 秋季社課進行中
             </div>
-            <h1 className="text-[clamp(3.25rem,7vw,6.75rem)] font-black leading-[1.1] tracking-[-0.075em]">
+            <h1 className="text-[clamp(3.25rem,7vw,6.75rem)] font-black leading-[1.1] tracking-[-0.025em]">
               把想法
               <span className="block text-highlight">做成真的。</span>
             </h1>
@@ -94,7 +94,7 @@ export default function HomePage() {
 
       <section className="px-5 py-20 md:px-8 md:py-28">
         <div className="mx-auto grid max-w-[1320px] gap-8 lg:grid-cols-[0.75fr_1.25fr]">
-          <div className="flex min-h-[420px] flex-col justify-between rounded-2xl border border-primary/40 bg-primary/15 p-8 text-foreground shadow-[6px_7px_0_rgba(36,87,214,0.78)] md:p-10">
+          <div className="flex min-h-[420px] flex-col justify-between rounded-2xl border border-primary/40 bg-surface-raised p-8 text-foreground shadow-[6px_7px_0_rgba(36,87,214,0.78)] md:p-10">
             <div>
               <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/20 text-primary"><CalendarDays /></span>
               <h2 className="mt-8 text-4xl font-black leading-tight md:text-5xl">下一次，<br />一起做什麼？</h2>
@@ -125,8 +125,8 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 pb-24 pt-12 md:px-8 md:pb-32">
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-8 overflow-hidden rounded-2xl bg-surface-raised p-8 text-on-secondary shadow-[6px_7px_0_rgba(242,106,46,0.28)] md:flex-row md:items-end md:justify-between md:p-12">
-          <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-secondary font-black leading-tight md:text-6xl">做出作品，也把方法分享出去。</h2></div>
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-8 overflow-hidden rounded-2xl border border-border bg-background p-8 text-on-secondary shadow-[6px_7px_0_rgba(242,106,46,0.28)] md:flex-row md:items-end md:justify-between md:p-12">
+          <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-foreground font-black leading-tight md:text-6xl">做出作品，也把方法分享出去。</h2></div>
           <a href="https://www.instagram.com/ntu_maker/" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 shrink-0 items-center gap-3 rounded-xl px-6 font-bold">追蹤 Instagram <ExternalLink size={18} /></a>
         </div>
       </section>
@@ -142,7 +142,7 @@ export default function HomePage() {
 }
 
 function SectionTitle({ label, title }: { label: string; title: string }) {
-  return <div className="max-w-220"><p className="mb-3 text-sm font-bold text-primary">{label}</p><h2 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">{title}</h2></div>;
+  return <div className="max-w-205"><p className="mb-3 text-sm font-bold text-primary">{label}</p><h2 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">{title}</h2></div>;
 }
 
 function TrackCard({ day, kicker, description, icon, color, topics }: { day: string; kicker: string; description: string; icon: React.ReactNode; color: "lime" | "blue"; topics: string[] }) {

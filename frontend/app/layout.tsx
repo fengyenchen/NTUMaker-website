@@ -12,6 +12,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-Hant">
+      <head>
+        <link rel="preload" href="/crownCork.glb" as="fetch" crossOrigin="anonymous" />
+      </head>
       <body>{children}</body>
     </html>
   );
