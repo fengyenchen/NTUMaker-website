@@ -1,22 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --color-primary: #f26a2e;
-  --color-on-primary: #fffaf0;
-  --color-secondary: #2457d6;
-  --color-on-secondary: #ffffff;
-  --color-accent: #ffb24a;
-  --color-highlight: #c92f3f;
-  --color-background: #fefaf0;
-  --color-surface: #fffaf0;
-  --color-surface-raised: #f4ebdb;
-  --color-foreground: #17263f;
-  --color-muted-foreground: #657086;
-  --color-border: #c9bda5;
-  --color-success: #237a57;
-  --color-warning: #ffc65b;
-  --color-destructive: #c83f3f;
-  --color-focus: #2457d6;
+  --color-primary: #c13f4a;
+  --color-on-primary: #fffdf8;
+  --color-secondary: #37352f;
+  --color-on-secondary: #fffdf8;
+  --color-accent: #2f5e9e;
+  --color-warm-accent: #a9572c;
+  --color-highlight: #c13f4a;
+  --color-background: #f7f6f2;
+  --color-surface: #fffdf8;
+  --color-surface-raised: #efeee9;
+  --color-foreground: #2f2e2a;
+  --color-muted-foreground: #6f6e69;
+  --color-border: #d8d5cd;
+  --color-success: #2f765d;
+  --color-warning: #d6a84b;
+  --color-destructive: #b83d48;
+  --color-focus: #2f5e9e;
+  --color-shadow: #37352f;
+  --color-shadow-soft: #b8b3a9;
 }
 
 @theme inline {
@@ -25,6 +28,7 @@
   --color-secondary: var(--color-secondary);
   --color-on-secondary: var(--color-on-secondary);
   --color-accent: var(--color-accent);
+  --color-warm-accent: var(--color-warm-accent);
   --color-highlight: var(--color-highlight);
   --color-background: var(--color-background);
   --color-surface: var(--color-surface);
@@ -56,7 +60,7 @@ body {
   line-height: 1.5;
 }
 a { color: inherit; text-decoration: none; }
-button, a { -webkit-tap-highlight-color: transparent; }
+button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 ::selection { background: var(--color-primary); color: var(--color-on-primary); }
 
@@ -67,14 +71,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
   border: 1px solid var(--color-foreground);
   background: var(--color-surface);
   color: var(--color-foreground);
-  box-shadow: 4px 4px 0 var(--color-secondary);
+  box-shadow: 3px 3px 0 var(--color-shadow);
   transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
 }
 .button-25d:hover {
   transform: translate(4px, 4px);
   background: var(--color-secondary);
   color: var(--color-on-secondary);
-  box-shadow: 2px 2px 0 var(--color-foreground);
+  box-shadow: 1px 1px 0 var(--color-shadow);
 }
 .button-25d:active {
   transform: translate(7px, 7px);

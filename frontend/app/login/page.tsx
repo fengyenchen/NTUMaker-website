@@ -33,7 +33,7 @@ export default function LoginPage() {
 
   return (
     <main className="grid min-h-screen place-items-center px-5 py-12">
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-surface p-7 shadow-[6px_7px_0_rgba(36,87,214,0.76)] md:p-10">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-surface p-7 shadow-[6px_7px_0_var(--color-shadow-soft)] md:p-10">
         <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-muted-foreground"><ArrowLeft size={17} /> 回首頁</Link>
         <span className="mt-10 grid size-14 place-items-center rounded-2xl bg-secondary text-on-secondary"><Mail /></span>
         <h1 className="mt-7 text-4xl font-black tracking-tight">用 Email 登入</h1>
@@ -44,7 +44,7 @@ export default function LoginPage() {
           <button disabled={loading} className="button-25d mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 font-bold disabled:cursor-not-allowed disabled:opacity-50">{loading ? "正在處理…" : "寄送登入連結"} <Send size={17} /></button>
         </form>
         {message && <p role="status" className="mt-6 rounded-xl bg-background p-4 text-sm">{message}</p>}
-        {developmentToken && <a className="mt-3 inline-flex min-h-11 items-center font-bold text-secondary underline" href={`/api/v1/auth/verify?return_to=/learn&token=${encodeURIComponent(developmentToken)}`}>開發模式：直接驗證登入</a>}
+        {developmentToken && <a className="mt-3 inline-flex min-h-11 items-center font-bold text-accent underline" href={`/api/v1/auth/verify?return_to=/learn&token=${encodeURIComponent(developmentToken)}`}>開發模式：直接驗證登入</a>}
       </div>
     </main>
   );

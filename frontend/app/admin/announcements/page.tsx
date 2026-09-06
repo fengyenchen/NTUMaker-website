@@ -146,7 +146,7 @@ export default function AnnouncementsAdminPage() {
         {error && <div role="alert" className="mt-6 border border-destructive bg-destructive/10 p-4 text-sm font-bold text-destructive">{error}</div>}
 
         {showForm && (
-          <section className="mt-7 border border-border bg-surface p-5 shadow-[4px_5px_0_var(--color-secondary)] md:p-7">
+          <section className="mt-7 border border-border bg-surface p-5 shadow-[4px_5px_0_var(--color-shadow-soft)] md:p-7">
             <div className="flex items-start justify-between gap-4">
               <div><h2 className="text-xl font-black">{editingId ? "編輯公告" : "新增公告"}</h2><p className="mt-1 text-sm text-muted-foreground">先存成草稿，確認內容後再發布。</p></div>
               <button type="button" onClick={() => setShowForm(false)} aria-label="關閉公告表單" className="grid size-11 place-items-center"><X size={19} /></button>

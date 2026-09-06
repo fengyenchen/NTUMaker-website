@@ -4,7 +4,7 @@
 
 ## 設計主張
 
-以「2.5D 自造工作台」為核心：使用柔和深色空間、斜角與堆疊卡片、實體感硬陰影，以及可互動的 3D 零件物件。瓶蓋是首頁的主角，其他介面保持乾淨，避免模仿活動網站的網格、跑馬燈、工程編號或大面積描邊字。
+以「Notion 紙張介面 × 2.5D 自造工作台」為核心：使用暖白紙張、墨色資訊層級、斜角與堆疊卡片、克制的硬陰影，以及可互動的 3D 零件物件。瓶蓋是首頁的主角，其他介面保持乾淨，避免模仿活動網站的網格、跑馬燈、工程編號或大面積描邊字。
 
 - 風格變化：7／10，允許非對稱與大型標題。
 - 動態程度：5／10，只在動態能表達層級或狀態時使用。
@@ -15,21 +15,25 @@
 
 | 用途 | 變數 | 色彩 |
 |---|---|---|
-| 主色 | `--color-primary` | `#F26A2E` |
-| 主色文字 | `--color-on-primary` | `#FFFAF0` |
-| 次色 | `--color-secondary` | `#2457D6` |
-| 強調色 | `--color-accent` | `#FFB24A` |
-| 大標強調 | `--color-highlight` | `#C92F3F` |
-| 背景 | `--color-background` | `#FEFAF0` |
-| 表面 | `--color-surface` | `#FFFAF0` |
-| 抬升表面 | `--color-surface-raised` | `#F4EBDB` |
-| 主要文字 | `--color-foreground` | `#17263F` |
-| 次要文字 | `--color-muted-foreground` | `#657086` |
-| 邊框 | `--color-border` | `#C9BDA5` |
-| 成功 | `--color-success` | `#38C976` |
-| 警告 | `--color-warning` | `#FFBD3E` |
-| 錯誤 | `--color-destructive` | `#EF4444` |
-| 焦點 | `--color-focus` | `#86A0FF` |
+| 品牌主色 | `--color-primary` | `#C13F4A` |
+| 主色文字 | `--color-on-primary` | `#FFFDF8` |
+| 墨色區塊 | `--color-secondary` | `#37352F` |
+| 墨色區塊文字 | `--color-on-secondary` | `#FFFDF8` |
+| 冷色點綴 | `--color-accent` | `#2F5E9E` |
+| 暖色點綴 | `--color-warm-accent` | `#A9572C` |
+| 大標強調 | `--color-highlight` | `#C13F4A` |
+| 背景 | `--color-background` | `#F7F6F2` |
+| 表面 | `--color-surface` | `#FFFDF8` |
+| 抬升表面 | `--color-surface-raised` | `#EFEEE9` |
+| 主要文字 | `--color-foreground` | `#2F2E2A` |
+| 次要文字 | `--color-muted-foreground` | `#6F6E69` |
+| 邊框 | `--color-border` | `#D8D5CD` |
+| 成功 | `--color-success` | `#2F765D` |
+| 警告 | `--color-warning` | `#D6A84B` |
+| 錯誤 | `--color-destructive` | `#B83D48` |
+| 焦點 | `--color-focus` | `#2F5E9E` |
+| 硬陰影 | `--color-shadow` | `#37352F` |
+| 柔和硬陰影 | `--color-shadow-soft` | `#B8B3A9` |
 
 元件只能使用語意變數，禁止在元件內散落品牌色碼。
 
@@ -47,14 +51,16 @@
 - 卡片以細邊框、色塊與編號建立層級，不靠陰影。
 - 硬陰影只保留輕量位移：小元件 2–4px、一般卡片 5–7px、首頁 3D 主框上限 8–9px。
 - 所有互動元件必須有 hover、active、focus-visible 與 disabled 狀態。
-- 主要按鈕平時使用米白底、深色描邊與右下藍色硬陰影；hover 時改為藍底白字並向右下位移，active 時壓平陰影。
+- 主要按鈕平時使用暖白底、墨色描邊與右下墨色硬陰影；hover 時改為墨色底、暖白字並向右下位移，active 時壓平陰影。
 - 圖示使用 Lucide SVG，不以 Emoji 代替功能圖示。
 - 一般轉場 150–300ms，只動畫化 `transform` 與 `opacity`。
+- 首頁以 GSAP 製作克制的進場與捲動揭露：位移 12–18px、時間 400–600ms，不使用彈跳、發光或持續漂浮。
+- GSAP 動效集中於獨立 Client Component，並在 `prefers-reduced-motion` 啟用時停用。
 - 3D 瓶蓋預設緩慢旋轉，且遵守 `prefers-reduced-motion`。
 - 手機或不支援 WebGL 時顯示簡化或靜態備援內容。
 - 不使用圓形漸層光暈、模糊氤氳或裝飾性發光背景；立體感來自物件、錯位色塊與硬陰影。
-- 橘色只作為半透明細節、描邊與小面積提示，不使用大面積不透明橘色塊；主要硬陰影使用藍色或深墨藍。
-- 紅色只用於大型標語的關鍵短句，避免同一區塊同時出現紅、橘、藍三種高彩度主角。
+- 藍色與橘色只作為小面積分類、焦點、描邊或提示，不使用大面積高彩度色塊；主要硬陰影使用墨色或暖灰。
+- 紅色負責品牌標語與主要狀態，同一區塊最多保留一個高彩度主角。
 
 ## 無障礙交付檢查
 

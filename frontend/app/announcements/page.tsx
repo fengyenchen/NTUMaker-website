@@ -12,10 +12,10 @@ const posts = [
 export default function AnnouncementsPage() {
   return <main><SiteHeader /><PageHero eyebrow="ANNOUNCEMENTS / 公告" title="社團最近在做什麼。" description="社課異動、工作坊報名、社員招募與空間開放資訊都會整理在這裡。" />
     <section className="px-5 pb-24 md:px-8"><div className="mx-auto max-w-[1320px] space-y-5">{posts.map((post, index) => (
-      <article key={post.title} className={`grid gap-6 rounded-2xl border border-border bg-surface p-7 md:grid-cols-[150px_1fr_auto] md:items-center md:p-9 ${index === 0 ? "shadow-[4px_5px_0_rgba(242,106,46,0.24)]" : ""}`}>
+      <article key={post.title} className={`grid gap-6 rounded-2xl border border-border bg-surface p-7 md:grid-cols-[150px_1fr_auto] md:items-center md:p-9 ${index === 0 ? "shadow-[4px_5px_0_var(--color-shadow-soft)]" : ""}`}>
         <div><p className="font-mono text-sm text-primary">{post.date}</p><span className="mt-3 inline-block rounded-full bg-surface-raised px-3 py-1 text-sm">{post.tag}</span></div>
         <div><h2 className="text-2xl font-black">{post.title}</h2><p className="mt-2 text-muted-foreground">{post.summary}</p></div>
-        <button className="inline-flex min-h-11 items-center gap-2 font-bold text-secondary">閱讀公告 <ArrowUpRight size={17} /></button>
+        <button className="inline-flex min-h-11 items-center gap-2 font-bold text-accent">閱讀公告 <ArrowUpRight size={17} /></button>
       </article>
     ))}</div></section><SiteFooter /></main>;
 }

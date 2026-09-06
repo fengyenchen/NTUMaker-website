@@ -30,7 +30,7 @@ function SceneLights() {
       <directionalLight position={[0, 1.5, 1]} intensity={1} />
       <directionalLight position={[-2, 0.5, -3]} intensity={4} />
       <pointLight position={[-1, 0, 2]} intensity={6} />
-      <pointLight position={[2, 1, 1]} intensity={3} color="#f26a2e" />
+      <pointLight position={[2, 1, 1]} intensity={3} color="#a9572c" />
     </>
   );
 }
