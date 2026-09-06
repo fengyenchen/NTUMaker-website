@@ -87,3 +87,17 @@ class ResourceAdminSummary(ResourceWrite):
 
     id: UUID
     created_at: datetime
+
+
+class CourseSessionAdminSummary(CourseSessionWrite):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    resources: list[ResourceAdminSummary]
+
+
+class CourseSeriesAdminSummary(CourseSeriesWrite):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    sessions: list[CourseSessionAdminSummary]

@@ -13,6 +13,7 @@ from app.schemas.admin import (
     AdminUserSummary,
     AnnouncementAdminSummary,
     AnnouncementWrite,
+    CourseSeriesAdminSummary,
     CourseSeriesWrite,
     CourseSessionWrite,
     MemberUpdate,
@@ -150,12 +151,71 @@ def create_course_series(payload: CourseSeriesWrite, db: Session = Depends(get_d
     return item
 
 
+@router.get("/course-library", response_model=list[CourseSeriesAdminSummary], summary="列出完整課程與教材")
+def list_admin_course_library(db: Session = Depends(get_db)) -> list[dict]:
+    series_list = db.scalars(
+        select(CourseSeries)
+        .options(selectinload(CourseSeries.sessions).selectinload(CourseSession.resources))
+        .order_by(CourseSeries.semester.desc(), CourseSeries.track)
+    ).unique()
+    return [
+        {
+            "id": series.id,
+            "title": series.title,
+            "semester": series.semester,
+            "track": series.track,
+            "description": series.description,
+            "sessions": [
+                {
+                    "id": session.id,
+                    "series_id": session.series_id,
+                    "title": session.title,
+                    "week_label": session.week_label,
+                    "summary": session.summary,
+                    "starts_at": session.starts_at,
+                    "order_index": session.order_index,
+                    "visibility": session.visibility,
+                    "resources": sorted(session.resources, key=lambda resource: resource.created_at),
+                }
+                for session in sorted(series.sessions, key=lambda item: item.order_index)
+            ],
+        }
+        for series in series_list
+    ]
+
+
+@router.put("/course-series/{item_id}", response_model=CourseSeriesSummary, summary="更新課程路線")
+def update_course_series(item_id: UUID, payload: CourseSeriesWrite, db: Session = Depends(get_db)) -> CourseSeries:
+    item = db.get(CourseSeries, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到課程路線")
+    for key, value in payload.model_dump().items():
+        setattr(item, key, value)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
 @router.post("/course-sessions", response_model=CourseSessionSummary, status_code=status.HTTP_201_CREATED, summary="新增單堂課")
 def create_course_session(payload: CourseSessionWrite, db: Session = Depends(get_db)) -> CourseSession:
     if not db.get(CourseSeries, payload.series_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到課程路線")
     item = CourseSession(**payload.model_dump())
     db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@router.put("/course-sessions/{item_id}", response_model=CourseSessionSummary, summary="更新單堂課")
+def update_course_session(item_id: UUID, payload: CourseSessionWrite, db: Session = Depends(get_db)) -> CourseSession:
+    item = db.get(CourseSession, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到課堂")
+    if not db.get(CourseSeries, payload.series_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到課程路線")
+    for key, value in payload.model_dump().items():
+        setattr(item, key, value)
     db.commit()
     db.refresh(item)
     return item

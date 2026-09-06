@@ -84,6 +84,18 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 .button-25d:disabled { transform: none; box-shadow: 2px 2px 0 var(--color-border); }
 
+.input-admin {
+  min-height: 2.75rem;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  padding-inline: 0.75rem;
+}
+.input-admin::placeholder { color: var(--color-muted-foreground); }
+textarea.input-admin { resize: vertical; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
