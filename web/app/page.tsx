@@ -33,7 +33,7 @@ export default function HomePage() {
               <Sparkles size={16} className="text-primary" aria-hidden="true" />
               2026 秋季社課進行中
             </div>
-            <h1 className="text-[clamp(3.7rem,8vw,7.8rem)] font-black leading-[1.1] tracking-[-0.075em]">
+            <h1 className="text-[clamp(3.25rem,7vw,6.75rem)] font-black leading-[1.1] tracking-[-0.075em]">
               把想法
               <span className="block text-highlight">做成真的。</span>
             </h1>
