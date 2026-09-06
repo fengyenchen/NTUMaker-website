@@ -163,7 +163,7 @@ copy web\.env.example web\.env
 copy api\.env.example api\.env
 ```
 
-後端的 `DATABASE_URL` 使用 Neon 提供的 pooled connection URL，並保留 `sslmode=require`。
+後端的 `DATABASE_URL` 可直接貼上 Neon 提供的 pooled connection URL，並保留 `sslmode=require`。程式會自動改用已安裝的 psycopg v3 驅動，不需要另外安裝 `psycopg2`。
 
 ### 3. 啟動 FastAPI
 

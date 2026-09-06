@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import EmailStr
+from pydantic import EmailStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +16,17 @@ class Settings(BaseSettings):
     email_from: EmailStr = "no-reply@example.com"
     resend_api_key: str | None = None
     admin_email: EmailStr | None = None
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def use_psycopg_v3(cls, value: object) -> object:
+        """Neon 的標準網址未指定驅動，統一交給已安裝的 psycopg v3。"""
+        if isinstance(value, str):
+            if value.startswith("postgresql://"):
+                return value.replace("postgresql://", "postgresql+psycopg://", 1)
+            if value.startswith("postgres://"):
+                return value.replace("postgres://", "postgresql+psycopg://", 1)
+        return value
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
