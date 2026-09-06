@@ -88,6 +88,28 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 }
 .button-25d:disabled { transform: none; box-shadow: 2px 2px 0 var(--color-border); }
 
+.card-interactive {
+  transition: translate 200ms ease, border-color 200ms ease, background-color 200ms ease;
+}
+.card-interactive:focus-within {
+  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
+}
+.card-inline-link svg {
+  transition: transform 180ms ease;
+}
+.card-interactive:hover .card-inline-link svg,
+.card-inline-link:hover svg,
+.card-inline-link:focus-visible svg {
+  transform: translateX(4px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-interactive:hover {
+    translate: 0 -3px;
+    border-color: color-mix(in srgb, var(--color-primary) 42%, var(--color-border));
+  }
+}
+
 .input-admin {
   min-height: 2.75rem;
   width: 100%;
@@ -103,4 +125,6 @@ textarea.input-admin { resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  .card-interactive, .card-inline-link svg { transition: none; }
+  .card-interactive:hover { translate: none; }
 }

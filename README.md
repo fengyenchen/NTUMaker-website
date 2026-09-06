@@ -12,6 +12,11 @@ NTUMaker 的公開資訊、社課教材、社員影片與幹部管理平台。
 - Admin：管理帳號、社員期限、公告、課程、資源與發布狀態。
 - 未來擴充：建立社群草稿、審核與排程流程，再串接 Instagram、Facebook 與 Threads。
 
+正式社群連結：
+
+- Instagram：<https://www.instagram.com/ntu_maker/>
+- Facebook：<https://www.facebook.com/ntumaker2018>
+
 ## 技術架構
 
 - Web：Next.js App Router、React、TypeScript、Tailwind CSS

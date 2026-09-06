@@ -7,11 +7,10 @@ import {
   Hammer,
   LockKeyhole,
   Play,
-  Shapes,
-  Sparkles,
 } from "lucide-react";
 import { BottleCapHero } from "@/components/bottle-cap-hero";
 import { HomeMotion } from "@/components/home-motion";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { courseTracks } from "@/data/course-schedule";
 
@@ -32,7 +31,6 @@ export default function HomePage() {
         <div className="mx-auto grid min-h-[680px] max-w-[1320px] items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative z-10" data-hero-copy>
             <div className="mb-7 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm shadow-[2px_3px_0_var(--color-shadow-soft)]">
-              <Sparkles size={16} className="text-primary" aria-hidden="true" />
               2026 秋季社課進行中
             </div>
             <h1 className="text-[clamp(3.25rem,7vw,6.75rem)] font-black leading-[1.1] tracking-[-0.025em]">
@@ -58,8 +56,7 @@ export default function HomePage() {
               <BottleCapHero />
             </div>
             <div className="absolute left-0 top-[12%] -rotate-6 rounded-2xl bg-secondary px-5 py-4 text-on-secondary shadow-[4px_4px_0_var(--color-shadow-soft)]">
-              <Shapes size={24} aria-hidden="true" />
-              <p className="mt-2 text-sm font-bold">從零件開始</p>
+              <p className="text-sm font-bold">MAKE IT REAL</p>
             </div>
             <div className="absolute bottom-[8%] right-0 rotate-3 rounded-2xl border border-warm-accent bg-surface px-5 py-4 text-foreground shadow-[3px_3px_0_var(--color-warm-accent)]">
               <p className="text-xs font-bold opacity-70">NEXT CLASS</p>
@@ -101,12 +98,12 @@ export default function HomePage() {
               <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/20 text-primary"><CalendarDays /></span>
               <h2 className="mt-8 text-4xl font-black leading-tight md:text-5xl">下一次，<br />一起做什麼？</h2>
             </div>
-            <Link href="/announcements" className="inline-flex min-h-12 items-center gap-2 font-bold">查看所有公告 <ArrowRight size={18} /></Link>
+            <Link href="/announcements" className="card-inline-link inline-flex min-h-12 items-center gap-2 font-bold">查看所有公告 <ArrowRight size={18} /></Link>
           </div>
 
           <div className="space-y-4">
             {announcements.map((item, index) => (
-              <Link href="/announcements" key={item.title} className="group grid gap-5 rounded-2xl border border-border bg-surface p-6 transition-transform hover:-translate-y-1 md:grid-cols-[92px_1fr_auto] md:items-center">
+              <Link href="/announcements" key={item.title} className="card-interactive card-inline-link group grid gap-5 rounded-2xl border border-border bg-surface p-6 md:grid-cols-[92px_1fr_auto] md:items-center">
                 <div><p className="font-mono text-sm text-primary">{item.date}</p><p className="mt-1 text-xs text-muted-foreground">{item.type}</p></div>
                 <div><h3 className="text-lg font-bold">{item.title}</h3><p className="mt-1 text-sm text-muted-foreground">{item.detail}</p></div>
                 <span className={`hidden size-11 items-center justify-center rounded-xl bg-surface-raised text-primary md:inline-flex ${index % 2 ? "rotate-3" : "-rotate-3"}`}><ArrowRight size={18} /></span>
@@ -129,16 +126,14 @@ export default function HomePage() {
       <section className="px-5 pb-24 pt-12 md:px-8 md:pb-32" data-reveal>
         <div className="mx-auto flex max-w-[1320px] flex-col gap-8 overflow-hidden rounded-2xl border border-border bg-surface p-8 shadow-[6px_7px_0_var(--color-shadow-soft)] md:flex-row md:items-end md:justify-between md:p-12">
           <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-foreground font-black leading-tight md:text-6xl">做出作品，也把方法分享出去。</h2></div>
-          <a href="https://www.instagram.com/ntu_maker/" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 shrink-0 items-center gap-3 rounded-xl px-6 font-bold">追蹤 Instagram <ExternalLink size={18} /></a>
+          <div className="flex shrink-0 flex-wrap gap-4">
+            <a href="https://www.instagram.com/ntu_maker/" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 items-center gap-3 rounded-xl px-6 font-bold">Instagram <ExternalLink size={18} aria-hidden="true" /></a>
+            <a href="https://www.facebook.com/ntumaker2018" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 items-center gap-3 rounded-xl px-6 font-bold">Facebook <ExternalLink size={18} aria-hidden="true" /></a>
+          </div>
         </div>
       </section>
 
-      <footer className="border-t border-border px-5 py-10 md:px-8">
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p><strong className="text-foreground">NTUMaker</strong> · 國立臺灣大學自造者社</p>
-          <p>Build. Learn. Share.</p>
-        </div>
-      </footer>
+      <SiteFooter />
       </main>
     </HomeMotion>
   );
@@ -151,24 +146,24 @@ function SectionTitle({ label, title }: { label: string; title: string }) {
 function TrackCard({ day, kicker, description, icon, color, topics }: { day: string; kicker: string; description: string; icon: React.ReactNode; color: "lime" | "blue"; topics: string[] }) {
   const lime = color === "lime";
   return (
-    <article className="rounded-2xl border border-border bg-surface p-7 shadow-[6px_7px_0_var(--color-shadow-soft)] md:p-10">
+    <article className="card-interactive rounded-2xl border border-border bg-surface p-7 shadow-[6px_7px_0_var(--color-shadow-soft)] md:p-10">
       <div className="flex items-start justify-between"><span className={`inline-flex size-14 items-center justify-center rounded-2xl ${lime ? "border border-primary/40 bg-primary/10 text-primary" : "border border-accent/40 bg-accent/10 text-accent"}`}>{icon}</span><span className="rounded-full border border-border px-4 py-2 text-sm font-bold">{day}</span></div>
       <h3 className="mt-9 text-3xl font-black md:text-4xl">{kicker}</h3>
       <p className="mt-5 leading-7 text-muted-foreground">{description}</p>
       <div className="mt-8 flex flex-wrap gap-2">{topics.map((topic) => <span key={topic} className="rounded-full bg-surface-raised px-4 py-2 text-sm">{topic}</span>)}</div>
-      <Link href="/courses" className="mt-8 inline-flex min-h-11 items-center gap-2 font-bold text-primary">查看課程 <ArrowRight size={18} /></Link>
+      <Link href="/courses" className="card-inline-link mt-8 inline-flex min-h-11 items-center gap-2 font-bold text-primary">查看課程 <ArrowRight size={18} /></Link>
     </article>
   );
 }
 
 function CourseLibraryCard({ day, title, description, items, blue = false }: { day: string; title: string; description: string; items: string[]; blue?: boolean }) {
   return (
-    <article className={`rounded-2xl border bg-surface p-7 shadow-[5px_6px_0_var(--color-shadow-soft)] ${blue ? "border-accent/45" : "border-border"}`}>
+    <article className={`card-interactive rounded-2xl border bg-surface p-7 shadow-[5px_6px_0_var(--color-shadow-soft)] ${blue ? "border-accent/45" : "border-border"}`}>
       <div className="flex items-center justify-between gap-4"><span className="rounded-full bg-surface-raised px-4 py-2 text-sm font-bold">{day}</span><LockKeyhole size={18} aria-label="部分內容限社員" /></div>
       <h3 className="mt-7 text-3xl font-black leading-tight">{title}</h3>
       <p className="mt-3 leading-7 text-muted-foreground">{description}</p>
       <div className="mt-6 space-y-2">{items.map((item) => <div key={item} className="flex items-center gap-3 rounded-xl bg-background p-4"><Play className="text-accent" size={17} aria-hidden="true" /><span className="font-bold">{item}</span></div>)}</div>
-      <Link href="/resources" className="mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent">查看這條課程的內容 <ArrowRight size={17} /></Link>
+      <Link href="/resources" className="card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent">查看這條課程的內容 <ArrowRight size={17} /></Link>
     </article>
   );
 }
