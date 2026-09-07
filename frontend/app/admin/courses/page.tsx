@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  Dispatch,
   FormEvent,
   ReactNode,
+  SetStateAction,
   useCallback,
   useEffect,
   useMemo,
@@ -74,7 +76,8 @@ const emptySeries = {
 const emptySession = {
   series_id: "",
   title: "",
-  week_label: "",
+  week_start: "",
+  week_end: "",
   summary: "",
   starts_at: "",
   order_index: 0,
@@ -95,6 +98,7 @@ export default function CoursesAdminPage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null,
   );
+  const [newSessionSeriesId, setNewSessionSeriesId] = useState<string | null>(null);
   const [editor, setEditor] = useState<Editor>(null);
   const [seriesForm, setSeriesForm] = useState(emptySeries);
   const [sessionForm, setSessionForm] = useState(emptySession);
@@ -148,6 +152,9 @@ export default function CoursesAdminPage() {
     ? (seriesList.find((series) => series.id === selectedSession.series_id) ??
       null)
     : null;
+  const newSessionSeries = newSessionSeriesId
+    ? (seriesList.find((series) => series.id === newSessionSeriesId) ?? null)
+    : null;
 
   function openNewSeries() {
     setSeriesForm(emptySeries);
@@ -159,9 +166,12 @@ export default function CoursesAdminPage() {
     setSessionForm({
       ...emptySession,
       series_id: series.id,
+      week_start: String(series.sessions.length + 1),
       order_index: series.sessions.length + 1,
     });
-    setEditor("session");
+    setSelectedSessionId(null);
+    setNewSessionSeriesId(series.id);
+    setEditor(null);
     setError("");
   }
 
@@ -180,8 +190,10 @@ export default function CoursesAdminPage() {
     event.preventDefault();
     await saveEditor("/api/v1/admin/course-sessions", "POST", {
       ...sessionForm,
+      week_label: formatWeekLabel(sessionForm.week_start, sessionForm.week_end),
       starts_at: new Date(sessionForm.starts_at).toISOString(),
     });
+    setNewSessionSeriesId(null);
   }
 
   async function submitResource(event: FormEvent<HTMLFormElement>) {
@@ -460,20 +472,11 @@ export default function CoursesAdminPage() {
                   className="input-admin"
                 />
               </Field>
-              <Field label="週次">
-                <input
-                  required
-                  maxLength={30}
-                  placeholder="例如：第 4–5 週"
-                  value={sessionForm.week_label}
-                  onChange={(event) =>
-                    setSessionForm({
-                      ...sessionForm,
-                      week_label: event.target.value,
-                    })
-                  }
-                  className="input-admin"
-                />
+              <Field label="開始週次">
+                <input required min={1} type="number" value={sessionForm.week_start} onChange={(event) => setSessionForm({ ...sessionForm, week_start: event.target.value })} className="input-admin" />
+              </Field>
+              <Field label="結束週次" required={false}>
+                <input min={Number(sessionForm.week_start) || 1} type="number" value={sessionForm.week_end} onChange={(event) => setSessionForm({ ...sessionForm, week_end: event.target.value })} className="input-admin" />
               </Field>
               <Field label="上課時間">
                 <input
@@ -778,7 +781,16 @@ export default function CoursesAdminPage() {
             </div>
 
             <aside className="border border-border bg-surface p-5 xl:sticky xl:top-6 xl:self-start">
-              {selectedSession && selectedSeries ? (
+              {newSessionSeries ? (
+                <NewSessionForm
+                  series={newSessionSeries}
+                  form={sessionForm}
+                  setForm={setSessionForm}
+                  saving={saving}
+                  onSubmit={submitSession}
+                  onCancel={() => setNewSessionSeriesId(null)}
+                />
+              ) : selectedSession && selectedSeries ? (
                 <>
                   <div className="border-b border-border pb-5">
                     <p className="mb-4 text-xs font-bold text-muted-foreground">
@@ -1033,6 +1045,52 @@ export default function CoursesAdminPage() {
       </div>
     </main>
   );
+}
+
+type SessionForm = typeof emptySession;
+
+function NewSessionForm({
+  series,
+  form,
+  setForm,
+  saving,
+  onSubmit,
+  onCancel,
+}: {
+  series: CourseSeries;
+  form: SessionForm;
+  setForm: Dispatch<SetStateAction<SessionForm>>;
+  saving: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="grid gap-4">
+      <div className="flex items-start justify-between gap-3 border-b border-border pb-4">
+        <div>
+          <p className="text-xs font-bold text-accent">新增課堂</p>
+          <h2 className="mt-1 text-xl font-black">{series.title}</h2>
+        </div>
+        <button type="button" onClick={onCancel} aria-label="關閉新增課堂" className="grid size-11 place-items-center"><X size={19} /></button>
+      </div>
+      <Field label="課堂名稱"><input required maxLength={200} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className="input-admin" /></Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="開始週次"><input required min={1} type="number" value={form.week_start} onChange={(event) => setForm({ ...form, week_start: event.target.value })} className="input-admin" /></Field>
+        <Field label="結束週次" required={false}><input min={Number(form.week_start) || 1} type="number" value={form.week_end} onChange={(event) => setForm({ ...form, week_end: event.target.value })} className="input-admin" /></Field>
+      </div>
+      <Field label="上課時間"><input required type="datetime-local" value={form.starts_at} onChange={(event) => setForm({ ...form, starts_at: event.target.value })} className="input-admin" /></Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="顯示順序"><input required min={0} type="number" value={form.order_index} onChange={(event) => setForm({ ...form, order_index: Number(event.target.value) })} className="input-admin" /></Field>
+        <Field label="課堂權限"><VisibilitySelect value={form.visibility} onChange={(visibility) => setForm({ ...form, visibility })} /></Field>
+      </div>
+      <Field label="課堂摘要"><textarea required maxLength={500} rows={3} value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} className="input-admin py-3" /></Field>
+      <div className="flex justify-end gap-3 pt-2"><button type="button" onClick={onCancel} className="min-h-11 px-4 font-bold">取消</button><button disabled={saving} className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50">{saving ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}建立課堂</button></div>
+    </form>
+  );
+}
+
+function formatWeekLabel(start: string, end: string) {
+  return end && end !== start ? `第 ${start}–${end} 週` : `第 ${start} 週`;
 }
 
 function EditorShell({
