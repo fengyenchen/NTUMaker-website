@@ -98,7 +98,7 @@ export default function HomePage() {
               <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/20 text-primary"><CalendarDays /></span>
               <h2 className="mt-8 text-4xl font-black leading-tight md:text-5xl">下一次，<br />一起做什麼？</h2>
             </div>
-            <Link href="/announcements" className="card-inline-link inline-flex min-h-12 items-center gap-2 font-bold">查看所有公告 <ArrowRight size={18} /></Link>
+            <Link href="/announcements" className="card-inline-link inline-flex min-h-12 items-center gap-2 font-bold">查看所有公告 <ArrowRight className="card-link-arrow" size={18} /></Link>
           </div>
 
           <div className="space-y-4">
@@ -106,7 +106,7 @@ export default function HomePage() {
               <Link href="/announcements" key={item.title} className="card-interactive card-inline-link group grid gap-5 rounded-2xl border border-border bg-surface p-6 md:grid-cols-[92px_1fr_auto] md:items-center">
                 <div><p className="font-mono text-sm text-primary">{item.date}</p><p className="mt-1 text-xs text-muted-foreground">{item.type}</p></div>
                 <div><h3 className="text-lg font-bold">{item.title}</h3><p className="mt-1 text-sm text-muted-foreground">{item.detail}</p></div>
-                <span className={`hidden size-11 items-center justify-center rounded-xl bg-surface-raised text-primary md:inline-flex ${index % 2 ? "rotate-3" : "-rotate-3"}`}><ArrowRight size={18} /></span>
+                <span className={`hidden size-11 items-center justify-center rounded-xl bg-surface-raised text-primary md:inline-flex ${index % 2 ? "rotate-3" : "-rotate-3"}`}><ArrowRight className="card-link-arrow" size={18} /></span>
               </Link>
             ))}
           </div>
@@ -151,7 +151,7 @@ function TrackCard({ day, kicker, description, icon, color, topics }: { day: str
       <h3 className="mt-9 text-3xl font-black md:text-4xl">{kicker}</h3>
       <p className="mt-5 leading-7 text-muted-foreground">{description}</p>
       <div className="mt-8 flex flex-wrap gap-2">{topics.map((topic) => <span key={topic} className="rounded-full bg-surface-raised px-4 py-2 text-sm">{topic}</span>)}</div>
-      <Link href="/courses" className="card-inline-link mt-8 inline-flex min-h-11 items-center gap-2 font-bold text-primary">查看課程 <ArrowRight size={18} /></Link>
+      <Link href="/courses" className="card-inline-link mt-8 inline-flex min-h-11 items-center gap-2 font-bold text-primary">查看課程 <ArrowRight className="card-link-arrow" size={18} /></Link>
     </article>
   );
 }
@@ -163,7 +163,7 @@ function CourseLibraryCard({ day, title, description, items, blue = false }: { d
       <h3 className="mt-7 text-3xl font-black leading-tight">{title}</h3>
       <p className="mt-3 leading-7 text-muted-foreground">{description}</p>
       <div className="mt-6 space-y-2">{items.map((item) => <div key={item} className="flex items-center gap-3 rounded-xl bg-background p-4"><Play className="text-accent" size={17} aria-hidden="true" /><span className="font-bold">{item}</span></div>)}</div>
-      <Link href="/resources" className="card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent">查看這條課程的內容 <ArrowRight size={17} /></Link>
+      <Link href="/resources" className="card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent">查看這條課程的內容 <ArrowRight className="card-link-arrow" size={17} /></Link>
     </article>
   );
 }

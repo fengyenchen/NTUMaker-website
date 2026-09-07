@@ -30,7 +30,7 @@ export default async function ResourcesPage() {
                           <div className="flex items-start justify-between gap-3"><h3 className="font-bold">{session.title}</h3>{session.isPublic ? <span className="shrink-0 text-xs text-success">公開</span> : <LockKeyhole className="shrink-0" size={17} aria-label="社員限定" />}</div>
                           <div className="mt-3 flex flex-wrap gap-2">{session.assets.map((asset) => <span key={asset} className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-3 py-1 text-xs"><AssetIcon label={asset} />{asset}</span>)}</div>
                         </div>
-                        <ArrowRight className="mt-8 shrink-0 transition-transform group-hover:translate-x-1" size={18} aria-hidden="true" />
+                        <ArrowRight className="card-link-arrow mt-8 shrink-0" size={18} aria-hidden="true" />
                       </div>
                     </Link>
                   ))}

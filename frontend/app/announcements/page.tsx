@@ -15,7 +15,7 @@ export default function AnnouncementsPage() {
       <article key={post.title} className={`card-interactive grid gap-6 rounded-2xl border border-border bg-surface p-7 md:grid-cols-[150px_1fr_auto] md:items-center md:p-9 ${index === 0 ? "shadow-[4px_5px_0_var(--color-shadow-soft)]" : ""}`}>
         <div><p className="font-mono text-sm text-primary">{post.date}</p><span className="mt-3 inline-block rounded-full bg-surface-raised px-3 py-1 text-sm">{post.tag}</span></div>
         <div><h2 className="text-2xl font-black">{post.title}</h2><p className="mt-2 text-muted-foreground">{post.summary}</p></div>
-        <button className="card-inline-link inline-flex min-h-11 items-center gap-2 font-bold text-accent">閱讀公告 <ArrowUpRight size={17} /></button>
+        <button className="card-inline-link inline-flex min-h-11 items-center gap-2 font-bold text-accent">閱讀公告 <ArrowUpRight className="card-link-arrow" size={17} /></button>
       </article>
     ))}</div></section><SiteFooter /></main>;
 }

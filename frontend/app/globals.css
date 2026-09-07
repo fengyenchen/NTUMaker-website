@@ -94,12 +94,12 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .card-interactive:focus-within {
   border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
 }
-.card-inline-link svg {
+.card-link-arrow {
   transition: transform 180ms ease;
 }
-.card-interactive:hover .card-inline-link svg,
-.card-inline-link:hover svg,
-.card-inline-link:focus-visible svg {
+.card-interactive:hover .card-inline-link .card-link-arrow,
+.card-inline-link:hover .card-link-arrow,
+.card-inline-link:focus-visible .card-link-arrow {
   transform: translateX(4px);
 }
 
@@ -125,6 +125,6 @@ textarea.input-admin { resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
-  .card-interactive, .card-inline-link svg { transition: none; }
+  .card-interactive, .card-link-arrow { transition: none; }
   .card-interactive:hover { translate: none; }
 }

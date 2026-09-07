@@ -4,12 +4,73 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
 const projects = [
-  { icon: Cpu, title: "桌上型環境感測站", tags: ["ESP32", "感測器"], description: "蒐集空間溫濕度與空氣品質，顯示於自製儀表板。" },
-  { icon: Box, title: "模組化工具收納", tags: ["3D 列印", "CAD"], description: "能依工具尺寸快速調整的桌面收納系統。" },
-  { icon: Lightbulb, title: "互動光影裝置", tags: ["互動", "燈光"], description: "根據觀眾距離與動作改變光線和聲音的展示作品。" },
+  {
+    icon: Cpu,
+    title: "桌上型環境感測站",
+    tags: ["ESP32", "感測器"],
+    description: "蒐集空間溫濕度與空氣品質，顯示於自製儀表板。",
+  },
+  {
+    icon: Box,
+    title: "模組化工具收納",
+    tags: ["3D 列印", "CAD"],
+    description: "能依工具尺寸快速調整的桌面收納系統。",
+  },
+  {
+    icon: Lightbulb,
+    title: "互動光影裝置",
+    tags: ["互動", "燈光"],
+    description: "根據觀眾距離與動作改變光線和聲音的展示作品。",
+  },
 ];
 
 export default function ProjectsPage() {
-  return <main><SiteHeader /><PageHero eyebrow="PROJECTS / 作品" title="完成的作品，和還在長大的點子。" description="記錄社員專案的目標、做法、失敗與下一版，讓作品不只停在成果照。" />
-    <section className="px-5 pb-28 md:px-8"><div className="mx-auto grid max-w-[1320px] gap-7 md:grid-cols-3">{projects.map((item, index) => { const Icon=item.icon; return <article key={item.title} className={`card-interactive rounded-2xl border border-border bg-surface p-8 ${index === 1 ? "md:translate-y-10" : ""}`}><span className={`grid size-16 place-items-center rounded-2xl ${index % 2 ? "border border-accent/40 bg-accent/10 text-accent" : "bg-primary text-on-primary"}`}><Icon size={28} /></span><h2 className="mt-16 text-3xl font-black">{item.title}</h2><p className="mt-4 leading-7 text-muted-foreground">{item.description}</p><div className="mt-6 flex flex-wrap gap-2">{item.tags.map((tag)=><span key={tag} className="rounded-full bg-surface-raised px-3 py-1 text-sm">{tag}</span>)}</div><button className="card-inline-link mt-8 inline-flex min-h-11 items-center gap-2 font-bold text-accent">查看紀錄 <ExternalLink size={17} /></button></article>; })}</div></section><SiteFooter /></main>;
+  return (
+    <main>
+      <SiteHeader />
+      <PageHero
+        eyebrow="PROJECTS / 作品"
+        title="完成的作品，和還在長大的點子。"
+        description="記錄社員專案的目標、做法、失敗與下一版，讓作品不只停在成果照。"
+      />
+      <section className="px-5 pb-28 md:px-8">
+        <div className="mx-auto grid max-w-[1320px] gap-7 md:grid-cols-3">
+          {projects.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <article
+                key={item.title}
+                className="card-interactive rounded-2xl border border-border bg-surface p-8"
+              >
+                <span
+                  className={`grid size-16 place-items-center rounded-2xl ${index % 2 ? "border border-accent/40 bg-accent/10 text-accent" : "bg-primary text-on-primary"}`}
+                >
+                  <Icon size={28} />
+                </span>
+                <h2 className="mt-16 text-3xl font-black">{item.title}</h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  {item.description}
+                </p>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {item.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-surface-raised px-3 py-1 text-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <button className="card-inline-link mt-8 inline-flex min-h-11 items-center gap-2 font-bold text-accent">
+                  查看紀錄{" "}
+                  <ExternalLink className="card-link-arrow" size={17} />
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+      <SiteFooter />
+    </main>
+  );
 }
