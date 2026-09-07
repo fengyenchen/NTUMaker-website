@@ -10,12 +10,22 @@ type SiteSetting = {
   description: string;
 };
 
+const settingTabs = [
+  { id: "home", label: "首頁", keys: ["home_badge", "home_title", "home_description", "weekly_courses_title", "course_library_title"] },
+  { id: "courses", label: "社課", keys: ["courses_title", "courses_description"] },
+  { id: "announcements", label: "公告", keys: ["announcements_title", "announcements_description"] },
+  { id: "projects", label: "作品", keys: ["projects_title", "projects_description"] },
+  { id: "about", label: "關於", keys: ["about_title", "about_description"] },
+  { id: "resources", label: "資源", keys: ["resources_title", "resources_description"] },
+] as const;
+
 export default function SettingsAdminPage() {
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [savedKey, setSavedKey] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<(typeof settingTabs)[number]["id"]>("home");
 
   const loadSettings = useCallback(async () => {
     setLoading(true);
@@ -64,7 +74,14 @@ export default function SettingsAdminPage() {
           <button onClick={() => void loadSettings()} className="inline-flex min-h-11 items-center justify-center gap-2 px-3 font-bold"><RefreshCw size={17} />重新整理</button>
         </div>
         {error && <div role="alert" className="mt-6 border border-destructive bg-destructive/10 p-4 text-sm font-bold text-destructive">{error}</div>}
-        {loading ? <div className="flex min-h-64 items-center justify-center gap-3 text-muted-foreground"><LoaderCircle className="animate-spin" />正在讀取網站設定…</div> : <div className="mt-8 grid gap-5 lg:grid-cols-2">{settings.map((setting) => <section key={setting.key} className="border border-border bg-surface p-5"><label className="grid gap-2"><span className="font-bold">{setting.label}</span><span className="text-xs leading-5 text-muted-foreground">{setting.description}</span><textarea rows={setting.key === "home_title" ? 3 : 2} value={setting.value} onChange={(event) => setSettings((current) => current.map((item) => item.key === setting.key ? { ...item, value: event.target.value } : item))} className="input-admin min-h-24 py-3" /></label><div className="mt-4 flex justify-end"><button disabled={savingKey === setting.key} onClick={() => void saveSetting(setting)} className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50">{savingKey === setting.key ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}{savedKey === setting.key ? "已儲存" : "儲存設定"}</button></div></section>)}</div>}
+        {loading ? <div className="flex min-h-64 items-center justify-center gap-3 text-muted-foreground"><LoaderCircle className="animate-spin" />正在讀取網站設定…</div> : <>
+          <nav aria-label="網站設定頁籤" className="mt-8 flex flex-wrap gap-2 border-b border-border pb-3" role="tablist">
+            {settingTabs.map((tab) => <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} className={`min-h-11 border px-4 font-bold transition-colors ${activeTab === tab.id ? "border-secondary bg-secondary text-on-secondary" : "border-border bg-surface hover:bg-surface-raised"}`}>{tab.label}</button>)}
+          </nav>
+          <div className="mt-6 grid gap-5 lg:grid-cols-2" role="tabpanel">
+            {settings.filter((setting) => settingTabs.find((tab) => tab.id === activeTab)?.keys.includes(setting.key as never)).map((setting) => <section key={setting.key} className="border border-border bg-surface p-5"><label className="grid gap-2"><span className="font-bold">{setting.label}</span><span className="text-xs leading-5 text-muted-foreground">{setting.description}</span><textarea rows={setting.key === "home_title" ? 3 : 2} value={setting.value} onChange={(event) => setSettings((current) => current.map((item) => item.key === setting.key ? { ...item, value: event.target.value } : item))} className="input-admin min-h-24 py-3" /></label><div className="mt-4 flex justify-end"><button disabled={savingKey === setting.key} onClick={() => void saveSetting(setting)} className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50">{savingKey === setting.key ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}{savedKey === setting.key ? "已儲存" : "儲存設定"}</button></div></section>)}
+          </div>
+        </>}
       </div>
     </main>
   );
