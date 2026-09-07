@@ -2,17 +2,16 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
-  CircuitBoard,
   ExternalLink,
-  Hammer,
   LockKeyhole,
   Play,
+  Wrench,
 } from "lucide-react";
 import { BottleCapHero } from "@/components/bottle-cap-hero";
 import { HomeMotion } from "@/components/home-motion";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { courseTracks } from "@/data/course-schedule";
+import { getCourseTracks } from "@/lib/course-api";
 import { getSiteSettings } from "@/lib/site-settings";
 
 type Announcement = { id: string; slug: string; title: string; summary: string; published_at: string | null };
@@ -27,8 +26,11 @@ async function getAnnouncements(): Promise<Announcement[]> {
 }
 
 export default async function HomePage() {
-  const settings = await getSiteSettings();
-  const announcements = await getAnnouncements();
+  const [settings, announcements, courseTracks] = await Promise.all([
+    getSiteSettings(),
+    getAnnouncements(),
+    getCourseTracks(),
+  ]);
   const [titleFirstLine, titleSecondLine = ""] = settings.home_title.split("\n");
   const sectionOrder = settings.home_section_order.split(",");
   const sectionPosition = (key: string) => ({ order: Math.max(sectionOrder.indexOf(key), 0) });
@@ -83,22 +85,14 @@ export default async function HomePage() {
         <div className="mx-auto max-w-330">
           <SectionTitle label="每週社課" title={settings.weekly_courses_title} />
           <div className="mt-12 grid gap-8 lg:grid-cols-2">
-            <TrackCard
-              day="星期二"
-              kicker="基礎連貫專案"
-              description="用一學期完成一個作品。每週接續前一堂的進度，練習電子、程式、機構與團隊協作。"
-              icon={<CircuitBoard aria-hidden="true" />}
-              color="lime"
-              topics={["基礎電子", "微控制器", "機構製作", "整合展示"]}
-            />
-            <TrackCard
-              day="星期五"
-              kicker="進階模組工作坊"
-              description="每次拆解一項進階技能。主題彼此獨立，可以依自己的專案需求與興趣選擇參加。"
-              icon={<Hammer aria-hidden="true" />}
-              color="blue"
-              topics={["嵌入式系統", "數位製造", "互動設計", "AI 工具"]}
-            />
+            {courseTracks.map((track) => (
+              <TrackCard
+                key={track.id}
+                day={track.day}
+                title={track.title}
+                description={track.description}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -129,8 +123,15 @@ export default async function HomePage() {
         <div className="mx-auto max-w-330">
           <SectionTitle label="課程內容" title={settings.course_library_title} />
           <div className="mt-12 grid gap-8 lg:grid-cols-2">
-            <CourseLibraryCard day="星期二" title={courseTracks[0].title} description="沿著循線車專案進度學習，每週課程內含講義、上課影片與實作附件。" items={courseTracks[0].sessions.slice(1, 3).map((session) => session.title)} />
-            <CourseLibraryCard day="星期五" title={courseTracks[1].title} description="依主題選擇工作坊，每場的教材、示範影片與範例檔案集中整理。" items={courseTracks[1].sessions.slice(0, 2).map((session) => session.title)} blue />
+            {courseTracks.map((track) => (
+              <CourseLibraryCard
+                key={track.id}
+                day={track.day}
+                title={track.title}
+                description={track.description}
+                items={track.sessions.slice(0, 2).map((session) => session.title)}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -158,27 +159,25 @@ function SectionTitle({ label, title }: { label: string; title: string }) {
   return <div className="max-w-205"><p className="mb-3 text-sm font-bold text-primary">{label}</p><h2 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">{title}</h2></div>;
 }
 
-function TrackCard({ day, kicker, description, icon, color, topics }: { day: string; kicker: string; description: string; icon: React.ReactNode; color: "lime" | "blue"; topics: string[] }) {
-  const lime = color === "lime";
+function TrackCard({ day, title, description }: { day: string; title: string; description: string }) {
   return (
     <article className="card-interactive rounded-2xl border border-border bg-surface p-7 shadow-[6px_7px_0_var(--color-shadow-soft)] md:p-10">
-      <div className="flex items-start justify-between"><span className={`inline-flex size-14 items-center justify-center rounded-2xl ${lime ? "border border-primary/40 bg-primary/10 text-primary" : "border border-accent/40 bg-accent/10 text-accent"}`}>{icon}</span><span className="rounded-full border border-border px-4 py-2 text-sm font-bold">{day}</span></div>
-      <h3 className="mt-9 text-3xl font-black md:text-4xl">{kicker}</h3>
+      <div className="flex items-start justify-between"><span className="inline-flex size-14 items-center justify-center rounded-2xl border border-accent/40 bg-accent/10 text-accent"><Wrench aria-hidden="true" /></span><span className="rounded-full border border-border px-4 py-2 text-sm font-bold">{day}</span></div>
+      <h3 className="mt-9 text-3xl font-black md:text-4xl">{title}</h3>
       <p className="mt-5 leading-7 text-muted-foreground">{description}</p>
-      <div className="mt-8 flex flex-wrap gap-2">{topics.map((topic) => <span key={topic} className="rounded-full bg-surface-raised px-4 py-2 text-sm">{topic}</span>)}</div>
-      <Link href="/courses" className="card-inline-link mt-8 inline-flex min-h-11 items-center gap-2 font-bold text-primary">查看課程 <ArrowRight className="card-link-arrow" size={18} /></Link>
+      <Link href="/courses" className="card-inline-link mt-8 inline-flex min-h-11 items-center gap-2 font-bold text-accent">查看課程 <ArrowRight className="card-link-arrow" size={18} /></Link>
     </article>
   );
 }
 
-function CourseLibraryCard({ day, title, description, items, blue = false }: { day: string; title: string; description: string; items: string[]; blue?: boolean }) {
+function CourseLibraryCard({ day, title, description, items }: { day: string; title: string; description: string; items: string[] }) {
   return (
-    <article className={`card-interactive rounded-2xl border bg-surface p-7 shadow-[5px_6px_0_var(--color-shadow-soft)] ${blue ? "border-accent/45" : "border-border"}`}>
+    <article className="card-interactive rounded-2xl border border-border bg-surface p-7 shadow-[5px_6px_0_var(--color-shadow-soft)]">
       <div className="flex items-center justify-between gap-4"><span className="rounded-full bg-surface-raised px-4 py-2 text-sm font-bold">{day}</span><LockKeyhole size={18} aria-label="部分內容限社員" /></div>
       <h3 className="mt-7 text-3xl font-black leading-tight">{title}</h3>
       <p className="mt-3 leading-7 text-muted-foreground">{description}</p>
       <div className="mt-6 space-y-2">{items.map((item) => <div key={item} className="flex items-center gap-3 rounded-xl bg-background p-4"><Play className="text-accent" size={17} aria-hidden="true" /><span className="font-bold">{item}</span></div>)}</div>
-      <Link href="/resources" className="card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent">查看這條課程的內容 <ArrowRight className="card-link-arrow" size={17} /></Link>
+      <Link href="/resources" className="card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent">查看課程內容 <ArrowRight className="card-link-arrow" size={17} /></Link>
     </article>
   );
 }
