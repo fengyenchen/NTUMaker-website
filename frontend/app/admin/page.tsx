@@ -151,7 +151,7 @@ export default function AdminPage() {
                     <td className="px-5 py-4">{row.visibility}</td>
                     <td className="px-5 py-4">
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ${row.status === "草稿" ? "bg-warning/40" : "bg-success/15 text-success"}`}
+                        className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusClassName(row.status)}`}
                       >
                         {row.status}
                       </span>
@@ -177,4 +177,10 @@ function formatDateTime(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function getStatusClassName(status: string) {
+  if (status === "草稿") return "bg-warning/40";
+  if (status === "已封存") return "bg-surface-raised text-muted-foreground";
+  return "bg-success/15 text-success";
 }

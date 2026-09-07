@@ -31,6 +31,12 @@ from app.services.passwords import hash_password
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
 
+PUBLISH_STATUS_LABELS = {
+    PublishStatus.DRAFT: "草稿",
+    PublishStatus.PUBLISHED: "已發布",
+    PublishStatus.ARCHIVED: "已封存",
+}
+
 
 @router.get("/overview", summary="取得管理後台總覽")
 def get_overview(db: Session = Depends(get_db)) -> dict:
@@ -55,7 +61,7 @@ def get_overview(db: Session = Depends(get_db)) -> dict:
         select(CourseSession).join(CourseSeries).where(CourseSeries.semester == current_semester, CourseSession.starts_at >= datetime.now(timezone.utc)).order_by(CourseSession.starts_at).limit(1)
     )
     recent = [
-        {"title": item.title, "type": "公告", "visibility": "公開", "status": item.status.value, "updated_at": item.updated_at}
+        {"title": item.title, "type": "公告", "visibility": "公開", "status": PUBLISH_STATUS_LABELS[item.status], "updated_at": item.updated_at}
         for item in db.scalars(select(Announcement).order_by(Announcement.updated_at.desc()).limit(3))
     ]
     recent.extend(

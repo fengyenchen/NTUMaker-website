@@ -3,7 +3,8 @@ import "./globals.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ntumaker.vercel.app");
+  process.env.FRONTEND_URL ??
+  "https://ntumaker.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
