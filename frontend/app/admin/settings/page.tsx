@@ -34,7 +34,16 @@ const settingTabs = [
   {
     id: "courses",
     label: "社課",
-    keys: ["courses_title", "courses_description"],
+    keys: [
+      "courses_title",
+      "courses_description",
+      "courses_time_label",
+      "courses_time_value",
+      "courses_location_label",
+      "courses_location_value",
+      "courses_fee_label",
+      "courses_fee_value",
+    ],
   },
   {
     id: "resources",
