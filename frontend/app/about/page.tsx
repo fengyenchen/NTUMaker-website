@@ -2,9 +2,11 @@ import { HeartHandshake, Share2, Sparkles } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getSiteSettings } from "@/lib/site-settings";
 
-export default function AboutPage() {
-  return <main><SiteHeader /><PageHero eyebrow="ABOUT / 關於" title="Build. Learn. Share." description="NTUMaker 致力於推廣創客文化。這裡不要求你一開始就會，而是希望每個人都能找到一起做東西、交換方法和完成作品的夥伴。" />
+export default async function AboutPage() {
+  const settings = await getSiteSettings();
+  return <main><SiteHeader /><PageHero eyebrow="ABOUT / 關於" title={settings.about_title} description={settings.about_description} />
     <section className="px-5 pb-28 md:px-8"><div className="mx-auto grid max-w-[1320px] gap-7 md:grid-cols-3">{[
       { icon: Sparkles, title: "Build", text: "從真實問題出發，快速做出可以摸、可以測的版本。" },
       { icon: HeartHandshake, title: "Learn", text: "透過專案與工作坊，把陌生技術變成自己的能力。" },

@@ -2,6 +2,7 @@ import { Box, Cpu, ExternalLink, Lightbulb } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getSiteSettings } from "@/lib/site-settings";
 
 const projects = [
   {
@@ -24,14 +25,15 @@ const projects = [
   },
 ];
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const settings = await getSiteSettings();
   return (
     <main>
       <SiteHeader />
       <PageHero
         eyebrow="PROJECTS / 作品"
-        title="完成的作品，和還在長大的點子。"
-        description="記錄社員專案的目標、做法、失敗與下一版，讓作品不只停在成果照。"
+        title={settings.projects_title}
+        description={settings.projects_description}
       />
       <section className="px-5 pb-28 md:px-8">
         <div className="mx-auto grid max-w-330 gap-7 md:grid-cols-3">

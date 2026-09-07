@@ -37,15 +37,19 @@ const settingTabs = [
     keys: ["courses_title", "courses_description"],
   },
   {
+    id: "resources",
+    label: "資源",
+    keys: ["resources_title", "resources_description"],
+  },
+  {
     id: "projects",
     label: "作品",
     keys: ["projects_title", "projects_description"],
   },
-  { id: "about", label: "關於", keys: ["about_title", "about_description"] },
   {
-    id: "resources",
-    label: "資源",
-    keys: ["resources_title", "resources_description"],
+    id: "about",
+    label: "關於",
+    keys: ["about_title", "about_description"],
   },
 ] as const;
 
@@ -119,7 +123,11 @@ export default function SettingsAdminPage() {
     const target = index + direction;
     if (index < 0 || target < 0 || target >= order.length) return;
     [order[index], order[target]] = [order[target], order[index]];
-    setSettings((current) => current.map((item) => item.key === setting.key ? { ...item, value: order.join(",") } : item));
+    setSettings((current) =>
+      current.map((item) =>
+        item.key === setting.key ? { ...item, value: order.join(",") } : item,
+      ),
+    );
   }
 
   return (
@@ -176,12 +184,73 @@ export default function SettingsAdminPage() {
                 </button>
               ))}
             </nav>
-            {activeTab === "home" && (() => {
-              const orderSetting = settings.find((item) => item.key === "home_section_order");
-              const labels: Record<string, string> = { weekly_courses: "每週社課", next_event: "下一次活動", course_library: "課程內容", share: "分享區塊" };
-              const order = orderSetting?.value.split(",") ?? [];
-              return orderSetting ? <section className="mt-6 border border-border bg-surface p-5"><div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="font-black">首頁區塊排序</h2><p className="mt-1 text-xs text-muted-foreground">調整首頁各區塊上下順序，儲存後前台會套用。</p></div><button disabled={savingKey === orderSetting.key} onClick={() => void saveSetting(orderSetting)} className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50">{savingKey === orderSetting.key ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}{savedKey === orderSetting.key ? "已儲存" : "儲存順序"}</button></div><div className="mt-5 grid gap-2">{order.map((key, index) => <div key={key} className="flex items-center justify-between gap-3 border border-border bg-background px-4 py-3"><span className="font-bold">{index + 1}. {labels[key] ?? key}</span><div className="flex gap-2"><button type="button" disabled={index === 0} onClick={() => moveHomeSection(key, -1)} className="min-h-10 border border-border px-3 text-sm font-bold disabled:opacity-30">上移</button><button type="button" disabled={index === order.length - 1} onClick={() => moveHomeSection(key, 1)} className="min-h-10 border border-border px-3 text-sm font-bold disabled:opacity-30">下移</button></div></div>)}</div></section> : null;
-            })()}
+            {activeTab === "home" &&
+              (() => {
+                const orderSetting = settings.find(
+                  (item) => item.key === "home_section_order",
+                );
+                const labels: Record<string, string> = {
+                  weekly_courses: "每週社課",
+                  next_event: "下一次活動",
+                  course_library: "課程內容",
+                  share: "分享區塊",
+                };
+                const order = orderSetting?.value.split(",") ?? [];
+                return orderSetting ? (
+                  <section className="mt-6 border border-border bg-surface p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <h2 className="font-black">首頁區塊排序</h2>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          調整首頁各區塊上下順序，儲存後前台會套用。
+                        </p>
+                      </div>
+                      <button
+                        disabled={savingKey === orderSetting.key}
+                        onClick={() => void saveSetting(orderSetting)}
+                        className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {savingKey === orderSetting.key ? (
+                          <LoaderCircle className="animate-spin" size={17} />
+                        ) : (
+                          <Save size={17} />
+                        )}
+                        {savedKey === orderSetting.key ? "已儲存" : "儲存順序"}
+                      </button>
+                    </div>
+                    <div className="mt-5 grid gap-2">
+                      {order.map((key, index) => (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between gap-3 border border-border bg-background px-4 py-3"
+                        >
+                          <span className="font-bold">
+                            {index + 1}. {labels[key] ?? key}
+                          </span>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => moveHomeSection(key, -1)}
+                              className="min-h-10 border border-border px-3 text-sm font-bold disabled:opacity-30"
+                            >
+                              上移
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === order.length - 1}
+                              onClick={() => moveHomeSection(key, 1)}
+                              className="min-h-10 border border-border px-3 text-sm font-bold disabled:opacity-30"
+                            >
+                              下移
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ) : null;
+              })()}
             <div className="mt-6 grid gap-5 lg:grid-cols-2" role="tabpanel">
               {settings
                 .filter((setting) =>

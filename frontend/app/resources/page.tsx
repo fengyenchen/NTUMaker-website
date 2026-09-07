@@ -4,13 +4,15 @@ import { PageHero } from "@/components/page-hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getCourseTracks } from "@/lib/course-api";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export default async function ResourcesPage() {
   const courseTracks = await getCourseTracks();
+  const settings = await getSiteSettings();
   return (
     <main>
       <SiteHeader />
-      <PageHero eyebrow="COURSE LIBRARY / 課程內容" title="從一堂課出發，教材和影片都在一起。" description="先選星期二的循線車專案或星期五的主題工作坊，再進入單堂課查看講義、上課影片與附件。標示公開的內容不需登入，其餘內容限有效社員使用。" />
+      <PageHero eyebrow="COURSE LIBRARY / 課程內容" title={settings.resources_title} description={settings.resources_description} />
       <section className="px-5 pb-28 md:px-8">
         <div className="mx-auto grid max-w-[1320px] gap-10 lg:grid-cols-2">
           {courseTracks.map((track) => {

@@ -4,13 +4,15 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { courseInfo, type CourseTrack } from "@/data/course-schedule";
 import { getCourseTracks } from "@/lib/course-api";
+import { getSiteSettings } from "@/lib/site-settings";
 
 export default async function CoursesPage() {
   const courseTracks = await getCourseTracks();
+  const settings = await getSiteSettings();
   return (
     <main>
       <SiteHeader />
-      <PageHero eyebrow={`${courseInfo.semester} / 社課`} title="週二完成一台車，週五帶走一項新技能。" description="星期二以 Arduino 循線車為連貫專案；星期五安排四場獨立主題工作坊。以下先使用社博課程表作為假資料，之後會改由資料庫載入。" />
+      <PageHero eyebrow={`${courseInfo.semester} / 社課`} title={settings.courses_title} description={settings.courses_description} />
       <section className="px-5 pb-12 md:px-8">
         <div className="mx-auto grid max-w-[1320px] gap-4 md:grid-cols-3">
           <InfoCard icon={<CalendarDays />} label="時間" value={`週二、週五 ${courseInfo.time}`} />

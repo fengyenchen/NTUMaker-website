@@ -2,6 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getSiteSettings } from "@/lib/site-settings";
 
 const posts = [
   { date: "2026.09.08", tag: "社課", title: "本學期第一次社課與社員說明會", summary: "認識 NTUMaker、本學期的社課雙軌，以及如何使用 Maker Space。" },
@@ -9,8 +10,9 @@ const posts = [
   { date: "2026.09.19", tag: "公告", title: "社員招募與空間使用須知", summary: "社員資格、工具借用、場地開放時間與安全規範整理。" },
 ];
 
-export default function AnnouncementsPage() {
-  return <main><SiteHeader /><PageHero eyebrow="ANNOUNCEMENTS / 公告" title="社團最近在做什麼。" description="社課異動、工作坊報名、社員招募與空間開放資訊都會整理在這裡。" />
+export default async function AnnouncementsPage() {
+  const settings = await getSiteSettings();
+  return <main><SiteHeader /><PageHero eyebrow="ANNOUNCEMENTS / 公告" title={settings.announcements_title} description={settings.announcements_description} />
     <section className="px-5 pb-24 md:px-8"><div className="mx-auto max-w-[1320px] space-y-5">{posts.map((post, index) => (
       <article key={post.title} className={`card-interactive grid gap-6 rounded-2xl border border-border bg-surface p-7 md:grid-cols-[150px_1fr_auto] md:items-center md:p-9 ${index === 0 ? "shadow-[4px_5px_0_var(--color-shadow-soft)]" : ""}`}>
         <div><p className="font-mono text-sm text-primary">{post.date}</p><span className="mt-3 inline-block rounded-full bg-surface-raised px-3 py-1 text-sm">{post.tag}</span></div>
