@@ -23,7 +23,7 @@ NTUMaker 的公開資訊、社課教材、社員影片與幹部管理平台。
 - 3D：React Three Fiber
 - API：FastAPI、SQLAlchemy、Alembic
 - Database：Neon PostgreSQL
-- Authentication：Email Magic Link／一次性驗證碼，Session 使用 HttpOnly Cookie
+- Authentication：社員使用資料庫 Email 白名單；管理員使用 Email＋密碼；Session 使用 HttpOnly Cookie
 - Video：資料庫只保存 YouTube URL 與影片 metadata
 
 ```text
@@ -74,6 +74,7 @@ Browser
 ├─ Overview
 ├─ 公告管理
 ├─ 社課、工作坊與各堂教材／影片
+├─ 教學文章與活動紀錄
 ├─ 活動與作品
 ├─ 會員與社員期限
 ├─ 社群發布（預留）
@@ -95,7 +96,7 @@ Browser
 
 ## 核心資料模型
 
-- `users`：Email、狀態與基本資料
+- `users`：Email、狀態、基本資料與管理員密碼雜湊
 - `roles`、`user_roles`：可疊加的角色
 - `memberships`：社員起訖日與狀態
 - `announcements`：公告與發布狀態
@@ -108,7 +109,7 @@ Browser
 
 ## 視覺方向
 
-整體採用 NTUMaker 自己的 2.5D 視覺系統：淡米色背景、橘藍主色、斜角與堆疊卡片、克制的實體硬陰影，以及帶有鮮明材質的零件物件。首頁第一個視窗以既有瓶蓋 3D 模型作為最大品牌焦點；模型會預先載入，並遵守 `prefers-reduced-motion`。
+整體採用「Notion 紙張介面 × 2.5D 自造工作台」：紙白背景、墨色資訊層級、品牌紅重點、斜角與堆疊卡片、克制的實體硬陰影，以及帶有鮮明材質的零件物件。藍色與橘色只作小面積點綴。首頁第一個視窗以既有瓶蓋 3D 模型作為最大品牌焦點；模型會預先載入，並遵守 `prefers-reduced-motion`。
 
 顏色統一由 CSS 語意變數管理：`primary`、`secondary`、`accent`、`background`、`surface`、`foreground`、`muted`、`border`、`success`、`warning`、`destructive` 與 `focus`。
 
@@ -180,9 +181,18 @@ python -m app.db.seed
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
+如果專案資料夾曾從 `api` 政名為 `backend`，舊 `.venv` 內的 Python 路徑可能仍指向原資料夾。請先刪除舊的 `backend\.venv`，再依上方指令重新建立；不要直接沿用改名前的虛擬環境。
+
 API 文件啟動後位於 `http://localhost:8000/docs`。
 
-`python -m app.db.seed` 會將社博課程表建立為 115-1 假資料，重複執行不會重複新增。請在 `backend/.env` 設定 `ADMIN_EMAIL`，該帳號會取得初始管理員權限。
+`python -m app.db.seed` 會將社博課程表建立為 115-1 假資料，重複執行不會重複新增。請在 `backend/.env` 設定 `ADMIN_EMAIL` 與至少 12 字元的 `ADMIN_PASSWORD`；該帳號會取得初始管理員權限，並可從登入頁的「管理員」分頁登入。
+
+登入頁分為兩種身分：
+
+- 社員：輸入後台已建立、帳號啟用且資格有效的 Email，核對成功後直接進入 `/learn`。
+- 管理員：輸入具有 Admin 角色的 Email 與密碼，進入 `/admin`。密碼只以 PBKDF2-SHA256 雜湊保存在資料庫。
+
+修改資料模型後請再次執行 `alembic upgrade head`。現有管理員第一次加入密碼欄位後，重新執行 `python -m app.db.seed` 即可依 `.env` 設定密碼。
 
 ### 4. 啟動 Next.js
 

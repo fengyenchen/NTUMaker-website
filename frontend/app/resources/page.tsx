@@ -23,7 +23,7 @@ export default async function ResourcesPage() {
                 <p className="mt-3 leading-7 text-muted-foreground">{track.description}</p>
                 <div className="mt-8 space-y-4">
                   {track.sessions.map((session) => (
-                    <Link href={session.isPublic ? "#" : "/login"} key={session.title} className="card-interactive card-inline-link group block rounded-2xl border border-border bg-background p-5">
+                    <Link href={session.isPublic ? "#" : "/learn"} key={session.title} className="card-interactive card-inline-link group block rounded-2xl border border-border bg-background p-5">
                       <div className="flex items-start gap-4">
                         <span className={`min-w-16 font-mono text-xs font-bold ${orange ? "text-primary" : "text-accent"}`}>{session.week}</span>
                         <div className="min-w-0 flex-1">

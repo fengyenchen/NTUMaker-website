@@ -24,7 +24,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <Link href="/login" className="inline-flex min-h-11 items-center gap-2 font-bold">
-          社員登入 <ArrowUpRight size={17} aria-hidden="true" />
+          社員入口 <ArrowUpRight size={17} aria-hidden="true" />
         </Link>
       </div>
     </header>

@@ -28,12 +28,12 @@ export default function HomePage() {
 
       <section className="relative isolate px-5 pb-16 pt-10 md:px-8 md:pb-24 md:pt-16">
         <div className="hero-glow absolute inset-0 -z-10" aria-hidden="true" />
-        <div className="mx-auto grid min-h-[680px] max-w-[1320px] items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="mx-auto grid min-h-170 max-w-330 items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative z-10" data-hero-copy>
-            <div className="mb-7 inline-flex rotate-[-2deg] items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm shadow-[2px_3px_0_var(--color-shadow-soft)]">
+            <div className="mb-7 inline-flex -rotate-2 items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm shadow-[2px_3px_0_var(--color-shadow-soft)]">
               2026 秋季社課進行中
             </div>
-            <h1 className="text-[clamp(3.25rem,7vw,6.75rem)] font-black leading-[1.1] tracking-[-0.025em]">
+            <h1 className="text-[clamp(3.25rem,7vw,6.75rem)] font-black leading-[1.1] tracking-tight">
               把想法
               <span className="block text-highlight">做成真的。</span>
             </h1>
@@ -50,7 +50,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative min-h-[500px] lg:min-h-[640px]" data-hero-model>
+          <div className="relative min-h-125 lg:min-h-160" data-hero-model>
             <div className="absolute inset-[8%] rotate-3 rounded-[1.25rem] border border-accent/35 bg-surface shadow-[8px_9px_0_var(--color-accent)]" aria-hidden="true" />
             <div className="absolute inset-[4%] -rotate-2 rounded-[1.25rem] border border-border bg-surface-raised shadow-[4px_5px_0_var(--color-shadow-soft)]">
               <BottleCapHero />
@@ -68,7 +68,7 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 py-20 md:px-8 md:py-28" data-reveal>
-        <div className="mx-auto max-w-[1320px]">
+        <div className="mx-auto max-w-330">
           <SectionTitle label="每週社課" title="兩條路線，自由找到你的節奏。" />
           <div className="mt-12 grid gap-8 lg:grid-cols-2">
             <TrackCard
@@ -92,8 +92,8 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 py-20 md:px-8 md:py-28" data-reveal>
-        <div className="mx-auto grid max-w-[1320px] gap-8 lg:grid-cols-[0.75fr_1.25fr]">
-          <div className="flex min-h-[420px] flex-col justify-between rounded-2xl border border-border bg-surface-raised p-8 text-foreground shadow-[6px_7px_0_var(--color-shadow-soft)] md:p-10">
+        <div className="mx-auto grid max-w-330 gap-8 lg:grid-cols-[0.75fr_1.25fr]">
+          <div className="flex min-h-105 flex-col justify-between rounded-2xl border border-border bg-surface-raised p-8 text-foreground shadow-[6px_7px_0_var(--color-shadow-soft)] md:p-10">
             <div>
               <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-primary/20 text-primary"><CalendarDays /></span>
               <h2 className="mt-8 text-4xl font-black leading-tight md:text-5xl">下一次，<br />一起做什麼？</h2>
@@ -114,7 +114,7 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 py-20 md:px-8 md:py-28" data-reveal>
-        <div className="mx-auto max-w-[1320px]">
+        <div className="mx-auto max-w-330">
           <SectionTitle label="課程內容" title="每堂課的教材、影片與檔案，都收在一起。" />
           <div className="mt-12 grid gap-8 lg:grid-cols-2">
             <CourseLibraryCard day="星期二" title={courseTracks[0].title} description="沿著循線車專案進度學習，每週課程內含講義、上課影片與實作附件。" items={courseTracks[0].sessions.slice(1, 3).map((session) => session.title)} />
@@ -124,7 +124,7 @@ export default function HomePage() {
       </section>
 
       <section className="px-5 pb-24 pt-12 md:px-8 md:pb-32" data-reveal>
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-8 overflow-hidden rounded-2xl border border-border bg-surface p-8 shadow-[6px_7px_0_var(--color-shadow-soft)] md:flex-row md:items-end md:justify-between md:p-12">
+        <div className="mx-auto flex max-w-330 flex-col gap-8 overflow-hidden rounded-2xl border border-border bg-surface p-8 shadow-[6px_7px_0_var(--color-shadow-soft)] md:flex-row md:items-end md:justify-between md:p-12">
           <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-foreground font-black leading-tight md:text-6xl">做出作品，也把方法分享出去。</h2></div>
           <div className="flex shrink-0 flex-wrap gap-4">
             <a href="https://www.instagram.com/ntu_maker/" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 items-center gap-3 rounded-xl px-6 font-bold">Instagram <ExternalLink size={18} aria-hidden="true" /></a>

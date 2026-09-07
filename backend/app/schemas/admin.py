@@ -12,12 +12,15 @@ class MemberWrite(BaseModel):
     starts_at: date
     expires_at: date
     is_admin: bool = False
+    admin_password: str | None = Field(default=None, min_length=12, max_length=200)
     note: str | None = Field(default=None, max_length=500)
 
     @model_validator(mode="after")
     def validate_period(self) -> "MemberWrite":
         if self.expires_at < self.starts_at:
             raise ValueError("社員到期日不可早於生效日")
+        if self.is_admin and not self.admin_password:
+            raise ValueError("建立管理員時必須設定至少 12 字元的密碼")
         return self
 
 
@@ -25,6 +28,7 @@ class MemberUpdate(BaseModel):
     display_name: str | None = Field(default=None, max_length=100)
     expires_at: date | None = None
     is_admin: bool | None = None
+    admin_password: str | None = Field(default=None, min_length=12, max_length=200)
     is_active: bool | None = None
 
 

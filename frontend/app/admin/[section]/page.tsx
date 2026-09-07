@@ -6,6 +6,8 @@ const sectionMeta = {
   announcements: { title: "公告管理", description: "撰寫、排程與發布所有人都能閱讀的社團公告。", action: "新增公告" },
   courses: { title: "社課管理", description: "管理星期二連貫專案與星期五主題工作坊的學期安排。", action: "新增課堂" },
   resources: { title: "課程內容", description: "進入一堂課管理它的教材、影片、程式與附件。", action: "新增課程內容" },
+  articles: { title: "文章管理", description: "撰寫教學文章、活動紀錄與可重複使用的文字頁面。", action: "新增文章" },
+  projects: { title: "作品管理", description: "整理社員作品的說明、圖片、標籤與製作紀錄。", action: "新增作品" },
   members: { title: "社員管理", description: "管理社員 Email、身分、有效期限與帳號狀態。", action: "新增社員" },
   social: { title: "社群草稿", description: "先集中管理貼文草稿，未來可串接 Instagram、Facebook 與 Threads。", action: "新增草稿" },
   settings: { title: "網站設定", description: "管理學期、上課地點、社費與首頁顯示資訊。", action: "儲存設定" },

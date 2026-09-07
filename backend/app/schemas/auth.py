@@ -1,13 +1,18 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
 
 
-class LoginRequested(BaseModel):
+class AdminLoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=12, max_length=200)
+
+
+class LoginSucceeded(BaseModel):
     message: str
-    development_token: str | None = None
+    redirect_to: str
 
 
 class CurrentUser(BaseModel):

@@ -22,6 +22,7 @@ from app.schemas.admin import (
     ResourceWrite,
 )
 from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
+from app.services.passwords import hash_password
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
 
@@ -60,6 +61,7 @@ def create_member(payload: MemberWrite, db: Session = Depends(get_db)) -> AdminU
     user.roles.append(UserRole(role=Role.MEMBER))
     if payload.is_admin:
         user.roles.append(UserRole(role=Role.ADMIN))
+        user.password_hash = hash_password(payload.admin_password or "")
     user.memberships.append(Membership(starts_at=payload.starts_at, expires_at=payload.expires_at, note=payload.note))
     db.add(user)
     db.commit()
@@ -90,9 +92,13 @@ def update_member(
     if payload.is_admin is not None:
         admin_role = next((item for item in user.roles if item.role == Role.ADMIN), None)
         if payload.is_admin and not admin_role:
+            if not user.password_hash and not payload.admin_password:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="授予管理員權限時必須設定至少 12 字元的密碼")
             user.roles.append(UserRole(role=Role.ADMIN))
         elif not payload.is_admin and admin_role:
             user.roles.remove(admin_role)
+    if payload.admin_password:
+        user.password_hash = hash_password(payload.admin_password)
     db.commit()
     return serialize_user(load_user(db, user.id))
 

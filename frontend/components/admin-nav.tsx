@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, FileText, LayoutDashboard, Megaphone, Settings, Users } from "lucide-react";
+import { Boxes, CalendarDays, FileText, LayoutDashboard, Megaphone, NotebookText, Settings, Users } from "lucide-react";
 
 const navigation = [
   ["總覽", "/admin", LayoutDashboard],
   ["公告", "/admin/announcements", Megaphone],
   ["社課", "/admin/courses", CalendarDays],
+  ["文章", "/admin/articles", NotebookText],
+  ["作品", "/admin/projects", Boxes],
   ["社員", "/admin/members", Users],
   ["社群草稿", "/admin/social", FileText],
   ["網站設定", "/admin/settings", Settings],

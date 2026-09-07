@@ -34,7 +34,7 @@ export default function ProjectsPage() {
         description="記錄社員專案的目標、做法、失敗與下一版，讓作品不只停在成果照。"
       />
       <section className="px-5 pb-28 md:px-8">
-        <div className="mx-auto grid max-w-[1320px] gap-7 md:grid-cols-3">
+        <div className="mx-auto grid max-w-330 gap-7 md:grid-cols-3">
           {projects.map((item, index) => {
             const Icon = item.icon;
             return (

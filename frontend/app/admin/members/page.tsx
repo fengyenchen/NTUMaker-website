@@ -19,6 +19,7 @@ const initialForm = {
   starts_at: new Date().toISOString().slice(0, 10),
   expires_at: "2027-01-31",
   is_admin: false,
+  admin_password: "",
 };
 
 export default function MembersAdminPage() {
@@ -55,7 +56,7 @@ export default function MembersAdminPage() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, display_name: form.display_name || null }),
+        body: JSON.stringify({ ...form, display_name: form.display_name || null, admin_password: form.is_admin ? form.admin_password : null }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail ?? "無法新增社員");
@@ -104,7 +105,8 @@ export default function MembersAdminPage() {
               <Field label="顯示名稱"><input value={form.display_name} onChange={(event) => setForm({ ...form, display_name: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
               <Field label="生效日"><input required type="date" value={form.starts_at} onChange={(event) => setForm({ ...form, starts_at: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
               <Field label="到期日"><input required type="date" min={form.starts_at} value={form.expires_at} onChange={(event) => setForm({ ...form, expires_at: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
-              <label className="flex min-h-11 items-center gap-3 font-bold"><input type="checkbox" checked={form.is_admin} onChange={(event) => setForm({ ...form, is_admin: event.target.checked })} className="size-5" />同時授予管理員權限</label>
+              <label className="flex min-h-11 items-center gap-3 font-bold"><input type="checkbox" checked={form.is_admin} onChange={(event) => setForm({ ...form, is_admin: event.target.checked, admin_password: event.target.checked ? form.admin_password : "" })} className="size-5" />同時授予管理員權限</label>
+              {form.is_admin && <Field label="管理員密碼（至少 12 字元）"><input required minLength={12} maxLength={200} type="password" autoComplete="new-password" value={form.admin_password} onChange={(event) => setForm({ ...form, admin_password: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>}
               <div className="flex justify-end gap-3"><button type="button" onClick={() => setShowForm(false)} className="min-h-11 px-4 font-bold">取消</button><button disabled={saving} className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50">{saving && <LoaderCircle className="animate-spin" size={17} />}建立社員</button></div>
             </form>
           </section>

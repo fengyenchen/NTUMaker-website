@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 const apiUrl = process.env.API_URL ?? "http://localhost:8000";
 
+function taipeiDate(): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
+
 export async function middleware(request: NextRequest) {
   const loginUrl = new URL("/login", request.url);
   loginUrl.searchParams.set("returnTo", request.nextUrl.pathname);
@@ -18,7 +29,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/learn", request.url));
     }
     if (request.nextUrl.pathname.startsWith("/learn")) {
-      const activeMember = user.roles.includes("admin") || (user.membership_expires_at && user.membership_expires_at >= new Date().toISOString().slice(0, 10));
+      const activeMember = user.roles.includes("admin") || (user.membership_expires_at && user.membership_expires_at >= taipeiDate());
       if (!activeMember) return NextResponse.redirect(new URL("/resources", request.url));
     }
     return NextResponse.next();

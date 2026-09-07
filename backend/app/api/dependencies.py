@@ -1,4 +1,3 @@
-from datetime import date
 from uuid import UUID
 
 from fastapi import Cookie, Depends, HTTPException, status
@@ -7,6 +6,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.db.session import get_db
 from app.models.user import Role, User, UserRole
+from app.services.memberships import has_active_membership
 from app.services.tokens import read_session_token
 
 
@@ -34,7 +34,7 @@ def get_current_user(
 
 def require_member(user: User = Depends(get_current_user)) -> User:
     is_admin = any(item.role == Role.ADMIN for item in user.roles)
-    is_member = any(item.starts_at <= date.today() <= item.expires_at for item in user.memberships)
+    is_member = has_active_membership(user)
     if not is_admin and not is_member:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="社員資格已到期或尚未生效")
     return user

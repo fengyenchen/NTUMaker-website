@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.models.content import CourseSeries, CourseSession, CourseTrack, Resource, Visibility
 from app.models.user import Role, User, UserRole
+from app.services.passwords import hash_password
 
 TAIPEI = ZoneInfo("Asia/Taipei")
 
@@ -42,7 +43,8 @@ TRACKS = [
 
 
 def ensure_admin(db: Session) -> None:
-    email = get_settings().admin_email
+    settings = get_settings()
+    email = settings.admin_email
     if not email:
         return
     normalized = str(email).lower()
@@ -53,6 +55,8 @@ def ensure_admin(db: Session) -> None:
         db.flush()
     if not db.scalar(select(UserRole).where(UserRole.user_id == user.id, UserRole.role == Role.ADMIN)):
         db.add(UserRole(user_id=user.id, role=Role.ADMIN))
+    if settings.admin_password:
+        user.password_hash = hash_password(settings.admin_password)
 
 
 def ensure_courses(db: Session) -> None:
