@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  BookOpen,
-  CalendarDays,
-  LoaderCircle,
-  Users,
-} from "lucide-react";
+import { BookOpen, CalendarDays, LoaderCircle, Users } from "lucide-react";
+
+const greetings = ["你好", "哈囉", "嗨嗨"];
 
 type Overview = {
   active_members: number;
@@ -28,8 +25,10 @@ type Overview = {
 export default function AdminPage() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [error, setError] = useState("");
+  const [greeting, setGreeting] = useState("你好");
 
   useEffect(() => {
+    setGreeting(greetings[Math.floor(Math.random() * greetings.length)]);
     void fetch("/api/v1/admin/overview", { credentials: "include" })
       .then(async (response) => {
         const body = await response.text();
@@ -63,7 +62,7 @@ export default function AdminPage() {
             : "目前沒有未來課堂",
         },
         {
-          label: "已發布教材",
+          label: "已發布資源",
           value: overview.published_resources,
           icon: BookOpen,
           note: `其中 ${overview.member_resources} 篇社員限定`,
@@ -79,7 +78,7 @@ export default function AdminPage() {
             {new Date().toLocaleDateString("zh-TW")}
           </p>
           <h1 className="mt-1 text-3xl font-black leading-[1.1] tracking-tight">
-            你好，管理員
+            {greeting}，管理員
           </h1>
         </div>
         {error ? (
@@ -124,7 +123,7 @@ export default function AdminPage() {
             <div>
               <h2 className="text-lg font-black">最近內容</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                管理公告、課程與教材的發布狀態。
+                管理公告、課程與資源的發布狀態。
               </p>
             </div>
           </div>
