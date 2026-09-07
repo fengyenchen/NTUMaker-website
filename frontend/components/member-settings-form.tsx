@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Check, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function MemberSettingsForm({
@@ -11,14 +11,13 @@ export function MemberSettingsForm({
 }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(initialDisplayName);
+  const [savedDisplayName, setSavedDisplayName] = useState(initialDisplayName);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
-    setMessage("");
     setError("");
     try {
       const response = await fetch("/api/v1/auth/me", {
@@ -30,7 +29,7 @@ export function MemberSettingsForm({
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail ?? "無法儲存名稱");
       setDisplayName(data.display_name ?? "");
-      setMessage("名稱已儲存");
+      setSavedDisplayName(data.display_name ?? "");
       router.refresh();
     } catch (requestError) {
       setError(
@@ -60,14 +59,8 @@ export function MemberSettingsForm({
           {error}
         </p>
       )}
-      {message && (
-        <p role="status" className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-success">
-          <Check size={16} />
-          {message}
-        </p>
-      )}
       <button
-        disabled={saving || !displayName.trim() || displayName === initialDisplayName}
+        disabled={saving || !displayName.trim() || displayName.trim() === savedDisplayName}
         className="button-25d mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50"
       >
         {saving && <LoaderCircle className="animate-spin" size={17} />}
