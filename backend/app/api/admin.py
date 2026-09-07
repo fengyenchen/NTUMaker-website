@@ -207,15 +207,13 @@ def update_announcement(item_id: UUID, payload: AnnouncementWrite, db: Session =
     return item
 
 
-@router.post("/announcements/{item_id}/archive", response_model=AnnouncementAdminSummary, summary="封存公告")
-def archive_announcement(item_id: UUID, db: Session = Depends(get_db)) -> Announcement:
+@router.delete("/announcements/{item_id}", status_code=status.HTTP_204_NO_CONTENT, summary="刪除公告")
+def delete_announcement(item_id: UUID, db: Session = Depends(get_db)) -> None:
     item = db.get(Announcement, item_id)
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到公告")
-    item.status = PublishStatus.ARCHIVED
+    db.delete(item)
     db.commit()
-    db.refresh(item)
-    return item
 
 
 @router.post("/course-series", response_model=CourseSeriesSummary, status_code=status.HTTP_201_CREATED, summary="新增課程路線")

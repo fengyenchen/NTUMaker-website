@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { Archive, Edit3, LoaderCircle, Plus, RefreshCw, Save, X } from "lucide-react";
+import { Edit3, Eye, LoaderCircle, Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { MarkdownContent } from "@/components/markdown-content";
 
 type PublishStatus = "draft" | "published" | "archived";
 
@@ -49,6 +50,7 @@ export default function AnnouncementsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [previewBody, setPreviewBody] = useState(false);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -73,6 +75,7 @@ export default function AnnouncementsAdminPage() {
     setEditingId(null);
     setForm({ ...emptyForm, slug: `announcement-${date}` });
     setShowForm(true);
+    setPreviewBody(false);
     setError("");
   }
 
@@ -87,6 +90,7 @@ export default function AnnouncementsAdminPage() {
       published_at: item.published_at ? toLocalDateTime(item.published_at) : "",
     });
     setShowForm(true);
+    setPreviewBody(false);
     setError("");
   }
 
@@ -118,16 +122,18 @@ export default function AnnouncementsAdminPage() {
     }
   }
 
-  async function archiveAnnouncement(item: Announcement) {
-    if (!window.confirm(`確定要封存「${item.title}」嗎？封存後不會出現在公開網站。`)) return;
+  async function deleteAnnouncement(item: Announcement) {
+    if (!window.confirm(`確定要刪除「${item.title}」嗎？刪除後無法復原。`)) return;
     setError("");
     try {
-      const response = await fetch(`/api/v1/admin/announcements/${item.id}/archive`, { method: "POST", credentials: "include" });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail ?? "無法封存公告");
-      setItems((current) => current.map((currentItem) => currentItem.id === item.id ? data : currentItem));
+      const response = await fetch(`/api/v1/admin/announcements/${item.id}`, { method: "DELETE", credentials: "include" });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail ?? "無法刪除公告");
+      }
+      setItems((current) => current.filter((currentItem) => currentItem.id !== item.id));
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "無法封存公告");
+      setError(requestError instanceof Error ? requestError.message : "無法刪除公告");
     }
   }
 
@@ -157,7 +163,7 @@ export default function AnnouncementsAdminPage() {
                 <Field label="網址代稱" hint="只能使用小寫英文、數字與連字號"><input required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={form.slug} onChange={(event) => setForm({ ...form, slug: event.target.value.toLowerCase() })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3 font-mono" /></Field>
               </div>
               <Field label="摘要" hint={`${form.summary.length} / 500`}><textarea required maxLength={500} rows={2} value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} className="w-full rounded-lg border border-border bg-background p-3 leading-6" /></Field>
-              <Field label="公告內容"><textarea required rows={8} value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} className="w-full rounded-lg border border-border bg-background p-3 leading-7" /></Field>
+              <Field label="公告內容" hint="支援 Markdown"><div className="overflow-hidden border border-border bg-background"><div className="flex border-b border-border"><button type="button" onClick={() => setPreviewBody(false)} className={`inline-flex min-h-10 items-center gap-2 px-3 text-sm font-bold ${!previewBody ? "bg-surface-raised" : "text-muted-foreground"}`}><Pencil size={15} />編輯</button><button type="button" onClick={() => setPreviewBody(true)} className={`inline-flex min-h-10 items-center gap-2 px-3 text-sm font-bold ${previewBody ? "bg-surface-raised" : "text-muted-foreground"}`}><Eye size={15} />預覽</button></div>{previewBody ? <MarkdownContent content={form.body || "尚未輸入公告內容。"} className="min-h-48 p-4" /> : <textarea required rows={8} value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} className="w-full bg-transparent p-3 leading-7 outline-none" />}</div></Field>
               <div className="grid gap-5 md:grid-cols-2">
                 <Field label="發布狀態"><select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as AnnouncementForm["status"] })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3"><option value="draft">草稿</option><option value="published">發布</option></select></Field>
                 <Field label="發布時間" hint="發布狀態下留空會立即發布"><input type="datetime-local" value={form.published_at} onChange={(event) => setForm({ ...form, published_at: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
@@ -170,7 +176,7 @@ export default function AnnouncementsAdminPage() {
         <section className="mt-8 overflow-hidden border border-border bg-surface">
           <div className="flex items-center justify-between border-b border-border p-5"><div><h2 className="font-black">所有公告</h2><p className="mt-1 text-xs text-muted-foreground">共 {items.length} 則</p></div><button onClick={() => void loadItems()} className="inline-flex min-h-11 items-center gap-2 px-3 font-bold"><RefreshCw size={17} />重新整理</button></div>
           {loading ? <div className="flex min-h-52 items-center justify-center gap-3 text-muted-foreground"><LoaderCircle className="animate-spin" />正在讀取公告…</div> : items.length === 0 ? <div className="min-h-52 p-8 text-center text-muted-foreground">目前沒有公告，可以從右上角建立第一則公告。</div> : (
-            <div className="divide-y divide-border">{items.map((item) => <article key={item.id} className="grid gap-4 p-5 md:grid-cols-[1fr_9rem_11rem] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><h3 className="font-bold">{item.title}</h3><StatusBadge status={item.status} /></div><p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{item.summary}</p><p className="mt-2 font-mono text-xs text-muted-foreground">/{item.slug}</p></div><div className="text-sm"><p className="text-xs text-muted-foreground">發布時間</p><p className="mt-1">{item.published_at ? formatDate(item.published_at) : "尚未設定"}</p></div><div className="flex justify-end gap-2"><button onClick={() => openEdit(item)} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold"><Edit3 size={16} />編輯</button>{item.status !== "archived" && <button onClick={() => void archiveAnnouncement(item)} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold text-destructive"><Archive size={16} />封存</button>}</div></article>)}</div>
+            <div className="divide-y divide-border">{items.map((item) => <article key={item.id} className="grid gap-4 p-5 md:grid-cols-[1fr_9rem_11rem] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><h3 className="font-bold">{item.title}</h3><StatusBadge status={item.status} /></div><p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{item.summary}</p><p className="mt-2 font-mono text-xs text-muted-foreground">/{item.slug}</p></div><div className="text-sm"><p className="text-xs text-muted-foreground">發布時間</p><p className="mt-1">{item.published_at ? formatDate(item.published_at) : "尚未設定"}</p></div><div className="flex justify-end gap-2"><button onClick={() => openEdit(item)} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold"><Edit3 size={16} />編輯</button><button onClick={() => void deleteAnnouncement(item)} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold text-destructive"><Trash2 size={16} />刪除</button></div></article>)}</div>
           )}
         </section>
       </div>

@@ -1,23 +1,30 @@
-import { ArrowUpRight } from "lucide-react";
+import { MarkdownContent } from "@/components/markdown-content";
 import { PageHero } from "@/components/page-hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getSiteSettings } from "@/lib/site-settings";
 
-const posts = [
-  { date: "2026.09.08", tag: "社課", title: "本學期第一次社課與社員說明會", summary: "認識 NTUMaker、本學期的社課雙軌，以及如何使用 Maker Space。" },
-  { date: "2026.09.12", tag: "工作坊", title: "雷射切割入門工作坊", summary: "從向量圖、材料設定到實際切割，完成第一件自己的作品。" },
-  { date: "2026.09.19", tag: "公告", title: "社員招募與空間使用須知", summary: "社員資格、工具借用、場地開放時間與安全規範整理。" },
-];
+type Announcement = { id: string; title: string; summary: string; body: string; published_at: string | null };
+
+async function getAnnouncements(): Promise<Announcement[]> {
+  const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+  try {
+    const response = await fetch(`${apiUrl}/api/v1/content/announcements`, { cache: "no-store" });
+    if (!response.ok) return [];
+    return await response.json() as Announcement[];
+  } catch { return []; }
+}
 
 export default async function AnnouncementsPage() {
   const settings = await getSiteSettings();
+  const posts = await getAnnouncements();
   return <main><SiteHeader /><PageHero eyebrow="ANNOUNCEMENTS / 公告" title={settings.announcements_title} description={settings.announcements_description} />
     <section className="px-5 pb-24 md:px-8"><div className="mx-auto max-w-[1320px] space-y-5">{posts.map((post, index) => (
-      <article key={post.title} className={`card-interactive grid gap-6 rounded-2xl border border-border bg-surface p-7 md:grid-cols-[150px_1fr_auto] md:items-center md:p-9 ${index === 0 ? "shadow-[4px_5px_0_var(--color-shadow-soft)]" : ""}`}>
-        <div><p className="font-mono text-sm text-primary">{post.date}</p><span className="mt-3 inline-block rounded-full bg-surface-raised px-3 py-1 text-sm">{post.tag}</span></div>
-        <div><h2 className="text-2xl font-black">{post.title}</h2><p className="mt-2 text-muted-foreground">{post.summary}</p></div>
-        <button className="card-inline-link inline-flex min-h-11 items-center gap-2 font-bold text-accent">閱讀公告 <ArrowUpRight className="card-link-arrow" size={17} /></button>
+      <article key={post.id} className={`card-interactive grid gap-6 rounded-2xl border border-border bg-surface p-7 md:grid-cols-[150px_1fr] md:p-9 ${index === 0 ? "shadow-[4px_5px_0_var(--color-shadow-soft)]" : ""}`}>
+        <div><p className="font-mono text-sm text-primary">{post.published_at ? formatDate(post.published_at) : "未設定日期"}</p><span className="mt-3 inline-block rounded-full bg-surface-raised px-3 py-1 text-sm">公告</span></div>
+        <div><h2 className="text-2xl font-black">{post.title}</h2><p className="mt-2 text-muted-foreground">{post.summary}</p><MarkdownContent content={post.body} className="mt-5 border-t border-border pt-5 text-muted-foreground" /></div>
       </article>
     ))}</div></section><SiteFooter /></main>;
 }
+
+function formatDate(value: string) { return new Intl.DateTimeFormat("zh-TW", { dateStyle: "medium" }).format(new Date(value)); }

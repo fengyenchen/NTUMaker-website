@@ -97,6 +97,17 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .card-link-arrow {
   transition: transform 180ms ease;
 }
+.markdown-content { display: grid; gap: 0.75rem; line-height: 1.8; }
+.markdown-content h2, .markdown-content h3, .markdown-content h4 { color: var(--color-foreground); font-weight: 800; line-height: 1.35; }
+.markdown-content h2 { font-size: 1.35rem; }
+.markdown-content h3 { font-size: 1.15rem; }
+.markdown-content h4 { font-size: 1rem; }
+.markdown-content ul { display: grid; gap: 0.35rem; list-style: disc; padding-left: 1.35rem; }
+.markdown-content a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
+.markdown-content strong { color: var(--color-foreground); font-weight: 800; }
+.markdown-content code { border: 1px solid var(--color-border); background: var(--color-surface-raised); padding: 0.1rem 0.35rem; font-family: var(--font-mono); font-size: 0.9em; }
+.markdown-content pre { overflow-x: auto; border: 1px solid var(--color-border); background: var(--color-surface-raised); padding: 0.85rem 1rem; }
+.markdown-content pre code { border: 0; padding: 0; }
 .card-inline-link:not(.card-interactive):hover .card-link-arrow,
 .card-inline-link:not(.card-interactive):focus-visible .card-link-arrow {
   transform: translateX(4px);

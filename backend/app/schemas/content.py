@@ -13,6 +13,7 @@ class AnnouncementSummary(BaseModel):
     slug: str
     title: str
     summary: str
+    body: str
     published_at: datetime | None
 
 

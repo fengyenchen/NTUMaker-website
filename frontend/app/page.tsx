@@ -15,14 +15,20 @@ import { SiteHeader } from "@/components/site-header";
 import { courseTracks } from "@/data/course-schedule";
 import { getSiteSettings } from "@/lib/site-settings";
 
-const announcements = [
-  { date: "09 / 08", type: "社課", title: "本學期第一次社課與社員說明會", detail: "一起認識課程雙軌與這學期的專案。" },
-  { date: "09 / 12", type: "工作坊", title: "雷射切割入門工作坊", detail: "從向量圖檔到完成第一件切割作品。" },
-  { date: "09 / 19", type: "公告", title: "社員招募與空間使用須知", detail: "加入方式、社員期限與工具借用規則。" },
-];
+type Announcement = { id: string; title: string; summary: string; published_at: string | null };
+
+async function getAnnouncements(): Promise<Announcement[]> {
+  const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+  try {
+    const response = await fetch(`${apiUrl}/api/v1/content/announcements`, { cache: "no-store" });
+    if (!response.ok) return [];
+    return await response.json() as Announcement[];
+  } catch { return []; }
+}
 
 export default async function HomePage() {
   const settings = await getSiteSettings();
+  const announcements = await getAnnouncements();
   const [titleFirstLine, titleSecondLine = ""] = settings.home_title.split("\n");
   const sectionOrder = settings.home_section_order.split(",");
   const sectionPosition = (key: string) => ({ order: Math.max(sectionOrder.indexOf(key), 0) });
@@ -108,10 +114,10 @@ export default async function HomePage() {
           </div>
 
           <div className="space-y-4">
-            {announcements.map((item, index) => (
-              <Link href="/announcements" key={item.title} className="card-interactive card-inline-link group grid gap-5 rounded-2xl border border-border bg-surface p-6 md:grid-cols-[92px_1fr_auto] md:items-center">
-                <div><p className="font-mono text-sm text-primary">{item.date}</p><p className="mt-1 text-xs text-muted-foreground">{item.type}</p></div>
-                <div><h3 className="text-lg font-bold">{item.title}</h3><p className="mt-1 text-sm text-muted-foreground">{item.detail}</p></div>
+            {announcements.slice(0, 3).map((item, index) => (
+              <Link href="/announcements" key={item.id} className="card-interactive card-inline-link group grid gap-5 rounded-2xl border border-border bg-surface p-6 md:grid-cols-[92px_1fr_auto] md:items-center">
+                <div><p className="font-mono text-sm text-primary">{item.published_at ? formatShortDate(item.published_at) : "未設定"}</p><p className="mt-1 text-xs text-muted-foreground">公告</p></div>
+                <div><h3 className="text-lg font-bold">{item.title}</h3><p className="mt-1 text-sm text-muted-foreground">{item.summary}</p></div>
                 <span className={`hidden size-11 items-center justify-center rounded-xl bg-surface-raised text-primary md:inline-flex ${index % 2 ? "rotate-3" : "-rotate-3"}`}><ArrowRight className="card-link-arrow" size={18} /></span>
               </Link>
             ))}
@@ -145,6 +151,8 @@ export default async function HomePage() {
     </HomeMotion>
   );
 }
+
+function formatShortDate(value: string) { return new Intl.DateTimeFormat("zh-TW", { month: "2-digit", day: "2-digit" }).format(new Date(value)).replace("/", " / "); }
 
 function SectionTitle({ label, title }: { label: string; title: string }) {
   return <div className="max-w-205"><p className="mb-3 text-sm font-bold text-primary">{label}</p><h2 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">{title}</h2></div>;
