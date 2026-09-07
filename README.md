@@ -1,6 +1,6 @@
 # NTUMaker 社團網站
 
-NTUMaker 的公開資訊、社課教材、社員影片與幹部管理平台。
+NTUMaker 的公開資訊、社課資源、社員影片與幹部管理平台。
 
 > Build. Learn. Share.  
 > 動手實作、持續學習、分享創造。
@@ -8,7 +8,7 @@ NTUMaker 的公開資訊、社課教材、社員影片與幹部管理平台。
 ## 專案目標
 
 - 一般訪客：查看公告、社課與工作坊簡介、公開資源與作品。
-- 社員：以 Email 登入，在資格有效期間觀看限定教材與嵌入式 YouTube 課程影片，並管理顯示名稱與查看社員資格。
+- 社員：以 Email 登入，在資格有效期間觀看限定資源與嵌入式 YouTube 課程影片，並管理顯示名稱與查看社員資格。
 - Admin：管理帳號、社員期限、公告、課程、資源與發布狀態。
 - 未來擴充：建立社群草稿、審核與排程流程，再串接 Instagram、Facebook 與 Threads。
 
@@ -60,7 +60,7 @@ Browser
 └─ 社員資格有效期限
 ```
 
-課程與教材統一由 `/resources` 進入；每堂課使用資料庫 `course_sessions.id` 作為網址識別，例如 `/resources/<session-uuid>`。YouTube 資源會直接在課程內容頁嵌入播放。
+課程與資源統一由 `/resources` 進入；每堂課使用資料庫 `course_sessions.id` 作為網址識別，例如 `/resources/<session-uuid>`。YouTube 資源會直接在課程內容頁嵌入播放。
 
 ### Admin 後台
 
@@ -68,7 +68,7 @@ Browser
 /admin
 ├─ Overview
 ├─ 公告管理
-├─ 社課、工作坊與各堂教材／影片
+├─ 社課、工作坊與各堂資源／影片
 ├─ 教學文章與活動紀錄
 ├─ 活動與作品
 ├─ 會員與社員期限
@@ -82,7 +82,7 @@ Browser
 | 功能 | 一般訪客 | 有效社員 | Admin |
 |---|---:|---:|---:|
 | 查看公開內容 | ✓ | ✓ | ✓ |
-| 查看社員教材／影片 | — | ✓ | ✓ |
+| 查看社員資源／影片 | — | ✓ | ✓ |
 | 管理個人帳號 | — | ✓ | ✓ |
 | 發布與管理內容 | — | — | ✓ |
 | 管理帳號與社員效期 | — | — | ✓ |
@@ -97,7 +97,7 @@ Browser
 - `announcements`：公告與發布狀態
 - `course_series`：星期二基礎線／星期五工作坊線
 - `course_sessions`：每堂課的內容、講師與日期
-- `resources`：教材、YouTube URL、附件連結與可見層級
+- `resources`：資源、YouTube URL、附件連結與可見層級
 - `events`、`projects`、`tags`
 - `audit_logs`：Admin 操作紀錄
 - `social_posts`、`social_publications`：未來跨平台發布
@@ -116,7 +116,7 @@ Browser
 2. 公開首頁與 3D Hero
 3. 公開內容、社課與資源頁
 4. FastAPI、Neon schema 與登入權限
-5. 社員設定與限定教材
+5. 社員設定與限定資源
 6. Notion 風格 Admin 後台
 7. 整合測試、響應式與無障礙檢查
 8. 社群排程與平台串接
