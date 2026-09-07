@@ -2,7 +2,7 @@ import { courseInfo, courseTracks, type CourseTrack } from "@/data/course-schedu
 
 type ApiResource = {
   title: string;
-  visibility: "public" | "member" | "admin";
+  visibility: "public" | "member";
 };
 
 type ApiSession = {

@@ -17,7 +17,7 @@ export type MemberResource = {
   resource_type: string;
   url: string | null;
   youtube_url: string | null;
-  visibility: "public" | "member" | "admin";
+  visibility: "public" | "member";
 };
 
 const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");

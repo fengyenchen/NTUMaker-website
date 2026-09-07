@@ -18,7 +18,6 @@ class PublishStatus(str, enum.Enum):
 class Visibility(str, enum.Enum):
     PUBLIC = "public"
     MEMBER = "member"
-    ADMIN = "admin"
 
 
 class CourseTrack(str, enum.Enum):

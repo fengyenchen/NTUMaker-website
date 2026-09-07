@@ -61,10 +61,9 @@ def list_course_library(db: Session = Depends(get_db)) -> list[dict]:
                     "starts_at": session.starts_at,
                     "order_index": session.order_index,
                     "visibility": session.visibility,
-                    "resources": [resource for resource in session.resources if resource.visibility != Visibility.ADMIN],
+                    "resources": list(session.resources),
                 }
                 for session in sorted(series.sessions, key=lambda item: item.order_index)
-                if session.visibility != Visibility.ADMIN
             ],
         }
         for series in series_list
@@ -81,4 +80,4 @@ def list_member_resources(
     _: User = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> list[Resource]:
-    return list(db.scalars(select(Resource).where(Resource.visibility != Visibility.ADMIN).order_by(Resource.created_at.desc())))
+    return list(db.scalars(select(Resource).order_by(Resource.created_at.desc())))
