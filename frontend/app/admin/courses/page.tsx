@@ -205,7 +205,7 @@ export default function CoursesAdminPage() {
     await saveEditor("/api/v1/admin/course-sessions", "POST", {
       ...sessionForm,
       week_label: formatWeekLabel(sessionForm.week_start, sessionForm.week_end),
-      starts_at: new Date(sessionForm.starts_at).toISOString(),
+        starts_at: new Date(`${sessionForm.starts_at}T12:00:00`).toISOString(),
     });
     setNewSessionSeriesId(null);
   }
@@ -354,7 +354,7 @@ export default function CoursesAdminPage() {
         title: session.title,
         week_label: session.week_label,
         summary: session.summary,
-        starts_at: new Date(session.starts_at).toISOString(),
+        starts_at: new Date(`${toLocalDate(session.starts_at)}T12:00:00`).toISOString(),
         order_index: session.order_index,
         visibility: session.visibility,
       },
@@ -569,10 +569,10 @@ export default function CoursesAdminPage() {
                   className="input-admin"
                 />
               </Field>
-              <Field label="上課時間">
+              <Field label="上課日期">
                 <input
                   required
-                  type="datetime-local"
+                  type="date"
                   value={sessionForm.starts_at}
                   onChange={(event) =>
                     setSessionForm({
@@ -920,10 +920,10 @@ export default function CoursesAdminPage() {
                           className="input-admin"
                         />
                       </Field>
-                      <Field label="上課時間">
+                      <Field label="上課日期">
                         <input
-                          type="datetime-local"
-                          value={toLocalDateTime(selectedSession.starts_at)}
+                          type="date"
+                          value={toLocalDate(selectedSession.starts_at)}
                           onChange={(event) =>
                             updateSessionDraft(selectedSession.id, {
                               starts_at: event.target.value,
@@ -1354,10 +1354,10 @@ function NewSessionForm({
           />
         </Field>
       </div>
-      <Field label="上課時間">
+      <Field label="上課日期">
         <input
           required
-          type="datetime-local"
+          type="date"
           value={form.starts_at}
           onChange={(event) =>
             setForm({ ...form, starts_at: event.target.value })
@@ -1575,10 +1575,10 @@ function resourceTypeLabel(type: string) {
   );
 }
 
-function toLocalDateTime(value: string) {
+function toLocalDate(value: string) {
   const date = new Date(value);
   const offset = date.getTimezoneOffset() * 60_000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
 }
 
 function readError(detail: unknown, fallback: string) {
