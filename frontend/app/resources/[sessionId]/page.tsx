@@ -145,6 +145,7 @@ export default async function SessionResourcePage({
 
 function ResourceCard({ resource }: { resource: ResourceItem }) {
   const href = resource.youtube_url ?? resource.url;
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(resource.youtube_url);
   const Icon =
     resource.resource_type === "video"
       ? Play
@@ -164,7 +165,30 @@ function ResourceCard({ resource }: { resource: ResourceItem }) {
     </>
   );
 
-  return href ? (
+  return youtubeEmbedUrl ? (
+    <article className="border border-border bg-surface p-6">
+      <div className="mb-6 overflow-hidden border border-border bg-black">
+        <iframe
+          src={youtubeEmbedUrl}
+          title={`${resource.title} YouTube 影片`}
+          loading="lazy"
+          className="aspect-video w-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+      {content}
+      <a
+        href={resource.youtube_url ?? "#"}
+        target="_blank"
+        rel="noreferrer"
+        className="card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent"
+      >
+        在 YouTube 開啟
+        <ExternalLink className="card-link-arrow" size={16} aria-hidden="true" />
+      </a>
+    </article>
+  ) : href ? (
     <a
       href={href}
       target="_blank"
@@ -183,4 +207,20 @@ function ResourceCard({ resource }: { resource: ResourceItem }) {
       <p className="mt-7 text-sm font-bold text-muted-foreground">內容連結待補</p>
     </article>
   );
+}
+
+function getYouTubeEmbedUrl(url: string | null) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const videoId =
+      parsed.hostname === "youtu.be"
+        ? parsed.pathname.slice(1)
+        : parsed.hostname.endsWith("youtube.com")
+          ? parsed.searchParams.get("v") ?? parsed.pathname.split("/").filter(Boolean).pop()
+          : null;
+    return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}` : null;
+  } catch {
+    return null;
+  }
 }

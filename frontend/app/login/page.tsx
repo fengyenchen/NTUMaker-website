@@ -82,7 +82,7 @@ export default function LoginPage() {
             <form onSubmit={submitMember} className="mt-8">
               <label htmlFor="member-email" className="text-sm font-bold">Email</label>
               <input id="member-email" name="email" type="email" autoComplete="email" required value={memberEmail} onChange={(event) => setMemberEmail(event.target.value)} placeholder="you@example.com" className="input-admin mt-2 min-h-12 px-4" />
-              <button disabled={loading} className="button-25d mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 font-bold disabled:cursor-not-allowed disabled:opacity-50">{loading ? "正在核對社員資格…" : "進入社員學習區"}</button>
+              <button disabled={loading} className="button-25d mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 font-bold disabled:cursor-not-allowed disabled:opacity-50">{loading ? "正在核對社員資格…" : "社員登入"}</button>
             </form>
           </section>
         ) : (
