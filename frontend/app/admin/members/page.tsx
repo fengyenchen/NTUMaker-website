@@ -186,7 +186,7 @@ export default function MembersAdminPage() {
 
   return (
     <main className="px-5 py-8 md:px-10 md:py-10">
-      <div className="mx-auto max-w-[1280px]">
+      <div className="mx-auto max-w-7xl">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm text-muted-foreground">管理後台</p>
@@ -324,7 +324,7 @@ export default function MembersAdminPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[780px] text-left text-sm">
+              <table className="w-full min-w-195 text-left text-sm">
                 <thead className="bg-background text-muted-foreground">
                   <tr>
                     <th className="px-5 py-3">社員</th>
@@ -400,7 +400,7 @@ export default function MembersAdminPage() {
                               className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               <CalendarCheck2 size={16} />
-                              儲存日期
+                              儲存
                             </button>
                             <button
                               onClick={() =>
