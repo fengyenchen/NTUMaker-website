@@ -142,6 +142,12 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .input-admin::placeholder { color: var(--color-muted-foreground); }
 textarea.input-admin { resize: vertical; }
 
+.markdown-editor-shell:focus-within {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-focus) 28%, transparent);
+}
+.markdown-editor:focus-visible { outline: none; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }

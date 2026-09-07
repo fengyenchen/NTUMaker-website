@@ -7,9 +7,13 @@ import { usePathname } from "next/navigation";
 
 import { LogoutButton } from "@/components/logout-button";
 
+type HeaderUser = {
+  roles: string[];
+};
+
 export function HeaderAuthAction() {
   const pathname = usePathname();
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [user, setUser] = useState<HeaderUser | null | undefined>(undefined);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -19,22 +23,36 @@ export function HeaderAuthAction() {
       cache: "no-store",
       signal: controller.signal,
     })
-      .then((response) => setAuthenticated(response.ok))
+      .then(async (response) => {
+        if (!response.ok) {
+          setUser(null);
+          return;
+        }
+        setUser((await response.json()) as HeaderUser);
+      })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
-        setAuthenticated(false);
+        setUser(null);
       });
 
     return () => controller.abort();
   }, []);
 
-  if (authenticated === null) {
+  if (user === undefined) {
     return <span aria-label="正在確認登入狀態" className="inline-flex min-h-11 min-w-26 items-center justify-end text-sm text-muted-foreground opacity-60">確認中…</span>;
   }
 
-  if (authenticated) {
+  if (user) {
     return (
       <div className="flex items-center gap-2">
+        {user.roles.includes("admin") ? (
+          <Link
+            href="/admin"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-3 font-bold text-accent transition-colors hover:bg-surface-raised"
+          >
+            後台
+          </Link>
+        ) : null}
         <Link
           href="/setting"
           className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-3 font-bold text-accent transition-colors hover:bg-surface-raised"
