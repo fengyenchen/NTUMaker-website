@@ -1,11 +1,18 @@
 import { courseInfo, courseTracks, type CourseTrack } from "@/data/course-schedule";
 
 type ApiResource = {
+  id: string;
+  session_id: string | null;
   title: string;
+  description: string;
+  resource_type: string;
+  url: string | null;
+  youtube_url: string | null;
   visibility: "public" | "member";
 };
 
 type ApiSession = {
+  id: string;
   title: string;
   week_label: string;
   summary: string;
@@ -42,6 +49,7 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
         sessions: [...series.sessions]
           .sort((a, b) => a.order_index - b.order_index)
           .map((session) => ({
+            id: session.id,
             week: session.week_label,
             title: session.title,
             summary: session.summary,
@@ -54,6 +62,25 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
   } catch {
     return courseTracks;
   }
+}
+
+export type PublicResource = ApiResource;
+
+export async function getPublicResources(): Promise<PublicResource[]> {
+  const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+  try {
+    const response = await fetch(`${apiUrl}/api/v1/content/resources`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(2000),
+    });
+    return response.ok ? ((await response.json()) as PublicResource[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function getSessionResourcePath(sessionId: string) {
+  return `/resources/${encodeURIComponent(sessionId)}`;
 }
 
 function trackDayLabel(track: string) {

@@ -6,7 +6,7 @@ from app.api.dependencies import get_current_user
 from app.core.config import get_settings
 from app.db.session import get_db
 from app.models.user import Role, User
-from app.schemas.auth import AdminLoginRequest, CurrentUser, LoginRequest, LoginSucceeded
+from app.schemas.auth import AdminLoginRequest, CurrentUser, CurrentUserUpdate, LoginRequest, LoginSucceeded
 from app.services.memberships import has_active_membership
 from app.services.passwords import verify_password
 from app.services.tokens import create_session_token
@@ -33,7 +33,7 @@ def member_login(payload: LoginRequest, response: Response, db: Session = Depend
     if not user or not has_active_membership(user):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email 不存在、帳號已停用或社員資格不在有效期限內")
     set_session_cookie(response, str(user.id))
-    return LoginSucceeded(message="登入成功", redirect_to="/learn")
+    return LoginSucceeded(message="登入成功", redirect_to="/setting")
 
 
 @router.post("/admin-login", response_model=LoginSucceeded, summary="管理員 Email 與密碼登入")
@@ -63,3 +63,15 @@ def me(user: User = Depends(get_current_user)) -> CurrentUser:
         roles=[item.role.value for item in user.roles],
         membership_expires_at=latest_membership.isoformat() if latest_membership else None,
     )
+
+
+@router.patch("/me", response_model=CurrentUser, summary="更新目前社員資料")
+def update_me(
+    payload: CurrentUserUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> CurrentUser:
+    user.display_name = payload.display_name
+    db.commit()
+    db.refresh(user)
+    return me(user)

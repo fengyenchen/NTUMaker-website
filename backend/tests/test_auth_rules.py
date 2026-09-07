@@ -49,7 +49,7 @@ def test_valid_member_email_creates_session() -> None:
 
     result = member_login(LoginRequest(email=user.email), response, FakeSession(user))  # type: ignore[arg-type]
 
-    assert result.redirect_to == "/learn"
+    assert result.redirect_to == "/setting"
     assert "session=" in response.headers["set-cookie"]
     assert "HttpOnly" in response.headers["set-cookie"]
 

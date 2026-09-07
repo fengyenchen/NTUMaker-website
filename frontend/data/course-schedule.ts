@@ -1,4 +1,5 @@
 export type CourseSession = {
+  id?: string;
   week: string;
   title: string;
   summary: string;

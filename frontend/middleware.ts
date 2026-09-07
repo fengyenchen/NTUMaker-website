@@ -26,9 +26,9 @@ export async function middleware(request: NextRequest) {
 
     const user = await response.json() as { roles: string[]; membership_expires_at: string | null };
     if (request.nextUrl.pathname.startsWith("/admin") && !user.roles.includes("admin")) {
-      return NextResponse.redirect(new URL("/learn", request.url));
+      return NextResponse.redirect(new URL("/setting", request.url));
     }
-    if (request.nextUrl.pathname.startsWith("/learn")) {
+    if (request.nextUrl.pathname.startsWith("/setting")) {
       const activeMember = user.roles.includes("admin") || (user.membership_expires_at && user.membership_expires_at >= taipeiDate());
       if (!activeMember) return NextResponse.redirect(new URL("/resources", request.url));
     }
@@ -38,4 +38,4 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-export const config = { matcher: ["/learn/:path*", "/admin/:path*"] };
+export const config = { matcher: ["/setting/:path*", "/admin/:path*"] };

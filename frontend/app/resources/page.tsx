@@ -10,7 +10,7 @@ import {
 import { PageHero } from "@/components/page-hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { getCourseTracks } from "@/lib/course-api";
+import { getCourseTracks, getSessionResourcePath } from "@/lib/course-api";
 import { getSiteSettings } from "@/lib/site-settings";
 
 export default async function ResourcesPage() {
@@ -51,7 +51,7 @@ export default async function ResourcesPage() {
                 <div className="mt-8 space-y-4">
                   {track.sessions.map((session) => (
                     <Link
-                      href={session.isPublic ? "#" : "/learn"}
+                      href={session.id ? getSessionResourcePath(session.id) : "/resources"}
                       key={session.title}
                       className="card-interactive card-inline-link group block rounded-2xl border border-border bg-background p-5"
                     >

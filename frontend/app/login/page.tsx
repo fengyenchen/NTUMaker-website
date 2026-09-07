@@ -34,7 +34,12 @@ export default function LoginPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail ?? "目前無法登入社員學習區");
-      window.location.assign(data.redirect_to ?? "/learn");
+      const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+      const destination =
+        returnTo?.startsWith("/") && !returnTo.startsWith("//")
+          ? returnTo
+          : data.redirect_to ?? "/setting";
+      window.location.assign(destination);
     } catch (error) {
       setFeedback({ type: "error", text: error instanceof Error ? error.message : "目前無法登入社員學習區" });
       setLoading(false);

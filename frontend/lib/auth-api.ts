@@ -12,6 +12,7 @@ export type CurrentUser = {
 
 export type MemberResource = {
   id: string;
+  session_id: string | null;
   title: string;
   description: string;
   resource_type: string;
