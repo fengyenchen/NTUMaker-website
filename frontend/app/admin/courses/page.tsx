@@ -746,7 +746,7 @@ export default function CoursesAdminPage() {
           </div>
         ) : seriesList.length === 0 ? (
           <div className="mt-5 border border-border bg-surface p-10 text-center text-muted-foreground">
-            尚未建立課程路線，請先新增星期二或星期五課程。
+            尚未建立課程路線，請先新增。
           </div>
         ) : (
           <div className="mt-3 grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,.9fr)]">
