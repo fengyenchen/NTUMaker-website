@@ -8,6 +8,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -106,6 +107,7 @@ export default function CoursesAdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const resourceEditorRef = useRef<HTMLDivElement>(null);
 
   const loadLibrary = useCallback(async () => {
     setLoading(true);
@@ -140,6 +142,12 @@ export default function CoursesAdminPage() {
   useEffect(() => {
     void loadLibrary();
   }, [loadLibrary]);
+
+  useEffect(() => {
+    if (editor === "resource") {
+      resourceEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [editor]);
 
   const selectedSession = useMemo(
     () =>
@@ -797,13 +805,15 @@ export default function CoursesAdminPage() {
 
             <aside className="border border-border bg-surface p-5 xl:sticky xl:top-6 xl:self-start">
               {editor === "resource" && selectedSession ? (
-                <NewResourceForm
-                  form={resourceForm}
-                  setForm={setResourceForm}
-                  saving={saving}
-                  onSubmit={submitResource}
-                  onCancel={() => setEditor(null)}
-                />
+                <div ref={resourceEditorRef}>
+                  <NewResourceForm
+                    form={resourceForm}
+                    setForm={setResourceForm}
+                    saving={saving}
+                    onSubmit={submitResource}
+                    onCancel={() => setEditor(null)}
+                  />
+                </div>
               ) : newSessionSeries ? (
                 <NewSessionForm
                   series={newSessionSeries}
@@ -1116,7 +1126,7 @@ function NewResourceForm({
         </div>
         <button type="button" onClick={onCancel} aria-label="關閉新增內容" className="grid size-11 place-items-center"><X size={19} /></button>
       </div>
-      <Field label="內容名稱"><input required maxLength={200} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className="input-admin" /></Field>
+      <Field label="內容名稱"><input autoFocus required maxLength={200} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className="input-admin" /></Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="內容類型"><select value={form.resource_type} onChange={(event) => setForm({ ...form, resource_type: event.target.value, url: event.target.value === "link" ? form.url : "", youtube_url: event.target.value === "video" ? form.youtube_url : "" })} className="input-admin"><option value="link">連結</option><option value="video">YouTube 影片</option></select></Field>
         <Field label="內容權限"><VisibilitySelect value={form.visibility} onChange={(visibility) => setForm({ ...form, visibility })} /></Field>
