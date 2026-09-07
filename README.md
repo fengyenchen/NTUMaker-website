@@ -8,7 +8,7 @@ NTUMaker 的公開資訊、社課教材、社員影片與幹部管理平台。
 ## 專案目標
 
 - 一般訪客：查看公告、社課與工作坊簡介、公開資源與作品。
-- 社員：以 Email 登入，在資格有效期間觀看限定教材與 YouTube 課程影片。
+- 社員：以 Email 登入，在資格有效期間觀看限定教材與嵌入式 YouTube 課程影片，並管理顯示名稱與查看社員資格。
 - Admin：管理帳號、社員期限、公告、課程、資源與發布狀態。
 - 未來擴充：建立社群草稿、審核與排程流程，再串接 Instagram、Facebook 與 Threads。
 
@@ -30,7 +30,7 @@ NTUMaker 的公開資訊、社課教材、社員影片與幹部管理平台。
 Browser
   └─ Next.js Web
        ├─ 公開網站
-       ├─ 社員學習區
+       ├─ 社員設定
        ├─ Admin 後台
        └─ FastAPI
             ├─ Email 登入與 RBAC
@@ -51,16 +51,16 @@ Browser
 └─ 登入
 ```
 
-### 社員學習區
+### 社員設定
 
 ```text
-/learn
-├─ 學習首頁
-├─ 課程進度
-├─ 檔案
-├─ YouTube 影片
-└─ 帳號與社員效期
+/setting
+├─ 顯示名稱
+├─ 登入 Email
+└─ 社員資格有效期限
 ```
+
+課程與教材統一由 `/resources` 進入；每堂課使用資料庫 `course_sessions.id` 作為網址識別，例如 `/resources/<session-uuid>`。YouTube 資源會直接在課程內容頁嵌入播放。
 
 ### Admin 後台
 
@@ -116,7 +116,7 @@ Browser
 2. 公開首頁與 3D Hero
 3. 公開內容、社課與資源頁
 4. FastAPI、Neon schema 與登入權限
-5. 社員學習區
+5. 社員設定與限定教材
 6. Notion 風格 Admin 後台
 7. 整合測試、響應式與無障礙檢查
 8. 社群排程與平台串接
@@ -184,7 +184,7 @@ API 文件啟動後位於 `http://localhost:8000/docs`。
 
 登入頁分為兩種身分：
 
-- 社員：輸入後台已建立、帳號啟用且資格有效的 Email，核對成功後直接進入 `/learn`。
+- 社員：輸入後台已建立、帳號啟用且資格有效的 Email，核對成功後會回到登入前頁面；若無回跳位置則進入 `/setting`。
 - 管理員：輸入具有 Admin 角色的 Email 與密碼，進入 `/admin`。密碼只以 PBKDF2-SHA256 雜湊保存在資料庫。
 
 修改資料模型後請再次執行 `alembic upgrade head`。現有管理員第一次加入密碼欄位後，重新執行 `python -m app.db.seed` 即可依 `.env` 設定密碼。
@@ -199,7 +199,7 @@ pnpm dev
 
 網站位於 `http://localhost:3000`。Next.js 會透過伺服器端 `API_URL` 反向代理 FastAPI，登入 Cookie 不需要暴露給前端程式。
 
-社課頁與課程內容頁會優先讀取 FastAPI；若本機 API 尚未啟動或資料庫尚無課程，則自動使用 `frontend/data/course-schedule.ts` 的假資料，方便前端持續開發。
+首頁、社課頁與課程內容頁會優先讀取 FastAPI；若本機 API 尚未啟動或資料庫尚無課程，則自動使用 `frontend/data/course-schedule.ts` 的假資料，方便前端持續開發。首頁課程卡的名稱、說明與課堂預覽皆取自同一份課程資料。
 
 ### 5. 上線前檢查
 
