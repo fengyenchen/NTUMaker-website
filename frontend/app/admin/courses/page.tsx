@@ -83,7 +83,7 @@ const emptyResource = {
   session_id: "",
   title: "",
   description: "",
-  resource_type: "article",
+  resource_type: "link",
   url: "",
   youtube_url: "",
   visibility: "member" as Visibility,
@@ -350,7 +350,7 @@ export default function CoursesAdminPage() {
 
         {editor === "series" && (
           <EditorShell title="新增課程路線" onClose={() => setEditor(null)}>
-            <form onSubmit={submitSeries} className="grid gap-5 md:grid-cols-2">
+            <form onSubmit={submitSeries} className="grid min-w-0 gap-5 md:grid-cols-2">
               <Field label="路線名稱">
                 <input
                   required
@@ -419,7 +419,7 @@ export default function CoursesAdminPage() {
           <EditorShell title="新增課堂" onClose={() => setEditor(null)}>
             <form
               onSubmit={submitSession}
-              className="grid gap-5 md:grid-cols-2"
+              className="grid min-w-0 gap-5 md:grid-cols-2"
             >
               <Field label="所屬路線">
                 <select
@@ -532,7 +532,7 @@ export default function CoursesAdminPage() {
           <EditorShell title="新增課程內容" onClose={() => setEditor(null)}>
             <form
               onSubmit={submitResource}
-              className="grid gap-5 md:grid-cols-2"
+              className="grid min-w-0 gap-5 md:grid-cols-2"
             >
               <Field label="內容名稱">
                 <input
@@ -559,11 +559,8 @@ export default function CoursesAdminPage() {
                   }
                   className="input-admin"
                 >
-                  <option value="article">教材</option>
-                  <option value="video">影片</option>
-                  <option value="code">程式</option>
-                  <option value="file">製作檔案</option>
-                  <option value="link">外部連結</option>
+                <option value="link">連結</option>
+                <option value="video">YouTube 影片</option>
                 </select>
               </Field>
               <Field label="閱讀／下載網址" required={false}>
@@ -913,11 +910,8 @@ export default function CoursesAdminPage() {
                                   }
                                   className="input-admin"
                                 >
-                                  <option value="article">教材</option>
-                                  <option value="video">影片</option>
-                                  <option value="code">程式</option>
-                                  <option value="file">製作檔案</option>
-                                  <option value="link">外部連結</option>
+                                  <option value="link">連結</option>
+                                  <option value="video">YouTube 影片</option>
                                 </select>
                               </Field>
                               <Field label="內容權限">
@@ -1059,7 +1053,7 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-bold">
+    <label className="grid min-w-0 gap-2 text-sm font-bold">
       <span>
         {label}
         {required && (
@@ -1143,11 +1137,8 @@ function resourceTypeLabel(type: string) {
   return (
     (
       {
-        article: "教材",
-        video: "影片",
-        code: "程式",
-        file: "製作檔案",
-        link: "外部連結",
+        video: "YouTube 影片",
+        link: "連結",
       } as Record<string, string>
     )[type] ?? type
   );

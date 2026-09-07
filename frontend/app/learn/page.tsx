@@ -127,6 +127,7 @@ export default async function LearnPage() {
 
 function ResourceCard({ resource }: { resource: MemberResource }) {
   const href = resource.youtube_url ?? resource.url;
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(resource.youtube_url);
   const Icon =
     resource.resource_type === "video"
       ? Play
@@ -135,6 +136,18 @@ function ResourceCard({ resource }: { resource: MemberResource }) {
         : BookOpen;
   const content = (
     <>
+      {youtubeEmbedUrl && (
+        <div className="mb-6 overflow-hidden border border-border bg-black">
+          <iframe
+            src={youtubeEmbedUrl}
+            title={`${resource.title} YouTube 影片`}
+            loading="lazy"
+            className="aspect-video w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      )}
       <div className="flex items-start justify-between gap-4">
         <Icon className="text-primary" aria-hidden="true" />
         <span className="rounded-full bg-surface-raised px-3 py-1 text-xs font-bold">
@@ -152,7 +165,7 @@ function ResourceCard({ resource }: { resource: MemberResource }) {
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
         {resource.description}
       </p>
-      {href && (
+      {href && !youtubeEmbedUrl && (
         <span className="card-inline-link mt-6 inline-flex min-h-11 items-center gap-2 font-bold text-accent">
           開啟內容{" "}
           <ExternalLink
@@ -165,7 +178,19 @@ function ResourceCard({ resource }: { resource: MemberResource }) {
     </>
   );
 
-  return href ? (
+  return youtubeEmbedUrl ? (
+    <article className="border border-border bg-surface p-6">
+      {content}
+      <a
+        href={href ?? "#"}
+        target="_blank"
+        rel="noreferrer"
+        className="card-inline-link mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-accent"
+      >
+        在 YouTube 開啟 <ExternalLink className="card-link-arrow" size={15} aria-hidden="true" />
+      </a>
+    </article>
+  ) : href ? (
     <a
       href={href}
       target="_blank"
@@ -182,4 +207,20 @@ function ResourceCard({ resource }: { resource: MemberResource }) {
       </p>
     </article>
   );
+}
+
+function getYouTubeEmbedUrl(url: string | null) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    let videoId = "";
+    if (parsed.hostname === "youtu.be") {
+      videoId = parsed.pathname.slice(1);
+    } else if (parsed.hostname.endsWith("youtube.com")) {
+      videoId = parsed.searchParams.get("v") ?? parsed.pathname.split("/").filter(Boolean).pop() ?? "";
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  } catch {
+    return null;
+  }
 }

@@ -10,6 +10,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <AdminNav />
       <AdminAccount />
     </aside>
-    <div>{children}</div>
+    <div className="min-w-0 overflow-x-hidden">{children}</div>
   </div>;
 }
