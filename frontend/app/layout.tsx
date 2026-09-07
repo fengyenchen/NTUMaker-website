@@ -7,6 +7,9 @@ export const metadata: Metadata = {
     template: "%s｜NTUMaker",
   },
   description: "NTUMaker 台大自造者社的公告、社課、工作坊、教材與社員學習平台。",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
