@@ -1,8 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.api.dependencies import require_admin
@@ -28,6 +28,49 @@ from app.services.memberships import taipei_today
 from app.services.passwords import hash_password
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
+
+
+@router.get("/overview", summary="取得管理後台總覽")
+def get_overview(db: Session = Depends(get_db)) -> dict:
+    today = taipei_today()
+    active_members = db.scalar(
+        select(func.count(distinct(Membership.user_id)))
+        .join(User, User.id == Membership.user_id)
+        .where(User.is_active.is_(True), Membership.starts_at <= today, Membership.expires_at >= today)
+    ) or 0
+    expiring_members = db.scalar(
+        select(func.count(distinct(Membership.user_id)))
+        .join(User, User.id == Membership.user_id)
+        .where(User.is_active.is_(True), Membership.expires_at >= today, Membership.expires_at <= today + timedelta(days=30))
+    ) or 0
+    current_semester = db.scalar(select(CourseSeries.semester).order_by(CourseSeries.semester.desc()).limit(1)) or ""
+    semester_sessions = db.scalar(
+        select(func.count(CourseSession.id)).join(CourseSeries).where(CourseSeries.semester == current_semester)
+    ) or 0
+    published_resources = db.scalar(select(func.count(Resource.id))) or 0
+    member_resources = db.scalar(select(func.count(Resource.id)).where(Resource.visibility == Visibility.MEMBER)) or 0
+    next_session = db.scalar(
+        select(CourseSession).join(CourseSeries).where(CourseSeries.semester == current_semester, CourseSession.starts_at >= datetime.now(timezone.utc)).order_by(CourseSession.starts_at).limit(1)
+    )
+    recent = [
+        {"title": item.title, "type": "公告", "visibility": "公開", "status": item.status.value, "updated_at": item.updated_at}
+        for item in db.scalars(select(Announcement).order_by(Announcement.updated_at.desc()).limit(3))
+    ]
+    recent.extend(
+        {"title": item.title, "type": "資源", "visibility": "社員限定" if item.visibility == Visibility.MEMBER else "公開", "status": "已發布", "updated_at": item.created_at}
+        for item in db.scalars(select(Resource).order_by(Resource.created_at.desc()).limit(3))
+    )
+    recent.sort(key=lambda item: item["updated_at"], reverse=True)
+    return {
+        "active_members": active_members,
+        "expiring_members": expiring_members,
+        "current_semester": current_semester,
+        "semester_sessions": semester_sessions,
+        "published_resources": published_resources,
+        "member_resources": member_resources,
+        "next_session": {"title": next_session.title, "starts_at": next_session.starts_at} if next_session else None,
+        "recent": recent[:5],
+    }
 
 
 @router.get("/settings", response_model=list[SiteSettingSummary], summary="列出網站文字設定")
