@@ -3,7 +3,7 @@
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 
-export function LogoutButton({ className = "" }: { className?: string }) {
+export function LogoutButton({ className = "", redirectTo = "/login" }: { className?: string; redirectTo?: string }) {
   const [loading, setLoading] = useState(false);
 
   async function logout() {
@@ -11,7 +11,7 @@ export function LogoutButton({ className = "" }: { className?: string }) {
     try {
       await fetch("/api/v1/auth/logout", { method: "POST", credentials: "include" });
     } finally {
-      window.location.assign("/login");
+      window.location.assign(redirectTo);
     }
   }
 
