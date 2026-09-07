@@ -15,9 +15,9 @@ export default async function CoursesPage() {
       <PageHero eyebrow={`${courseInfo.semester} / 社課`} title={settings.courses_title} description={settings.courses_description} />
       <section className="px-5 pb-12 md:px-8">
         <div className="mx-auto grid max-w-[1320px] gap-4 md:grid-cols-3">
-          <InfoCard icon={<CalendarDays />} label={settings.courses_time_label} value={settings.courses_time_value} />
-          <InfoCard icon={<MapPin />} label={settings.courses_location_label} value={settings.courses_location_value} />
-          <InfoCard icon={<WalletCards />} label={settings.courses_fee_label} value={settings.courses_fee_value} />
+          <InfoCard icon={<CalendarDays />} label="時間" value={settings.courses_time_value} />
+          <InfoCard icon={<MapPin />} label="地點" value={settings.courses_location_value} />
+          <InfoCard icon={<WalletCards />} label="社費" value={settings.courses_fee_value} />
         </div>
       </section>
       <section className="px-5 pb-28 pt-8 md:px-8">
