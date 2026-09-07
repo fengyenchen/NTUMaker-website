@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -22,6 +22,7 @@ from app.schemas.admin import (
     ResourceWrite,
 )
 from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
+from app.services.memberships import taipei_today
 from app.services.passwords import hash_password
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
@@ -57,12 +58,15 @@ def list_users(db: Session = Depends(get_db)) -> list[AdminUserSummary]:
 def create_member(payload: MemberWrite, db: Session = Depends(get_db)) -> AdminUserSummary:
     if db.scalar(select(User).where(User.email == payload.email.lower())):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="這個 Email 已存在")
+    starts_at = taipei_today()
+    if payload.expires_at < starts_at:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="結束日期不可早於今天")
     user = User(email=payload.email.lower(), display_name=payload.display_name)
     user.roles.append(UserRole(role=Role.MEMBER))
     if payload.is_admin:
         user.roles.append(UserRole(role=Role.ADMIN))
         user.password_hash = hash_password(payload.admin_password or "")
-    user.memberships.append(Membership(starts_at=payload.starts_at, expires_at=payload.expires_at, note=payload.note))
+    user.memberships.append(Membership(starts_at=starts_at, expires_at=payload.expires_at, note=payload.note))
     db.add(user)
     db.commit()
     return serialize_user(load_user(db, user.id))
@@ -86,9 +90,14 @@ def update_member(
     if payload.expires_at is not None:
         membership = max(user.memberships, key=lambda item: item.expires_at, default=None)
         if membership:
+            if payload.expires_at < membership.starts_at:
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="結束日期不可早於開始日期")
             membership.expires_at = payload.expires_at
         else:
-            user.memberships.append(Membership(starts_at=date.today(), expires_at=payload.expires_at))
+            starts_at = taipei_today()
+            if payload.expires_at < starts_at:
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="結束日期不可早於今天")
+            user.memberships.append(Membership(starts_at=starts_at, expires_at=payload.expires_at))
     if payload.is_admin is not None:
         admin_role = next((item for item in user.roles if item.role == Role.ADMIN), None)
         if payload.is_admin and not admin_role:

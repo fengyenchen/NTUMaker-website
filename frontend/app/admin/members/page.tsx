@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { CalendarPlus, LoaderCircle, Plus, RefreshCw, ShieldCheck, UserRoundCheck, X } from "lucide-react";
+import { CalendarCheck2, LoaderCircle, Plus, RefreshCw, ShieldCheck, UserRoundCheck, X } from "lucide-react";
 
 type Member = {
   id: string;
@@ -16,11 +16,21 @@ type Member = {
 const initialForm = {
   email: "",
   display_name: "",
-  starts_at: new Date().toISOString().slice(0, 10),
-  expires_at: "2027-01-31",
+  expires_at: "",
   is_admin: false,
   admin_password: "",
 };
+
+function taipeiToday() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
 
 export default function MembersAdminPage() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -29,6 +39,7 @@ export default function MembersAdminPage() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [expiryDrafts, setExpiryDrafts] = useState<Record<string, string>>({});
 
   const loadMembers = useCallback(async () => {
     setLoading(true);
@@ -38,6 +49,7 @@ export default function MembersAdminPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail ?? "無法讀取社員名單");
       setMembers(data);
+      setExpiryDrafts(Object.fromEntries(data.map((member: Member) => [member.id, member.membership_expires_at ?? ""])));
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "無法讀取社員名單");
     } finally {
@@ -61,6 +73,7 @@ export default function MembersAdminPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail ?? "無法新增社員");
       setMembers((current) => [...current, data].sort((a, b) => a.email.localeCompare(b.email)));
+      setExpiryDrafts((current) => ({ ...current, [data.id]: data.membership_expires_at ?? "" }));
       setForm(initialForm);
       setShowForm(false);
     } catch (requestError) {
@@ -82,6 +95,7 @@ export default function MembersAdminPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail ?? "無法更新社員資料");
       setMembers((current) => current.map((item) => item.id === member.id ? data : item));
+      if (data.membership_expires_at) setExpiryDrafts((current) => ({ ...current, [member.id]: data.membership_expires_at }));
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "無法更新社員資料");
     }
@@ -99,12 +113,12 @@ export default function MembersAdminPage() {
 
         {showForm && (
           <section className="mt-7 border border-border bg-surface p-5 shadow-[4px_5px_0_var(--color-shadow-soft)]">
-            <div className="flex items-center justify-between"><div><h2 className="text-xl font-black">新增社員</h2><p className="mt-1 text-sm text-muted-foreground">社員會使用這個 Email 接收登入連結。</p></div><button onClick={() => setShowForm(false)} aria-label="關閉新增社員表單" className="grid size-11 place-items-center"><X size={19} /></button></div>
+            <div className="flex items-center justify-between"><div><h2 className="text-xl font-black">新增社員</h2><p className="mt-1 text-sm text-muted-foreground">社員會使用這個 Email 直接核對資格並登入。</p></div><button onClick={() => setShowForm(false)} aria-label="關閉新增社員表單" className="grid size-11 place-items-center"><X size={19} /></button></div>
             <form onSubmit={createMember} className="mt-6 grid gap-5 md:grid-cols-2">
               <Field label="Email"><input required type="email" autoComplete="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
               <Field label="顯示名稱"><input value={form.display_name} onChange={(event) => setForm({ ...form, display_name: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
-              <Field label="生效日"><input required type="date" value={form.starts_at} onChange={(event) => setForm({ ...form, starts_at: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
-              <Field label="到期日"><input required type="date" min={form.starts_at} value={form.expires_at} onChange={(event) => setForm({ ...form, expires_at: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
+              <Field label="開始日期"><output className="flex min-h-11 items-center border border-border bg-surface-raised px-3 font-mono font-normal text-muted-foreground">{taipeiToday()}（自動）</output></Field>
+              <Field label="結束日期"><input required type="date" min={taipeiToday()} value={form.expires_at} onChange={(event) => setForm({ ...form, expires_at: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
               <label className="flex min-h-11 items-center gap-3 font-bold"><input type="checkbox" checked={form.is_admin} onChange={(event) => setForm({ ...form, is_admin: event.target.checked, admin_password: event.target.checked ? form.admin_password : "" })} className="size-5" />同時授予管理員權限</label>
               {form.is_admin && <Field label="管理員密碼（至少 12 字元）"><input required minLength={12} maxLength={200} type="password" autoComplete="new-password" value={form.admin_password} onChange={(event) => setForm({ ...form, admin_password: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>}
               <div className="flex justify-end gap-3"><button type="button" onClick={() => setShowForm(false)} className="min-h-11 px-4 font-bold">取消</button><button disabled={saving} className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50">{saving && <LoaderCircle className="animate-spin" size={17} />}建立社員</button></div>
@@ -115,7 +129,7 @@ export default function MembersAdminPage() {
         <section className="mt-8 overflow-hidden border border-border bg-surface">
           <div className="flex items-center justify-between border-b border-border p-5"><div><h2 className="font-black">社員名單</h2><p className="mt-1 text-xs text-muted-foreground">共 {members.length} 個帳號</p></div><button onClick={() => void loadMembers()} className="inline-flex min-h-11 items-center gap-2 px-3 font-bold"><RefreshCw size={17} />重新整理</button></div>
           {loading ? <div className="flex min-h-52 items-center justify-center gap-3 text-muted-foreground"><LoaderCircle className="animate-spin" />正在讀取社員名單…</div> : members.length === 0 ? <div className="min-h-52 p-8 text-center text-muted-foreground">目前沒有社員資料，可以從右上角新增第一位社員。</div> : (
-            <div className="overflow-x-auto"><table className="w-full min-w-[820px] text-left text-sm"><thead className="bg-background text-muted-foreground"><tr><th className="px-5 py-3">社員</th><th className="px-5 py-3">身分</th><th className="px-5 py-3">資格期限</th><th className="px-5 py-3">狀態</th><th className="px-5 py-3">操作</th></tr></thead><tbody>{members.map((member) => { const expired = member.membership_expires_at ? member.membership_expires_at < new Date().toISOString().slice(0, 10) : true; return <tr key={member.id} className="border-t border-border"><td className="px-5 py-4"><p className="font-bold">{member.display_name || "未設定名稱"}</p><p className="mt-1 text-xs text-muted-foreground">{member.email}</p></td><td className="px-5 py-4">{member.roles.includes("admin") ? <span className="inline-flex items-center gap-1 font-bold"><ShieldCheck size={16} />管理員</span> : "社員"}</td><td className="px-5 py-4"><p className="font-mono">{member.membership_expires_at ?? "未設定"}</p><p className={`mt-1 text-xs ${expired ? "text-destructive" : "text-success"}`}>{expired ? "已到期" : "有效"}</p></td><td className="px-5 py-4">{member.is_active ? "啟用中" : "已停用"}</td><td className="px-5 py-4"><div className="flex gap-2"><button onClick={() => void updateMember(member, { expires_at: "2027-01-31" })} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold"><CalendarPlus size={16} />延長</button><button onClick={() => void updateMember(member, { is_active: !member.is_active })} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold"><UserRoundCheck size={16} />{member.is_active ? "停用" : "啟用"}</button></div></td></tr>; })}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full min-w-[980px] text-left text-sm"><thead className="bg-background text-muted-foreground"><tr><th className="px-5 py-3">社員</th><th className="px-5 py-3">身分</th><th className="px-5 py-3">開始日期</th><th className="px-5 py-3">結束日期</th><th className="px-5 py-3">狀態</th><th className="px-5 py-3">操作</th></tr></thead><tbody>{members.map((member) => { const expiryDraft = expiryDrafts[member.id] ?? member.membership_expires_at ?? ""; const expired = member.membership_expires_at ? member.membership_expires_at < taipeiToday() : true; return <tr key={member.id} className="border-t border-border"><td className="px-5 py-4"><p className="font-bold">{member.display_name || "未設定名稱"}</p><p className="mt-1 text-xs text-muted-foreground">{member.email}</p></td><td className="px-5 py-4">{member.roles.includes("admin") ? <span className="inline-flex items-center gap-1 font-bold"><ShieldCheck size={16} />管理員</span> : "社員"}</td><td className="px-5 py-4 font-mono">{member.membership_starts_at ?? "未設定"}</td><td className="px-5 py-4"><label className="sr-only" htmlFor={`expiry-${member.id}`}>設定 {member.email} 的結束日期</label><input id={`expiry-${member.id}`} type="date" min={member.membership_starts_at ?? taipeiToday()} value={expiryDraft} onChange={(event) => setExpiryDrafts((current) => ({ ...current, [member.id]: event.target.value }))} className="min-h-11 border border-border bg-background px-3 font-mono" /><p className={`mt-1 text-xs ${expired ? "text-destructive" : "text-success"}`}>{expired ? "已到期" : "有效"}</p></td><td className="px-5 py-4">{member.is_active ? "啟用中" : "已停用"}</td><td className="px-5 py-4"><div className="flex gap-2"><button disabled={!expiryDraft || expiryDraft === member.membership_expires_at} onClick={() => void updateMember(member, { expires_at: expiryDraft })} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold disabled:cursor-not-allowed disabled:opacity-40"><CalendarCheck2 size={16} />儲存日期</button><button onClick={() => void updateMember(member, { is_active: !member.is_active })} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold"><UserRoundCheck size={16} />{member.is_active ? "停用" : "啟用"}</button></div></td></tr>; })}</tbody></table></div>
           )}
         </section>
       </div>
