@@ -263,6 +263,15 @@ def update_course_session(item_id: UUID, payload: CourseSessionWrite, db: Sessio
     return item
 
 
+@router.delete("/course-sessions/{item_id}", status_code=status.HTTP_204_NO_CONTENT, summary="刪除單堂課")
+def delete_course_session(item_id: UUID, db: Session = Depends(get_db)) -> None:
+    item = db.get(CourseSession, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到課堂")
+    db.delete(item)
+    db.commit()
+
+
 @router.post("/resources", response_model=ResourceAdminSummary, status_code=status.HTTP_201_CREATED, summary="新增課程教材或影片")
 def create_resource(payload: ResourceWrite, db: Session = Depends(get_db)) -> Resource:
     if not db.get(CourseSession, payload.session_id):

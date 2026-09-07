@@ -301,6 +301,11 @@ export default function CoursesAdminPage() {
     await saveEditor(`/api/v1/admin/course-series/${series.id}`, "DELETE", {}, false);
   }
 
+  async function deleteSession(session: CourseSession) {
+    if (!window.confirm(`確定要刪除「${session.title}」嗎？這堂課底下的教材與影片也會一起刪除。`)) return;
+    await saveEditor(`/api/v1/admin/course-sessions/${session.id}`, "DELETE", {}, false);
+  }
+
   async function saveSessionInline(session: CourseSession) {
     await saveEditor(
       `/api/v1/admin/course-sessions/${session.id}`,
@@ -547,7 +552,7 @@ export default function CoursesAdminPage() {
           </EditorShell>
         )}
 
-        {editor === "resource" && (
+        {editor === "resource" && !selectedSession && (
           <EditorShell title="新增課程內容" onClose={() => setEditor(null)}>
             <form
               onSubmit={submitResource}
@@ -791,7 +796,15 @@ export default function CoursesAdminPage() {
             </div>
 
             <aside className="border border-border bg-surface p-5 xl:sticky xl:top-6 xl:self-start">
-              {newSessionSeries ? (
+              {editor === "resource" && selectedSession ? (
+                <NewResourceForm
+                  form={resourceForm}
+                  setForm={setResourceForm}
+                  saving={saving}
+                  onSubmit={submitResource}
+                  onCancel={() => setEditor(null)}
+                />
+              ) : newSessionSeries ? (
                 <NewSessionForm
                   series={newSessionSeries}
                   form={sessionForm}
@@ -877,7 +890,16 @@ export default function CoursesAdminPage() {
                         />
                       </Field>
                     </div>
-                    <div className="mt-4 flex justify-end">
+                    <div className="mt-4 flex justify-between gap-3">
+                      <button
+                        type="button"
+                        disabled={saving}
+                        onClick={() => void deleteSession(selectedSession)}
+                        className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Trash2 size={17} />
+                        刪除課堂
+                      </button>
                       <button
                         disabled={saving}
                         onClick={() => void saveSessionInline(selectedSession)}
@@ -1070,6 +1092,41 @@ export default function CoursesAdminPage() {
 }
 
 type SessionForm = typeof emptySession;
+type ResourceForm = typeof emptyResource;
+
+function NewResourceForm({
+  form,
+  setForm,
+  saving,
+  onSubmit,
+  onCancel,
+}: {
+  form: ResourceForm;
+  setForm: Dispatch<SetStateAction<ResourceForm>>;
+  saving: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="grid gap-4">
+      <div className="flex items-start justify-between gap-3 border-b border-border pb-4">
+        <div>
+          <p className="text-xs font-bold text-accent">新增內容</p>
+          <h2 className="mt-1 text-xl font-black">加入這堂課</h2>
+        </div>
+        <button type="button" onClick={onCancel} aria-label="關閉新增內容" className="grid size-11 place-items-center"><X size={19} /></button>
+      </div>
+      <Field label="內容名稱"><input required maxLength={200} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className="input-admin" /></Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="內容類型"><select value={form.resource_type} onChange={(event) => setForm({ ...form, resource_type: event.target.value, url: event.target.value === "link" ? form.url : "", youtube_url: event.target.value === "video" ? form.youtube_url : "" })} className="input-admin"><option value="link">連結</option><option value="video">YouTube 影片</option></select></Field>
+        <Field label="內容權限"><VisibilitySelect value={form.visibility} onChange={(visibility) => setForm({ ...form, visibility })} /></Field>
+      </div>
+      {form.resource_type === "link" ? <Field label="連結網址"><input required type="url" value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} className="input-admin" /></Field> : <Field label="YouTube 網址"><input required type="url" value={form.youtube_url} onChange={(event) => setForm({ ...form, youtube_url: event.target.value })} className="input-admin" /></Field>}
+      <Field label="內容說明"><textarea required rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="input-admin py-3" /></Field>
+      <div className="flex justify-end gap-3 pt-2"><button type="button" onClick={onCancel} className="min-h-11 px-4 font-bold">取消</button><button disabled={saving} className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50">{saving ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}建立內容</button></div>
+    </form>
+  );
+}
 
 function NewSessionForm({
   series,
