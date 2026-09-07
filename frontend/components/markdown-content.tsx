@@ -6,7 +6,7 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
   const blocks: ReactNode[] = [];
   const lines = content.replaceAll("\r\n", "\n").split("\n");
   let paragraph: string[] = [];
-  let list: string[] = [];
+  let list: ListItem[] = [];
   let code: string[] = [];
   let inCode = false;
 
@@ -18,7 +18,7 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
   };
   const flushList = () => {
     if (list.length) {
-      blocks.push(<ul key={`ul-${blocks.length}`}>{list.map((item, index) => <li key={`${item}-${index}`}>{inlineMarkdown(item)}</li>)}</ul>);
+      blocks.push(<List key={`list-${blocks.length}`} items={list} />);
       list = [];
     }
   };
@@ -38,6 +38,7 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
     }
     if (inCode) { code.push(line); return; }
     if (!line.trim()) { flushParagraph(); flushList(); return; }
+    if (/^\s*(\*{3,}|-{3,}|_{3,})\s*$/.test(line)) { flushParagraph(); flushList(); blocks.push(<hr key={`hr-${blocks.length}`} />); return; }
     const heading = line.match(/^(#{1,3})\s+(.+)$/);
     if (heading) {
       flushParagraph(); flushList();
@@ -46,8 +47,10 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
       blocks.push(<Tag key={`h-${blocks.length}`}>{inlineMarkdown(heading[2])}</Tag>);
       return;
     }
-    const item = line.match(/^\s*[-*]\s+(.+)$/);
-    if (item) { flushParagraph(); list.push(item[1]); return; }
+    const item = line.match(/^(\s*)([-*]|\d+\.)\s+(.+)$/);
+    if (item) { flushParagraph(); list.push({ indent: item[1].length, ordered: /\d/.test(item[2]), text: item[3] }); return; }
+    const quote = line.match(/^\s*>\s?(.*)$/);
+    if (quote) { flushParagraph(); flushList(); blocks.push(<blockquote key={`quote-${blocks.length}`}>{inlineMarkdown(quote[1])}</blockquote>); return; }
     flushList();
     paragraph.push(line);
   });
@@ -59,13 +62,35 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
 }
 
 function inlineMarkdown(value: string): ReactNode[] {
-  const parts = value.split(/(\[[^\]]+\]\([^\)]+\)|\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|\*[^*]+\*|_[^_]+_)/g);
+  const parts = value.split(/(\[[^\]]+\]\([^\)]+\)|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|`[^`]+`|\*[^*]+\*|_[^_]+_)/g);
   return parts.map((part, index) => {
     const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)$/);
     if (link) return <a key={index} href={link[2]} target="_blank" rel="noreferrer">{link[1]}</a>;
     if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) return <strong key={index}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("~~") && part.endsWith("~~")) return <del key={index}>{part.slice(2, -2)}</del>;
     if (part.startsWith("`") && part.endsWith("`")) return <code key={index}>{part.slice(1, -1)}</code>;
     if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) return <em key={index}>{part.slice(1, -1)}</em>;
     return <span key={index}>{part}</span>;
   });
+}
+
+type ListItem = { indent: number; ordered: boolean; text: string; children?: ListItem[] };
+
+function List({ items }: { items: ListItem[] }) {
+  const roots: ListItem[] = [];
+  const stack: ListItem[] = [];
+  items.forEach((item) => {
+    const current = { ...item, children: [] as ListItem[] };
+    while (stack.length && stack[stack.length - 1].indent >= current.indent) stack.pop();
+    if (stack.length) stack[stack.length - 1].children?.push(current);
+    else roots.push(current);
+    stack.push(current);
+  });
+  return <ListGroup items={roots} />;
+}
+
+function ListGroup({ items }: { items: ListItem[] }) {
+  if (!items.length) return null;
+  const Tag = items[0].ordered ? "ol" : "ul";
+  return <Tag>{items.map((item, index) => <li key={`${item.text}-${index}`}>{inlineMarkdown(item.text)}{item.children?.length ? <ListGroup items={item.children} /> : null}</li>)}</Tag>;
 }

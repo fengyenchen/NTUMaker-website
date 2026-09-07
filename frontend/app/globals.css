@@ -102,7 +102,12 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .markdown-content h2 { font-size: 1.35rem; }
 .markdown-content h3 { font-size: 1.15rem; }
 .markdown-content h4 { font-size: 1rem; }
-.markdown-content ul { display: grid; gap: 0.35rem; list-style: disc; padding-left: 1.35rem; }
+.markdown-content ul, .markdown-content ol { display: grid; gap: 0.35rem; padding-left: 1.35rem; }
+.markdown-content ul { list-style: disc; }
+.markdown-content ol { list-style: decimal; }
+.markdown-content li > ul, .markdown-content li > ol { margin-top: 0.35rem; }
+.markdown-content blockquote { border-left: 3px solid var(--color-primary); background: var(--color-surface-raised); padding: 0.65rem 1rem; color: var(--color-muted-foreground); }
+.markdown-content hr { border: 0; border-top: 1px solid var(--color-border); }
 .markdown-content a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
 .markdown-content strong { color: var(--color-foreground); font-weight: 800; }
 .markdown-content code { border: 1px solid var(--color-border); background: var(--color-surface-raised); padding: 0.1rem 0.35rem; font-family: var(--font-mono); font-size: 0.9em; }
