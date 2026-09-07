@@ -26,7 +26,7 @@ const defaults: SiteSettings = {
 export async function getSiteSettings(): Promise<SiteSettings> {
   const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
   try {
-    const response = await fetch(`${apiUrl}/api/v1/content/settings`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(2000) });
+    const response = await fetch(`${apiUrl}/api/v1/content/settings`, { cache: "no-store", signal: AbortSignal.timeout(2000) });
     if (!response.ok) return defaults;
     const data = (await response.json()) as Array<{ key: string; value: string }>;
     return { ...defaults, ...Object.fromEntries(data.map((item) => [item.key, item.value])) };

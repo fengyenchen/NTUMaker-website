@@ -58,7 +58,7 @@ export default function SettingsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [savedKey, setSavedKey] = useState<string | null>(null);
+  const [savedValues, setSavedValues] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] =
     useState<(typeof settingTabs)[number]["id"]>("home");
 
@@ -72,6 +72,11 @@ export default function SettingsAdminPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail ?? "無法讀取網站設定");
       setSettings(data);
+      setSavedValues(
+        Object.fromEntries(
+          (data as SiteSetting[]).map((item) => [item.key, item.value]),
+        ),
+      );
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -89,7 +94,6 @@ export default function SettingsAdminPage() {
 
   async function saveSetting(setting: SiteSetting) {
     setSavingKey(setting.key);
-    setSavedKey(null);
     setError("");
     try {
       const response = await fetch(`/api/v1/admin/settings/${setting.key}`, {
@@ -103,7 +107,7 @@ export default function SettingsAdminPage() {
       setSettings((current) =>
         current.map((item) => (item.key === setting.key ? data : item)),
       );
-      setSavedKey(setting.key);
+      setSavedValues((current) => ({ ...current, [setting.key]: data.value }));
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -113,6 +117,10 @@ export default function SettingsAdminPage() {
     } finally {
       setSavingKey(null);
     }
+  }
+
+  function hasChanges(setting: SiteSetting) {
+    return savedValues[setting.key] !== setting.value;
   }
 
   function moveHomeSection(sectionKey: string, direction: -1 | 1) {
@@ -206,7 +214,7 @@ export default function SettingsAdminPage() {
                         </p>
                       </div>
                       <button
-                        disabled={savingKey === orderSetting.key}
+                        disabled={savingKey === orderSetting.key || !hasChanges(orderSetting)}
                         onClick={() => void saveSetting(orderSetting)}
                         className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -215,7 +223,7 @@ export default function SettingsAdminPage() {
                         ) : (
                           <Save size={17} />
                         )}
-                        {savedKey === orderSetting.key ? "已儲存" : "儲存順序"}
+                        儲存順序
                       </button>
                     </div>
                     <div className="mt-5 grid gap-2">
@@ -285,7 +293,7 @@ export default function SettingsAdminPage() {
                     </label>
                     <div className="mt-4 flex justify-end">
                       <button
-                        disabled={savingKey === setting.key}
+                        disabled={savingKey === setting.key || !hasChanges(setting)}
                         onClick={() => void saveSetting(setting)}
                         className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -294,7 +302,7 @@ export default function SettingsAdminPage() {
                         ) : (
                           <Save size={17} />
                         )}
-                        {savedKey === setting.key ? "已儲存" : "儲存設定"}
+                        儲存設定
                       </button>
                     </div>
                   </section>
