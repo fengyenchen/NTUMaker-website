@@ -21,8 +21,13 @@ class Visibility(str, enum.Enum):
 
 
 class CourseTrack(str, enum.Enum):
+    MONDAY = "monday"
     TUESDAY = "tuesday"
+    WEDNESDAY = "wednesday"
+    THURSDAY = "thursday"
     FRIDAY = "friday"
+    SATURDAY = "saturday"
+    SUNDAY = "sunday"
 
 
 class Announcement(Base):

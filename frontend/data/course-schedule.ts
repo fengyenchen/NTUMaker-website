@@ -7,7 +7,7 @@ export type CourseSession = {
 };
 
 export type CourseTrack = {
-  id: "tuesday" | "friday";
+  id: string;
   day: string;
   time: string;
   title: string;

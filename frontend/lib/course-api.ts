@@ -15,7 +15,7 @@ type ApiSession = {
 
 type ApiCourseSeries = {
   title: string;
-  track: "tuesday" | "friday";
+  track: string;
   description: string;
   sessions: ApiSession[];
 };
@@ -33,7 +33,7 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
     return data
       .map((series): CourseTrack => ({
         id: series.track,
-        day: series.track === "tuesday" ? "星期二" : "星期五",
+        day: trackDayLabel(series.track),
         time: courseInfo.time,
         title: series.title,
         description: series.description,
@@ -47,8 +47,16 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
             isPublic: session.resources.some((resource) => resource.visibility === "public"),
           })),
       }))
-      .sort((a, b) => (a.id === "tuesday" ? -1 : b.id === "tuesday" ? 1 : 0));
+      .sort((a, b) => dayOrder(a.id) - dayOrder(b.id));
   } catch {
     return courseTracks;
   }
+}
+
+function trackDayLabel(track: string) {
+  return ({ monday: "星期一", tuesday: "星期二", wednesday: "星期三", thursday: "星期四", friday: "星期五", saturday: "星期六", sunday: "星期日" } as Record<string, string>)[track] ?? track;
+}
+
+function dayOrder(track: string) {
+  return ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].indexOf(track);
 }
