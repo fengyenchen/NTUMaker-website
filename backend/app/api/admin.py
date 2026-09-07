@@ -211,6 +211,15 @@ def update_course_series(item_id: UUID, payload: CourseSeriesWrite, db: Session 
     return item
 
 
+@router.delete("/course-series/{item_id}", status_code=status.HTTP_204_NO_CONTENT, summary="刪除課程路線")
+def delete_course_series(item_id: UUID, db: Session = Depends(get_db)) -> None:
+    item = db.get(CourseSeries, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到課程路線")
+    db.delete(item)
+    db.commit()
+
+
 @router.post("/course-sessions", response_model=CourseSessionSummary, status_code=status.HTTP_201_CREATED, summary="新增單堂課")
 def create_course_session(payload: CourseSessionWrite, db: Session = Depends(get_db)) -> CourseSession:
     if not db.get(CourseSeries, payload.series_id):

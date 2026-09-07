@@ -17,6 +17,7 @@ import {
   Plus,
   RefreshCw,
   Save,
+  Trash2,
   X,
 } from "lucide-react";
 
@@ -109,7 +110,7 @@ export default function CoursesAdminPage() {
       const response = await fetch("/api/v1/admin/course-library", {
         credentials: "include",
       });
-      const data = await response.json();
+      const data = response.status === 204 ? {} : await response.json();
       if (!response.ok)
         throw new Error(readError(data.detail, "無法讀取課程資料"));
       const next = data as CourseSeries[];
@@ -194,7 +195,7 @@ export default function CoursesAdminPage() {
 
   async function saveEditor(
     url: string,
-    method: "POST" | "PUT",
+    method: "POST" | "PUT" | "DELETE",
     payload: object,
     closeEditor = true,
   ) {
@@ -281,6 +282,11 @@ export default function CoursesAdminPage() {
       },
       false,
     );
+  }
+
+  async function deleteSeries(series: CourseSeries) {
+    if (!window.confirm(`確定要刪除「${series.title}」嗎？這條路線底下的課堂與教材也會一起刪除。`)) return;
+    await saveEditor(`/api/v1/admin/course-series/${series.id}`, "DELETE", {}, false);
   }
 
   async function saveSessionInline(session: CourseSession) {
@@ -715,7 +721,15 @@ export default function CoursesAdminPage() {
                         />
                       </Field>
                     </div>
-                    <div className="flex justify-end">
+                    <div className="flex justify-between gap-3">
+                      <button
+                        disabled={saving}
+                        onClick={() => void deleteSeries(series)}
+                        className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Trash2 size={17} />
+                        刪除路線
+                      </button>
                       <button
                         disabled={saving}
                         onClick={() => void saveSeriesInline(series)}
