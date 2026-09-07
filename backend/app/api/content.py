@@ -15,7 +15,7 @@ router = APIRouter(prefix="/content", tags=["內容"])
 
 @router.get("/settings", summary="取得前台網站文字設定")
 def list_public_settings(db: Session = Depends(get_db)) -> list[dict[str, str]]:
-    return [{"key": item.key, "value": item.value} for item in db.scalars(select(SiteSetting).order_by(SiteSetting.key))]
+    return [{"key": item.key, "value": item.value} for item in db.scalars(select(SiteSetting).order_by(SiteSetting.sort_order, SiteSetting.key))]
 
 
 @router.get("/announcements", response_model=list[AnnouncementSummary], summary="取得公開公告")

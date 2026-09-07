@@ -109,6 +109,8 @@ class SiteSettingSummary(BaseModel):
     label: str
     value: str
     description: str
+    category: str
+    sort_order: int
 
 
 class SiteSettingWrite(BaseModel):

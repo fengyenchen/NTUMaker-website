@@ -8,6 +8,8 @@ type SiteSetting = {
   label: string;
   value: string;
   description: string;
+  category: string;
+  sort_order: number;
 };
 
 const settingTabs = [

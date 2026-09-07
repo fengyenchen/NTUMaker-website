@@ -47,7 +47,7 @@ export function BottleCapScene() {
   }, []);
 
   return (
-    <div className="relative h-full min-h-[360px] w-full" aria-label="會隨游標輕微傾斜的 NTUMaker 瓶蓋模型" role="img">
+    <div className="relative h-full min-h-90 w-full" aria-label="會隨游標輕微傾斜的 NTUMaker 瓶蓋模型" role="img">
       <Canvas
         camera={{ position: mobile ? [2, 8, 5] : [1.2, 4.6, 2.6], fov: mobile ? 65 : 45 }}
         dpr={[1, 1.5]}

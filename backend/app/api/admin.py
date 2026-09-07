@@ -32,7 +32,7 @@ router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends
 
 @router.get("/settings", response_model=list[SiteSettingSummary], summary="列出網站文字設定")
 def list_settings(db: Session = Depends(get_db)) -> list[SiteSetting]:
-    return list(db.scalars(select(SiteSetting).order_by(SiteSetting.key)))
+    return list(db.scalars(select(SiteSetting).order_by(SiteSetting.sort_order, SiteSetting.key)))
 
 
 @router.put("/settings/{key}", response_model=SiteSettingSummary, summary="更新網站文字設定")

@@ -27,7 +27,7 @@ export function HeaderAuthAction() {
   }, []);
 
   if (authenticated === null) {
-    return <span aria-label="正在確認登入狀態" className="inline-flex min-h-11 min-w-[6.5rem] items-center justify-end text-sm text-muted-foreground opacity-60">確認中…</span>;
+    return <span aria-label="正在確認登入狀態" className="inline-flex min-h-11 min-w-26 items-center justify-end text-sm text-muted-foreground opacity-60">確認中…</span>;
   }
 
   if (authenticated) {

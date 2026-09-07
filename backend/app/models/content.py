@@ -37,6 +37,8 @@ class SiteSetting(Base):
     label: Mapped[str] = mapped_column(String(200))
     value: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(String(500), default="")
+    category: Mapped[str] = mapped_column(String(50), default="general", index=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
