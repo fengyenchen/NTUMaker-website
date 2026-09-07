@@ -97,9 +97,8 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .card-link-arrow {
   transition: transform 180ms ease;
 }
-.card-interactive:hover .card-link-arrow,
-.card-inline-link:hover .card-link-arrow,
-.card-inline-link:focus-visible .card-link-arrow {
+.card-inline-link:not(.card-interactive):hover .card-link-arrow,
+.card-inline-link:not(.card-interactive):focus-visible .card-link-arrow {
   transform: translateX(4px);
 }
 
