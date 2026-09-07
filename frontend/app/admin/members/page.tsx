@@ -6,6 +6,7 @@ import {
   LoaderCircle,
   Plus,
   RefreshCw,
+  Trash2,
   UserRoundCheck,
   X,
 } from "lucide-react";
@@ -47,6 +48,7 @@ export default function MembersAdminPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [expiryDrafts, setExpiryDrafts] = useState<Record<string, string>>({});
+  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
 
   const loadMembers = useCallback(async () => {
     setLoading(true);
@@ -145,6 +147,40 @@ export default function MembersAdminPage() {
           ? requestError.message
           : "無法更新社員資料",
       );
+    }
+  }
+
+  async function deleteMember(member: Member) {
+    const memberName = member.display_name || member.email;
+    if (
+      !window.confirm(
+        `確定要刪除「${memberName}」嗎？此操作會永久清除帳號與社員資格，無法復原。`,
+      )
+    )
+      return;
+
+    setDeletingMemberId(member.id);
+    setError("");
+    try {
+      const response = await fetch(`/api/v1/admin/users/${member.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail ?? "無法刪除社員");
+      }
+      setMembers((current) => current.filter((item) => item.id !== member.id));
+      setExpiryDrafts((current) => {
+        const { [member.id]: _removed, ...remaining } = current;
+        return remaining;
+      });
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "無法刪除社員",
+      );
+    } finally {
+      setDeletingMemberId(null);
     }
   }
 
@@ -376,6 +412,18 @@ export default function MembersAdminPage() {
                             >
                               <UserRoundCheck size={16} />
                               {member.is_active ? "停用" : "啟用"}
+                            </button>
+                            <button
+                              disabled={deletingMemberId === member.id}
+                              onClick={() => void deleteMember(member)}
+                              className="inline-flex min-h-11 items-center gap-1 border border-destructive px-3 font-bold text-destructive transition-colors hover:bg-destructive hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              {deletingMemberId === member.id ? (
+                                <LoaderCircle className="animate-spin" size={16} />
+                              ) : (
+                                <Trash2 size={16} />
+                              )}
+                              刪除
                             </button>
                           </div>
                         </td>

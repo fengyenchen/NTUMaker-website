@@ -208,6 +208,21 @@ def update_member(
     return serialize_user(load_user(db, user.id))
 
 
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, summary="刪除社員")
+def delete_member(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_admin),
+) -> None:
+    user = load_user(db, user_id)
+    if user.id == current_admin.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不可刪除自己的管理員帳號")
+    if any(item.role == Role.ADMIN for item in user.roles):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不可刪除管理員帳號")
+    db.delete(user)
+    db.commit()
+
+
 @router.get("/announcements", response_model=list[AnnouncementAdminSummary], summary="列出所有公告")
 def list_admin_announcements(db: Session = Depends(get_db)) -> list[Announcement]:
     return list(db.scalars(select(Announcement).order_by(Announcement.updated_at.desc())))
