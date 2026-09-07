@@ -804,17 +804,7 @@ export default function CoursesAdminPage() {
             </div>
 
             <aside className="border border-border bg-surface p-5 xl:sticky xl:top-6 xl:self-start">
-              {editor === "resource" && selectedSession ? (
-                <div ref={resourceEditorRef}>
-                  <NewResourceForm
-                    form={resourceForm}
-                    setForm={setResourceForm}
-                    saving={saving}
-                    onSubmit={submitResource}
-                    onCancel={() => setEditor(null)}
-                  />
-                </div>
-              ) : newSessionSeries ? (
+              {newSessionSeries ? (
                 <NewSessionForm
                   series={newSessionSeries}
                   form={sessionForm}
@@ -1085,6 +1075,17 @@ export default function CoursesAdminPage() {
                           )}
                         </article>
                       ))
+                    )}
+                    {editor === "resource" && (
+                      <div ref={resourceEditorRef}>
+                        <NewResourceForm
+                          form={resourceForm}
+                          setForm={setResourceForm}
+                          saving={saving}
+                          onSubmit={submitResource}
+                          onCancel={() => setEditor(null)}
+                        />
+                      </div>
                     )}
                   </div>
                 </>
