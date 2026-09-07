@@ -137,7 +137,7 @@ export default function AnnouncementsAdminPage() {
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm text-muted-foreground">管理後台</p>
-            <h1 className="mt-1 text-3xl font-black">公告管理</h1>
+            <h1 className="mt-1 text-3xl font-black leading-[1.1] tracking-tight">公告管理</h1>
             <p className="mt-2 text-sm text-muted-foreground">撰寫、排程及發布所有訪客都能閱讀的社團公告。</p>
           </div>
           <button onClick={openNew} className="button-25d inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 font-bold"><Plus size={18} />新增公告</button>

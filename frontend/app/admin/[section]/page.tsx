@@ -25,7 +25,7 @@ export default async function AdminSectionPage({ params }: { params: Promise<{ s
     <main className="px-5 py-8 md:px-10 md:py-10">
       <div className="mx-auto max-w-[1280px]">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div><p className="text-sm text-muted-foreground">管理後台</p><h1 className="mt-1 text-3xl font-black">{meta.title}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{meta.description}</p></div>
+          <div><p className="text-sm text-muted-foreground">管理後台</p><h1 className="mt-1 text-3xl font-black leading-[1.1] tracking-tight">{meta.title}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{meta.description}</p></div>
           <button className="button-25d inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg px-4 font-bold"><Plus size={18} />{meta.action}</button>
         </div>
         {key === "resources" || key === "courses" ? <CourseManager resources={key === "resources"} /> : <GenericManager section={key} />}

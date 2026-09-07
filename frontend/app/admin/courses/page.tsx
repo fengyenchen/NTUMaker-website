@@ -156,7 +156,7 @@ export default function CoursesAdminPage() {
     <main className="px-5 py-8 md:px-10 md:py-10">
       <div className="mx-auto max-w-[1280px]">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div><p className="text-sm text-muted-foreground">管理後台</p><h1 className="mt-1 text-3xl font-black">社課與教材</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">以每堂社課為單位管理教材、影片、程式與附件；星期二與星期五各自保有完整內容。</p></div>
+          <div><p className="text-sm text-muted-foreground">管理後台</p><h1 className="mt-1 text-3xl font-black leading-[1.1] tracking-tight">社課與教材</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">以每堂社課為單位管理教材、影片、程式與附件；星期二與星期五各自保有完整內容。</p></div>
           <button onClick={openNewSeries} className="button-25d inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg px-4 font-bold"><Plus size={18} />新增課程路線</button>
         </div>
 

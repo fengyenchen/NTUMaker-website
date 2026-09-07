@@ -73,7 +73,7 @@ export default function LoginPage() {
 
         {mode === "member" ? (
           <section id="member-panel" role="tabpanel" aria-labelledby="member-tab" className="pt-9">
-            <h1 className="mt-6 text-4xl font-black tracking-tight">社員 Email 登入</h1>
+            <h1 className="mt-6 text-4xl font-black leading-[1.1] tracking-tight">社員 Email 登入</h1>
             <p className="mt-3 leading-7 text-muted-foreground">輸入社員資料庫中登記的 Email。帳號啟用且目前在資格期限內，就會直接進入社員學習區。</p>
             <form onSubmit={submitMember} className="mt-8">
               <label htmlFor="member-email" className="text-sm font-bold">Email</label>
@@ -83,7 +83,7 @@ export default function LoginPage() {
           </section>
         ) : (
           <section id="admin-panel" role="tabpanel" aria-labelledby="admin-tab" className="pt-9">
-            <h1 className="mt-6 text-4xl font-black tracking-tight">管理員登入</h1>
+            <h1 className="mt-6 text-4xl font-black leading-[1.1] tracking-tight">管理員登入</h1>
             <p className="mt-3 leading-7 text-muted-foreground">登入後可管理社員、公告、學期課表、課堂內容與教材，未來也會在同一個後台加入文章與社群發布。</p>
             <form onSubmit={submitAdmin} className="mt-8 space-y-5">
               <div><label htmlFor="admin-email" className="text-sm font-bold">管理員 Email</label><input id="admin-email" name="email" type="email" autoComplete="username" required value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} placeholder="admin@example.com" className="input-admin mt-2 min-h-12 px-4" /></div>

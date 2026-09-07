@@ -105,7 +105,7 @@ export default function MembersAdminPage() {
     <main className="px-5 py-8 md:px-10 md:py-10">
       <div className="mx-auto max-w-[1280px]">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div><p className="text-sm text-muted-foreground">管理後台</p><h1 className="mt-1 text-3xl font-black">社員管理</h1><p className="mt-2 text-sm text-muted-foreground">管理社員 Email、資格期限、帳號狀態與管理員身分。</p></div>
+          <div><p className="text-sm text-muted-foreground">管理後台</p><h1 className="mt-1 text-3xl font-black leading-[1.1] tracking-tight">社員管理</h1><p className="mt-2 text-sm text-muted-foreground">管理社員 Email、資格期限、帳號狀態與管理員身分。</p></div>
           <button onClick={() => setShowForm(true)} className="button-25d inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 font-bold"><Plus size={18} />新增社員</button>
         </div>
 

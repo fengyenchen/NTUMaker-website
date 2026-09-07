@@ -19,7 +19,7 @@ export default async function LearnPage() {
       <section className="px-5 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-[1320px]">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
-            <div><p className="text-sm font-bold text-primary">社員學習區</p><h1 className="mt-3 text-5xl font-black tracking-tight">{user.display_name ? `${user.display_name}，繼續動手做。` : "歡迎回來，繼續動手做。"}</h1><p className="mt-4 text-sm text-muted-foreground">{user.email}</p></div>
+            <div><p className="text-sm font-bold text-primary">社員學習區</p><h1 className="mt-3 text-5xl font-black leading-[1.1] tracking-tight">{user.display_name ? `${user.display_name}，繼續動手做。` : "歡迎回來，繼續動手做。"}</h1><p className="mt-4 text-sm text-muted-foreground">{user.email}</p></div>
             <div className="flex items-center gap-4 border border-border bg-surface px-5 py-4"><div><p className="text-xs text-muted-foreground">社員資格</p><p className="mt-1 font-bold text-success">有效至 {expiresAt}</p></div><LogoutButton className="border-l border-border pl-4 text-sm" /></div>
           </div>
 
