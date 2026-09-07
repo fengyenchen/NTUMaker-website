@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, LargeBinary, String, Text, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -111,7 +111,7 @@ class SocialPost(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     caption: Mapped[str] = mapped_column(Text)
     platforms: Mapped[list[str]] = mapped_column(JSON)
-    image_data: Mapped[bytes | None] = mapped_column(LargeBinary)
+    r2_object_key: Mapped[str | None] = mapped_column(String(500))
     image_name: Mapped[str | None] = mapped_column(String(255))
     image_mime_type: Mapped[str | None] = mapped_column(String(100))
     scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)

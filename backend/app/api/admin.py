@@ -1,4 +1,3 @@
-import base64
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
@@ -107,13 +106,9 @@ def create_social_post(payload: SocialPostWrite, db: Session = Depends(get_db)) 
     platforms = list(dict.fromkeys(payload.platforms))
     if not set(platforms).issubset(allowed):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="包含不支援的發布平台")
-    image_data = None
-    if payload.image_data:
-        try:
-            image_data = base64.b64decode(payload.image_data.split(",", 1)[-1], validate=True)
-        except ValueError as error:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="圖片格式無法讀取") from error
-    item = SocialPost(caption=payload.caption, platforms=platforms, image_data=image_data, image_name=payload.image_name, image_mime_type=payload.image_mime_type, scheduled_at=payload.scheduled_at, status=SocialPostStatus.SCHEDULED if payload.scheduled_at else SocialPostStatus.DRAFT)
+    if payload.image_name and not payload.r2_object_key:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Cloudflare R2 尚未設定，暫時無法上傳照片")
+    item = SocialPost(caption=payload.caption, platforms=platforms, r2_object_key=payload.r2_object_key, image_name=payload.image_name, image_mime_type=payload.image_mime_type, scheduled_at=payload.scheduled_at, status=SocialPostStatus.SCHEDULED if payload.scheduled_at else SocialPostStatus.DRAFT)
     db.add(item)
     db.commit()
     db.refresh(item)

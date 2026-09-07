@@ -121,7 +121,7 @@ class SiteSettingWrite(BaseModel):
 class SocialPostWrite(BaseModel):
     caption: str = Field(min_length=1, max_length=10000)
     platforms: list[str] = Field(min_length=1)
-    image_data: str | None = None
+    r2_object_key: str | None = Field(default=None, max_length=500)
     image_name: str | None = Field(default=None, max_length=255)
     image_mime_type: str | None = Field(default=None, max_length=100)
     scheduled_at: datetime | None = None
@@ -134,6 +134,7 @@ class SocialPostSummary(BaseModel):
     caption: str
     platforms: list[str]
     image_name: str | None
+    r2_object_key: str | None
     scheduled_at: datetime | None
     status: SocialPostStatus
     published_at: datetime | None
