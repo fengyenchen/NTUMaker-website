@@ -36,9 +36,8 @@ export default async function HomePage() {
   const sectionPosition = (key: string) => ({ order: Math.max(sectionOrder.indexOf(key), 0) });
   return (
     <HomeMotion>
-      <main className="min-h-screen overflow-hidden bg-background">
       <SiteHeader />
-
+      <main className="min-h-screen overflow-hidden bg-background">
       <section className="relative isolate px-5 pb-16 pt-10 md:px-8 md:pb-24 md:pt-16">
         <div className="hero-glow absolute inset-0 -z-10" aria-hidden="true" />
         <div className="mx-auto grid min-h-170 max-w-330 items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
