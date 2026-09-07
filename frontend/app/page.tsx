@@ -34,6 +34,10 @@ export default async function HomePage() {
   const [titleFirstLine, titleSecondLine = ""] = settings.home_title.split("\n");
   const sectionOrder = settings.home_section_order.split(",");
   const sectionPosition = (key: string) => ({ order: Math.max(sectionOrder.indexOf(key), 0) });
+  const nextSession = courseTracks
+    .flatMap((track) => track.sessions)
+    .filter((session) => session.startsAt && new Date(session.startsAt).getTime() >= Date.now())
+    .sort((a, b) => new Date(a.startsAt!).getTime() - new Date(b.startsAt!).getTime())[0];
   return (
     <HomeMotion>
       <SiteHeader />
@@ -70,10 +74,10 @@ export default async function HomePage() {
             <div className="absolute left-0 top-[12%] -rotate-6 rounded-2xl bg-secondary px-5 py-4 text-on-secondary shadow-[4px_4px_0_var(--color-shadow-soft)]">
               <p className="text-sm font-bold">MAKE IT REAL</p>
             </div>
-            <div className="absolute bottom-[8%] right-0 rotate-3 rounded-2xl border border-warm-accent bg-surface px-5 py-4 text-foreground shadow-[3px_3px_0_var(--color-warm-accent)]">
+            <div className="absolute bottom-[8%] right-0 max-w-52 rotate-3 rounded-2xl border border-warm-accent bg-surface px-5 py-4 text-foreground shadow-[3px_3px_0_var(--color-warm-accent)]">
               <p className="text-xs font-bold opacity-70">NEXT CLASS</p>
-              <p className="mt-1 font-bold">週二 19:00</p>
-              <p className="text-sm">感測器與互動</p>
+              <p className="mt-1 font-bold">{nextSession?.startsAt ? formatNextClassTime(nextSession.startsAt) : "尚未安排"}</p>
+              <p className="truncate text-sm" title={nextSession?.title}>{nextSession?.title ?? "敬請期待"}</p>
             </div>
           </div>
         </div>
@@ -153,6 +157,17 @@ export default async function HomePage() {
 }
 
 function formatShortDate(value: string) { return new Intl.DateTimeFormat("zh-TW", { month: "2-digit", day: "2-digit" }).format(new Date(value)).replace("/", " / "); }
+
+function formatNextClassTime(value: string) {
+  const date = new Date(value);
+  const weekday = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"][date.getDay()];
+  const time = new Intl.DateTimeFormat("zh-TW", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+  return `${weekday} ${time}`;
+}
 
 function SectionTitle({ label, title }: { label: string; title: string }) {
   return <div className="max-w-205"><p className="mb-3 text-sm font-bold text-primary">{label}</p><h2 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">{title}</h2></div>;

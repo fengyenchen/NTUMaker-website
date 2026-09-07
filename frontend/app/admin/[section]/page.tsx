@@ -15,7 +15,7 @@ const sectionMeta = {
   },
   resources: {
     title: "課程內容",
-    description: "進入一堂課管理它的教材、影片、程式與附件。",
+    description: "進入一堂課管理它的資源、影片、程式與附件。",
     action: "新增課程內容",
   },
   articles: {

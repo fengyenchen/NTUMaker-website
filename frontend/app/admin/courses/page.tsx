@@ -318,7 +318,7 @@ export default function CoursesAdminPage() {
   async function deleteSeries(series: CourseSeries) {
     if (
       !window.confirm(
-        `確定要刪除「${series.title}」嗎？這條路線底下的課堂與教材也會一起刪除。`,
+        `確定要刪除「${series.title}」嗎？這條路線底下的課堂與資源也會一起刪除。`,
       )
     )
       return;
@@ -333,7 +333,7 @@ export default function CoursesAdminPage() {
   async function deleteSession(session: CourseSession) {
     if (
       !window.confirm(
-        `確定要刪除「${session.title}」嗎？這堂課底下的教材與影片也會一起刪除。`,
+        `確定要刪除「${session.title}」嗎？這堂課底下的資源與影片也會一起刪除。`,
       )
     )
       return;
@@ -398,10 +398,10 @@ export default function CoursesAdminPage() {
           <div>
             <p className="text-sm text-muted-foreground">管理後台</p>
             <h1 className="mt-1 text-3xl font-black leading-[1.1] tracking-tight">
-              社課與教材
+              社課與資源
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              以每堂社課為單位管理教材、影片、程式與附件；上課日可依需求設定。
+              以每堂社課為單位管理資源、影片、程式與附件；上課日可依需求設定。
             </p>
           </div>
           <button
@@ -1014,7 +1014,7 @@ export default function CoursesAdminPage() {
                   <div className="mt-3 grid gap-3">
                     {selectedSession.resources.length === 0 ? (
                       <p className="py-8 text-center text-sm text-muted-foreground">
-                        這堂課還沒有教材或影片。
+                        這堂課還沒有資源或影片。
                       </p>
                     ) : (
                       selectedSession.resources.map((resource) => (
@@ -1181,7 +1181,7 @@ export default function CoursesAdminPage() {
                 </>
               ) : (
                 <div className="grid min-h-64 place-items-center text-center text-sm text-muted-foreground">
-                  請從左側選擇一堂課管理教材與影片。
+                  請從左側選擇一堂課管理資源與影片。
                 </div>
               )}
             </aside>

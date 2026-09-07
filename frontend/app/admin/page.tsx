@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  ArrowUpRight,
   BookOpen,
   CalendarDays,
   LoaderCircle,
@@ -56,7 +55,7 @@ export default function AdminPage() {
           note: `${overview.expiring_members} 人將在 30 天內到期`,
         },
         {
-          label: `${overview.current_semester} 社課`,
+          label: "社課",
           value: overview.semester_sessions,
           icon: CalendarDays,
           note: overview.next_session
@@ -80,7 +79,7 @@ export default function AdminPage() {
             {new Date().toLocaleDateString("zh-TW")}
           </p>
           <h1 className="mt-1 text-3xl font-black leading-[1.1] tracking-tight">
-            早安，管理員
+            你好，管理員
           </h1>
         </div>
         {error ? (
