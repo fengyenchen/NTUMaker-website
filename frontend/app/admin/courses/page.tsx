@@ -885,9 +885,6 @@ export default function CoursesAdminPage() {
                                 size={19}
                               />
                             )}
-                            <p className="text-xs font-bold text-muted-foreground">
-                              直接編輯內容
-                            </p>
                           </div>
                           <div className="grid gap-4">
                             <Field label="內容名稱">
