@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ntumaker.vercel.app");
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "NTUMaker 台大自造者社",
     template: "%s｜NTUMaker",
