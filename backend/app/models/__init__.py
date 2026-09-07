@@ -1,4 +1,4 @@
-from app.models.content import Announcement, CourseSeries, CourseSession, Resource
+from app.models.content import Announcement, CourseSeries, CourseSession, Resource, SocialPost
 from app.models.user import Membership, Role, User, UserRole
 
 __all__ = [
@@ -7,6 +7,7 @@ __all__ = [
     "CourseSession",
     "Membership",
     "Resource",
+    "SocialPost",
     "Role",
     "User",
     "UserRole",

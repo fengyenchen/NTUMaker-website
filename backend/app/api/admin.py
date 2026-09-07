@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
@@ -7,7 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.dependencies import require_admin
 from app.db.session import get_db
-from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting, Visibility
+from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting, SocialPost, SocialPostStatus, Visibility
 from app.models.user import Membership, Role, User, UserRole
 from app.schemas.admin import (
     AdminUserSummary,
@@ -22,6 +23,8 @@ from app.schemas.admin import (
     ResourceWrite,
     SiteSettingSummary,
     SiteSettingWrite,
+    SocialPostSummary,
+    SocialPostWrite,
 )
 from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
 from app.services.memberships import taipei_today
@@ -87,6 +90,43 @@ def update_setting(key: str, payload: SiteSettingWrite, db: Session = Depends(ge
     db.commit()
     db.refresh(item)
     return item
+
+
+def serialize_social_post(item: SocialPost) -> SocialPostSummary:
+    return SocialPostSummary.model_validate(item)
+
+
+@router.get("/social-posts", response_model=list[SocialPostSummary], summary="列出社群貼文")
+def list_social_posts(db: Session = Depends(get_db)) -> list[SocialPostSummary]:
+    return [serialize_social_post(item) for item in db.scalars(select(SocialPost).order_by(SocialPost.created_at.desc()))]
+
+
+@router.post("/social-posts", response_model=SocialPostSummary, status_code=status.HTTP_201_CREATED, summary="建立社群貼文草稿或排程")
+def create_social_post(payload: SocialPostWrite, db: Session = Depends(get_db)) -> SocialPostSummary:
+    allowed = {"instagram", "facebook", "threads"}
+    platforms = list(dict.fromkeys(payload.platforms))
+    if not set(platforms).issubset(allowed):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="包含不支援的發布平台")
+    image_data = None
+    if payload.image_data:
+        try:
+            image_data = base64.b64decode(payload.image_data.split(",", 1)[-1], validate=True)
+        except ValueError as error:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="圖片格式無法讀取") from error
+    item = SocialPost(caption=payload.caption, platforms=platforms, image_data=image_data, image_name=payload.image_name, image_mime_type=payload.image_mime_type, scheduled_at=payload.scheduled_at, status=SocialPostStatus.SCHEDULED if payload.scheduled_at else SocialPostStatus.DRAFT)
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return serialize_social_post(item)
+
+
+@router.delete("/social-posts/{item_id}", status_code=status.HTTP_204_NO_CONTENT, summary="刪除社群貼文")
+def delete_social_post(item_id: UUID, db: Session = Depends(get_db)) -> None:
+    item = db.get(SocialPost, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到社群貼文")
+    db.delete(item)
+    db.commit()
 
 
 def serialize_user(user: User) -> AdminUserSummary:

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
-from app.models.content import CourseTrack, PublishStatus, Visibility
+from app.models.content import CourseTrack, PublishStatus, SocialPostStatus, Visibility
 
 
 class MemberWrite(BaseModel):
@@ -116,3 +116,26 @@ class SiteSettingSummary(BaseModel):
 
 class SiteSettingWrite(BaseModel):
     value: str = Field(max_length=5000)
+
+
+class SocialPostWrite(BaseModel):
+    caption: str = Field(min_length=1, max_length=10000)
+    platforms: list[str] = Field(min_length=1)
+    image_data: str | None = None
+    image_name: str | None = Field(default=None, max_length=255)
+    image_mime_type: str | None = Field(default=None, max_length=100)
+    scheduled_at: datetime | None = None
+
+
+class SocialPostSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    caption: str
+    platforms: list[str]
+    image_name: str | None
+    scheduled_at: datetime | None
+    status: SocialPostStatus
+    published_at: datetime | None
+    error_message: str | None
+    created_at: datetime

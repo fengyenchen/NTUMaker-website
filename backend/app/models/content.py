@@ -2,8 +2,8 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, LargeBinary, String, Text, func
+from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -13,6 +13,13 @@ class PublishStatus(str, enum.Enum):
     DRAFT = "draft"
     PUBLISHED = "published"
     ARCHIVED = "archived"
+
+
+class SocialPostStatus(str, enum.Enum):
+    DRAFT = "draft"
+    SCHEDULED = "scheduled"
+    PUBLISHED = "published"
+    FAILED = "failed"
 
 
 class Visibility(str, enum.Enum):
@@ -96,3 +103,19 @@ class Resource(Base):
     visibility: Mapped[Visibility] = mapped_column(Enum(Visibility, name="content_visibility", create_type=False), default=Visibility.PUBLIC)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     session: Mapped[CourseSession | None] = relationship(back_populates="resources")
+
+
+class SocialPost(Base):
+    __tablename__ = "social_posts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    caption: Mapped[str] = mapped_column(Text)
+    platforms: Mapped[list[str]] = mapped_column(JSON)
+    image_data: Mapped[bytes | None] = mapped_column(LargeBinary)
+    image_name: Mapped[str | None] = mapped_column(String(255))
+    image_mime_type: Mapped[str | None] = mapped_column(String(100))
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    status: Mapped[SocialPostStatus] = mapped_column(Enum(SocialPostStatus, name="social_post_status"), default=SocialPostStatus.DRAFT, index=True)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    error_message: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
