@@ -131,7 +131,7 @@ export default async function HomePage() {
 
       <section style={sectionPosition("share")} className="px-5 pb-24 pt-12 md:px-8 md:pb-32" data-reveal>
         <div className="mx-auto flex max-w-330 flex-col gap-8 overflow-hidden rounded-2xl border border-border bg-surface p-8 shadow-[6px_7px_0_var(--color-shadow-soft)] md:flex-row md:items-end md:justify-between md:p-12">
-          <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-foreground font-black leading-tight md:text-6xl">做出作品，也把方法分享出去。</h2></div>
+          <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-foreground font-black leading-tight md:text-6xl">{settings.share_title}</h2></div>
           <div className="flex shrink-0 flex-wrap gap-4">
             <a href="https://www.instagram.com/ntu_maker/" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 items-center gap-3 rounded-xl px-6 font-bold">Instagram <ExternalLink size={18} aria-hidden="true" /></a>
             <a href="https://www.facebook.com/ntumaker2018" target="_blank" rel="noreferrer" className="button-25d inline-flex min-h-12 items-center gap-3 rounded-xl px-6 font-bold">Facebook <ExternalLink size={18} aria-hidden="true" /></a>

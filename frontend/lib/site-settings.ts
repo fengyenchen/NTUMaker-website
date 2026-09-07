@@ -10,6 +10,7 @@ const defaults: SiteSettings = {
   course_library_title: "每堂課的教材、影片與檔案，都收在一起。",
   home_section_order: "weekly_courses,next_event,course_library,share",
   next_event_title: "下一次，一起做什麼？",
+  share_title: "做出作品，也把方法分享出去。",
 };
 
 export async function getSiteSettings(): Promise<SiteSettings> {

@@ -23,6 +23,7 @@ const settingTabs = [
       "weekly_courses_title",
       "course_library_title",
       "next_event_title",
+      "share_title",
     ],
   },
   {
