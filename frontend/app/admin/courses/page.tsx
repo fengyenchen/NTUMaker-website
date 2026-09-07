@@ -335,6 +335,16 @@ export default function CoursesAdminPage() {
     );
   }
 
+  async function deleteResource(resource: Resource) {
+    if (!window.confirm(`確定要刪除「${resource.title}」嗎？`)) return;
+    await saveEditor(
+      `/api/v1/admin/resources/${resource.id}`,
+      "DELETE",
+      {},
+      false,
+    );
+  }
+
   return (
     <main className="px-5 py-8 md:px-10 md:py-10">
       <div className="mx-auto max-w-[1280px]">
@@ -1009,14 +1019,26 @@ export default function CoursesAdminPage() {
                               {resourceTypeLabel(resource.resource_type)} ·{" "}
                               {visibilityLabel(resource.visibility)}
                             </span>
-                            <button
-                              disabled={saving}
-                              onClick={() => void saveResourceInline(resource)}
-                              className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              <Save size={17} />
-                              儲存內容
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                disabled={saving}
+                                onClick={() => void deleteResource(resource)}
+                                className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <Trash2 size={17} />
+                                刪除
+                              </button>
+                              <button
+                                type="button"
+                                disabled={saving}
+                                onClick={() => void saveResourceInline(resource)}
+                                className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <Save size={17} />
+                                儲存內容
+                              </button>
+                            </div>
                           </div>
                           {(resource.youtube_url || resource.url) && (
                             <a

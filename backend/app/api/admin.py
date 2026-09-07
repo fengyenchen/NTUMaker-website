@@ -284,3 +284,12 @@ def update_resource(item_id: UUID, payload: ResourceWrite, db: Session = Depends
     db.commit()
     db.refresh(item)
     return item
+
+
+@router.delete("/resources/{item_id}", status_code=status.HTTP_204_NO_CONTENT, summary="刪除課程教材或影片")
+def delete_resource(item_id: UUID, db: Session = Depends(get_db)) -> None:
+    item = db.get(Resource, item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到課程內容")
+    db.delete(item)
+    db.commit()
