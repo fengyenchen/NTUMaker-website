@@ -109,6 +109,7 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .markdown-content blockquote { border-left: 3px solid var(--color-primary); background: var(--color-surface-raised); padding: 0.65rem 1rem; color: var(--color-muted-foreground); }
 .markdown-content hr { border: 0; border-top: 1px solid var(--color-border); }
 .markdown-content a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
+.markdown-content img { max-width: 100%; height: auto; border: 1px solid var(--color-border); }
 .markdown-content strong { color: var(--color-foreground); font-weight: 800; }
 .markdown-content code { border: 1px solid var(--color-border); background: var(--color-surface-raised); padding: 0.1rem 0.35rem; font-family: var(--font-mono); font-size: 0.9em; }
 .markdown-content pre { overflow-x: auto; border: 1px solid var(--color-border); background: var(--color-surface-raised); padding: 0.85rem 1rem; }

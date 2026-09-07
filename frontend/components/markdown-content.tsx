@@ -62,8 +62,10 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
 }
 
 function inlineMarkdown(value: string): ReactNode[] {
-  const parts = value.split(/(\[[^\]]+\]\([^\)]+\)|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|`[^`]+`|\*[^*]+\*|_[^_]+_)/g);
+  const parts = value.split(/(!\[[^\]]*\]\((?:https?:\/\/|\/)[^\)]+\)|\[[^\]]+\]\([^\)]+\)|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|`[^`]+`|\*[^*]+\*|_[^_]+_)/g);
   return parts.map((part, index) => {
+    const image = part.match(/^!\[([^\]]*)\]\(((?:https?:\/\/|\/)[^\)]+)\)$/);
+    if (image) return <img key={index} src={image[2]} alt={image[1]} loading="lazy" />;
     const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)$/);
     if (link) return <a key={index} href={link[2]} target="_blank" rel="noreferrer">{link[1]}</a>;
     if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) return <strong key={index}>{part.slice(2, -2)}</strong>;

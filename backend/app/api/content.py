@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload, with_loader_criteria
 
@@ -30,6 +30,14 @@ def list_announcements(db: Session = Depends(get_db)) -> list[Announcement]:
             .order_by(Announcement.published_at.desc())
         )
     )
+
+
+@router.get("/announcements/{slug}", response_model=AnnouncementSummary, summary="取得單篇公開公告")
+def get_announcement(slug: str, db: Session = Depends(get_db)) -> Announcement:
+    item = db.scalar(select(Announcement).where(Announcement.slug == slug, Announcement.status == PublishStatus.PUBLISHED, or_(Announcement.published_at.is_(None), Announcement.published_at <= datetime.now(timezone.utc))))
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到公告")
+    return item
 
 
 @router.get("/courses", response_model=list[CourseSeriesSummary], summary="取得公開社課")
