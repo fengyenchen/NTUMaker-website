@@ -188,8 +188,8 @@ export default function CoursesAdminPage() {
     event.preventDefault();
     await saveEditor("/api/v1/admin/resources", "POST", {
       ...resourceForm,
-      url: resourceForm.url || null,
-      youtube_url: resourceForm.youtube_url || null,
+      url: resourceForm.resource_type === "link" ? resourceForm.url || null : null,
+      youtube_url: resourceForm.resource_type === "video" ? resourceForm.youtube_url || null : null,
     });
   }
 
@@ -208,7 +208,7 @@ export default function CoursesAdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await response.json();
+      const data = response.status === 204 ? {} : await response.json();
       if (!response.ok)
         throw new Error(readError(data.detail, "無法儲存課程資料"));
       if (closeEditor) setEditor(null);
@@ -561,6 +561,8 @@ export default function CoursesAdminPage() {
                     setResourceForm({
                       ...resourceForm,
                       resource_type: event.target.value,
+                      url: event.target.value === "link" ? resourceForm.url : "",
+                      youtube_url: event.target.value === "video" ? resourceForm.youtube_url : "",
                     })
                   }
                   className="input-admin"
@@ -569,8 +571,9 @@ export default function CoursesAdminPage() {
                 <option value="video">YouTube 影片</option>
                 </select>
               </Field>
-              <Field label="閱讀／下載網址" required={false}>
+              {resourceForm.resource_type === "link" ? <Field label="連結網址">
                 <input
+                  required
                   type="url"
                   value={resourceForm.url}
                   onChange={(event) =>
@@ -581,9 +584,9 @@ export default function CoursesAdminPage() {
                   }
                   className="input-admin"
                 />
-              </Field>
-              <Field label="YouTube 網址" required={false}>
+              </Field> : <Field label="YouTube 網址">
                 <input
+                  required
                   type="url"
                   value={resourceForm.youtube_url}
                   onChange={(event) =>
@@ -594,7 +597,7 @@ export default function CoursesAdminPage() {
                   }
                   className="input-admin"
                 />
-              </Field>
+              </Field>}
               <Field label="內容權限">
                 <VisibilitySelect
                   value={resourceForm.visibility}
@@ -919,7 +922,11 @@ export default function CoursesAdminPage() {
                                     updateResourceDraft(
                                       selectedSession.id,
                                       resource.id,
-                                      { resource_type: event.target.value },
+                                      {
+                                        resource_type: event.target.value,
+                                        url: event.target.value === "link" ? resource.url : null,
+                                        youtube_url: event.target.value === "video" ? resource.youtube_url : null,
+                                      },
                                     )
                                   }
                                   className="input-admin"
@@ -941,8 +948,9 @@ export default function CoursesAdminPage() {
                                 />
                               </Field>
                             </div>
-                            <Field label="閱讀／下載網址" required={false}>
+                            {resource.resource_type === "link" ? <Field label="連結網址">
                               <input
+                                required
                                 type="url"
                                 value={resource.url ?? ""}
                                 onChange={(event) =>
@@ -954,9 +962,9 @@ export default function CoursesAdminPage() {
                                 }
                                 className="input-admin"
                               />
-                            </Field>
-                            <Field label="YouTube 網址" required={false}>
+                            </Field> : <Field label="YouTube 網址">
                               <input
+                                required
                                 type="url"
                                 value={resource.youtube_url ?? ""}
                                 onChange={(event) =>
@@ -968,7 +976,7 @@ export default function CoursesAdminPage() {
                                 }
                                 className="input-admin"
                               />
-                            </Field>
+                            </Field>}
                             <Field label="內容說明">
                               <textarea
                                 rows={2}
