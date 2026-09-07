@@ -48,11 +48,6 @@ const settingTabs = [
     keys: ["resources_title", "resources_description"],
   },
   {
-    id: "projects",
-    label: "作品",
-    keys: ["projects_title", "projects_description"],
-  },
-  {
     id: "about",
     label: "關於",
     keys: ["about_title", "about_description"],

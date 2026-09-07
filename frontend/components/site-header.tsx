@@ -6,7 +6,6 @@ const links = [
   ["公告", "/announcements"],
   ["社課", "/courses"],
   ["資源", "/resources"],
-  ["作品", "/projects"],
   ["關於", "/about"],
 ] as const;
 
