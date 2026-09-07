@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 
 type MarkdownContentProps = { content: string; className?: string };
 
@@ -47,6 +49,8 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
       blocks.push(<Tag key={`h-${blocks.length}`}>{inlineMarkdown(heading[2])}</Tag>);
       return;
     }
+    const displayMath = line.match(/^\s*\$\$(.+)\$\$\s*$/);
+    if (displayMath) { flushParagraph(); flushList(); blocks.push(<div key={`math-${blocks.length}`} className="markdown-math" dangerouslySetInnerHTML={{ __html: renderMath(displayMath[1], true) }} />); return; }
     const item = line.match(/^(\s*)([-*]|\d+\.)\s+(.+)$/);
     if (item) { flushParagraph(); list.push({ indent: item[1].length, ordered: /\d/.test(item[2]), text: item[3] }); return; }
     const quote = line.match(/^\s*>\s?(.*)$/);
@@ -62,7 +66,7 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
 }
 
 function inlineMarkdown(value: string): ReactNode[] {
-  const parts = value.split(/(!\[[^\]]*\]\((?:https?:\/\/|\/)[^\)]+\)|\[[^\]]+\]\([^\)]+\)|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|`[^`]+`|\*[^*]+\*|_[^_]+_)/g);
+  const parts = value.split(/(!\[[^\]]*\]\((?:https?:\/\/|\/)[^\)]+\)|\[[^\]]+\]\([^\)]+\)|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|`[^`]+`|\$[^$]+\$|\*[^*]+\*|_[^_]+_)/g);
   return parts.map((part, index) => {
     const image = part.match(/^!\[([^\]]*)\]\(((?:https?:\/\/|\/)[^\)]+)\)$/);
     if (image) return <img key={index} src={image[2]} alt={image[1]} loading="lazy" />;
@@ -71,9 +75,15 @@ function inlineMarkdown(value: string): ReactNode[] {
     if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) return <strong key={index}>{part.slice(2, -2)}</strong>;
     if (part.startsWith("~~") && part.endsWith("~~")) return <del key={index}>{part.slice(2, -2)}</del>;
     if (part.startsWith("`") && part.endsWith("`")) return <code key={index}>{part.slice(1, -1)}</code>;
+    if (part.startsWith("$") && part.endsWith("$")) return <span key={index} className="markdown-math" dangerouslySetInnerHTML={{ __html: renderMath(part.slice(1, -1), false) }} />;
     if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) return <em key={index}>{part.slice(1, -1)}</em>;
     return <span key={index}>{part}</span>;
   });
+}
+
+function renderMath(value: string, displayMode: boolean) {
+  try { return katex.renderToString(value, { displayMode, throwOnError: false, strict: "ignore" }); }
+  catch { return value; }
 }
 
 type ListItem = { indent: number; ordered: boolean; text: string; children?: ListItem[] };
