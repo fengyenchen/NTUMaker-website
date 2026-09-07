@@ -8,6 +8,8 @@ const defaults: SiteSettings = {
   home_description: "從電子、程式、設計到數位製造，和一群喜歡動手的人一起試、一起拆，再做出更好的版本。",
   weekly_courses_title: "兩條路線，自由找到你的節奏。",
   course_library_title: "每堂課的教材、影片與檔案，都收在一起。",
+  home_section_order: "weekly_courses,next_event,course_library,share",
+  next_event_title: "下一次，一起做什麼？",
 };
 
 export async function getSiteSettings(): Promise<SiteSettings> {
