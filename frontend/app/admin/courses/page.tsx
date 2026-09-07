@@ -14,7 +14,6 @@ import {
 import {
   BookOpen,
   CalendarPlus,
-  ExternalLink,
   Film,
   LoaderCircle,
   Plus,
@@ -99,7 +98,9 @@ export default function CoursesAdminPage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null,
   );
-  const [newSessionSeriesId, setNewSessionSeriesId] = useState<string | null>(null);
+  const [newSessionSeriesId, setNewSessionSeriesId] = useState<string | null>(
+    null,
+  );
   const [editor, setEditor] = useState<Editor>(null);
   const [seriesForm, setSeriesForm] = useState(emptySeries);
   const [sessionForm, setSessionForm] = useState(emptySession);
@@ -145,7 +146,10 @@ export default function CoursesAdminPage() {
 
   useEffect(() => {
     if (editor === "resource") {
-      resourceEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      resourceEditorRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }
   }, [editor]);
 
@@ -208,8 +212,12 @@ export default function CoursesAdminPage() {
     event.preventDefault();
     await saveEditor("/api/v1/admin/resources", "POST", {
       ...resourceForm,
-      url: resourceForm.resource_type === "link" ? resourceForm.url || null : null,
-      youtube_url: resourceForm.resource_type === "video" ? resourceForm.youtube_url || null : null,
+      url:
+        resourceForm.resource_type === "link" ? resourceForm.url || null : null,
+      youtube_url:
+        resourceForm.resource_type === "video"
+          ? resourceForm.youtube_url || null
+          : null,
     });
   }
 
@@ -305,13 +313,33 @@ export default function CoursesAdminPage() {
   }
 
   async function deleteSeries(series: CourseSeries) {
-    if (!window.confirm(`確定要刪除「${series.title}」嗎？這條路線底下的課堂與教材也會一起刪除。`)) return;
-    await saveEditor(`/api/v1/admin/course-series/${series.id}`, "DELETE", {}, false);
+    if (
+      !window.confirm(
+        `確定要刪除「${series.title}」嗎？這條路線底下的課堂與教材也會一起刪除。`,
+      )
+    )
+      return;
+    await saveEditor(
+      `/api/v1/admin/course-series/${series.id}`,
+      "DELETE",
+      {},
+      false,
+    );
   }
 
   async function deleteSession(session: CourseSession) {
-    if (!window.confirm(`確定要刪除「${session.title}」嗎？這堂課底下的教材與影片也會一起刪除。`)) return;
-    await saveEditor(`/api/v1/admin/course-sessions/${session.id}`, "DELETE", {}, false);
+    if (
+      !window.confirm(
+        `確定要刪除「${session.title}」嗎？這堂課底下的教材與影片也會一起刪除。`,
+      )
+    )
+      return;
+    await saveEditor(
+      `/api/v1/admin/course-sessions/${session.id}`,
+      "DELETE",
+      {},
+      false,
+    );
   }
 
   async function saveSessionInline(session: CourseSession) {
@@ -360,7 +388,7 @@ export default function CoursesAdminPage() {
 
   return (
     <main className="px-5 py-8 md:px-10 md:py-10">
-      <div className="mx-auto max-w-[1280px]">
+      <div className="mx-auto max-w-7xl">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm text-muted-foreground">管理後台</p>
@@ -391,7 +419,10 @@ export default function CoursesAdminPage() {
 
         {editor === "series" && (
           <EditorShell title="新增課程路線" onClose={() => setEditor(null)}>
-            <form onSubmit={submitSeries} className="grid min-w-0 gap-5 md:grid-cols-2">
+            <form
+              onSubmit={submitSeries}
+              className="grid min-w-0 gap-5 md:grid-cols-2"
+            >
               <Field label="路線名稱">
                 <input
                   required
@@ -496,10 +527,33 @@ export default function CoursesAdminPage() {
                 />
               </Field>
               <Field label="開始週次">
-                <input required min={1} type="number" value={sessionForm.week_start} onChange={(event) => setSessionForm({ ...sessionForm, week_start: event.target.value })} className="input-admin" />
+                <input
+                  required
+                  min={1}
+                  type="number"
+                  value={sessionForm.week_start}
+                  onChange={(event) =>
+                    setSessionForm({
+                      ...sessionForm,
+                      week_start: event.target.value,
+                    })
+                  }
+                  className="input-admin"
+                />
               </Field>
               <Field label="結束週次" required={false}>
-                <input min={Number(sessionForm.week_start) || 1} type="number" value={sessionForm.week_end} onChange={(event) => setSessionForm({ ...sessionForm, week_end: event.target.value })} className="input-admin" />
+                <input
+                  min={Number(sessionForm.week_start) || 1}
+                  type="number"
+                  value={sessionForm.week_end}
+                  onChange={(event) =>
+                    setSessionForm({
+                      ...sessionForm,
+                      week_end: event.target.value,
+                    })
+                  }
+                  className="input-admin"
+                />
               </Field>
               <Field label="上課時間">
                 <input
@@ -531,7 +585,7 @@ export default function CoursesAdminPage() {
                 />
               </Field>
               <Field label="課堂權限">
-                <VisibilitySelect
+                <SessionVisibilitySelect
                   value={sessionForm.visibility}
                   onChange={(visibility) =>
                     setSessionForm({ ...sessionForm, visibility })
@@ -587,43 +641,51 @@ export default function CoursesAdminPage() {
                     setResourceForm({
                       ...resourceForm,
                       resource_type: event.target.value,
-                      url: event.target.value === "link" ? resourceForm.url : "",
-                      youtube_url: event.target.value === "video" ? resourceForm.youtube_url : "",
+                      url:
+                        event.target.value === "link" ? resourceForm.url : "",
+                      youtube_url:
+                        event.target.value === "video"
+                          ? resourceForm.youtube_url
+                          : "",
                     })
                   }
                   className="input-admin"
                 >
-                <option value="link">連結</option>
-                <option value="video">YouTube 影片</option>
+                  <option value="link">連結</option>
+                  <option value="video">YouTube 影片</option>
                 </select>
               </Field>
-              {resourceForm.resource_type === "link" ? <Field label="連結網址">
-                <input
-                  required
-                  type="url"
-                  value={resourceForm.url}
-                  onChange={(event) =>
-                    setResourceForm({
-                      ...resourceForm,
-                      url: event.target.value,
-                    })
-                  }
-                  className="input-admin"
-                />
-              </Field> : <Field label="YouTube 網址">
-                <input
-                  required
-                  type="url"
-                  value={resourceForm.youtube_url}
-                  onChange={(event) =>
-                    setResourceForm({
-                      ...resourceForm,
-                      youtube_url: event.target.value,
-                    })
-                  }
-                  className="input-admin"
-                />
-              </Field>}
+              {resourceForm.resource_type === "video" ? (
+                <Field key="youtube-url" label="YouTube 網址">
+                  <input
+                    required
+                    type="url"
+                    value={resourceForm.youtube_url}
+                    onChange={(event) =>
+                      setResourceForm({
+                        ...resourceForm,
+                        youtube_url: event.target.value,
+                      })
+                    }
+                    className="input-admin"
+                  />
+                </Field>
+              ) : (
+                <Field key="link-url" label="連結網址">
+                  <input
+                    required
+                    type="url"
+                    value={resourceForm.url}
+                    onChange={(event) =>
+                      setResourceForm({
+                        ...resourceForm,
+                        url: event.target.value,
+                      })
+                    }
+                    className="input-admin"
+                  />
+                </Field>
+              )}
               <Field label="內容權限">
                 <VisibilitySelect
                   value={resourceForm.visibility}
@@ -868,7 +930,7 @@ export default function CoursesAdminPage() {
                         />
                       </Field>
                       <Field label="課堂權限">
-                        <VisibilitySelect
+                        <SessionVisibilitySelect
                           value={selectedSession.visibility}
                           onChange={(visibility) =>
                             updateSessionDraft(selectedSession.id, {
@@ -968,8 +1030,14 @@ export default function CoursesAdminPage() {
                                       resource.id,
                                       {
                                         resource_type: event.target.value,
-                                        url: event.target.value === "link" ? resource.url : null,
-                                        youtube_url: event.target.value === "video" ? resource.youtube_url : null,
+                                        url:
+                                          event.target.value === "link"
+                                            ? resource.url
+                                            : null,
+                                        youtube_url:
+                                          event.target.value === "video"
+                                            ? resource.youtube_url
+                                            : null,
                                       },
                                     )
                                   }
@@ -992,35 +1060,27 @@ export default function CoursesAdminPage() {
                                 />
                               </Field>
                             </div>
-                            {resource.resource_type === "link" ? <Field label="連結網址">
-                              <input
-                                required
-                                type="url"
-                                value={resource.url ?? ""}
-                                onChange={(event) =>
-                                  updateResourceDraft(
-                                    selectedSession.id,
-                                    resource.id,
-                                    { url: event.target.value || null },
-                                  )
-                                }
-                                className="input-admin"
-                              />
-                            </Field> : <Field label="YouTube 網址">
-                              <input
-                                required
-                                type="url"
-                                value={resource.youtube_url ?? ""}
-                                onChange={(event) =>
-                                  updateResourceDraft(
-                                    selectedSession.id,
-                                    resource.id,
-                                    { youtube_url: event.target.value || null },
-                                  )
-                                }
-                                className="input-admin"
-                              />
-                            </Field>}
+                            {resource.resource_type === "video" ? (
+                              <Field key="youtube-url" label="YouTube 網址">
+                                <input required type="url" value={resource.youtube_url ?? ""} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { youtube_url: event.target.value || null })} className="input-admin" />
+                              </Field>
+                            ) : (
+                              <Field key="link-url" label="連結網址">
+                                <input
+                                  required
+                                  type="url"
+                                  value={resource.url ?? ""}
+                                  onChange={(event) =>
+                                    updateResourceDraft(
+                                      selectedSession.id,
+                                      resource.id,
+                                      { url: event.target.value || null },
+                                    )
+                                  }
+                                  className="input-admin"
+                                />
+                              </Field>
+                            )}
                             <Field label="內容說明">
                               <textarea
                                 rows={2}
@@ -1037,10 +1097,6 @@ export default function CoursesAdminPage() {
                             </Field>
                           </div>
                           <div className="mt-4 flex items-center justify-between gap-3">
-                            <span className="text-xs text-muted-foreground">
-                              {resourceTypeLabel(resource.resource_type)} ·{" "}
-                              {visibilityLabel(resource.visibility)}
-                            </span>
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
@@ -1054,7 +1110,9 @@ export default function CoursesAdminPage() {
                               <button
                                 type="button"
                                 disabled={saving}
-                                onClick={() => void saveResourceInline(resource)}
+                                onClick={() =>
+                                  void saveResourceInline(resource)
+                                }
                                 className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <Save size={17} />
@@ -1062,17 +1120,6 @@ export default function CoursesAdminPage() {
                               </button>
                             </div>
                           </div>
-                          {(resource.youtube_url || resource.url) && (
-                            <a
-                              href={resource.youtube_url ?? resource.url ?? "#"}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-bold text-accent"
-                            >
-                              開啟內容
-                              <ExternalLink size={15} />
-                            </a>
-                          )}
                         </article>
                       ))
                     )}
@@ -1120,21 +1167,97 @@ function NewResourceForm({
 }) {
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
-      <div className="flex items-start justify-between gap-3 border-b border-border pb-4">
-        <div>
-          <p className="text-xs font-bold text-accent">新增內容</p>
-          <h2 className="mt-1 text-xl font-black">加入這堂課</h2>
-        </div>
-        <button type="button" onClick={onCancel} aria-label="關閉新增內容" className="grid size-11 place-items-center"><X size={19} /></button>
-      </div>
-      <Field label="內容名稱"><input autoFocus required maxLength={200} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className="input-admin" /></Field>
+      <div className="border-b border-border" />
+      <Field label="內容名稱">
+        <input
+          autoFocus
+          required
+          maxLength={200}
+          value={form.title}
+          onChange={(event) => setForm({ ...form, title: event.target.value })}
+          className="input-admin"
+        />
+      </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="內容類型"><select value={form.resource_type} onChange={(event) => setForm({ ...form, resource_type: event.target.value, url: event.target.value === "link" ? form.url : "", youtube_url: event.target.value === "video" ? form.youtube_url : "" })} className="input-admin"><option value="link">連結</option><option value="video">YouTube 影片</option></select></Field>
-        <Field label="內容權限"><VisibilitySelect value={form.visibility} onChange={(visibility) => setForm({ ...form, visibility })} /></Field>
+        <Field label="內容類型">
+          <select
+            value={form.resource_type}
+            onChange={(event) =>
+              setForm({
+                ...form,
+                resource_type: event.target.value,
+                url: event.target.value === "link" ? form.url : "",
+                youtube_url:
+                  event.target.value === "video" ? form.youtube_url : "",
+              })
+            }
+            className="input-admin"
+          >
+            <option value="link">連結</option>
+            <option value="video">YouTube 影片</option>
+          </select>
+        </Field>
+        <Field label="內容權限">
+          <VisibilitySelect
+            value={form.visibility}
+            onChange={(visibility) => setForm({ ...form, visibility })}
+          />
+        </Field>
       </div>
-      {form.resource_type === "link" ? <Field label="連結網址"><input required type="url" value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} className="input-admin" /></Field> : <Field label="YouTube 網址"><input required type="url" value={form.youtube_url} onChange={(event) => setForm({ ...form, youtube_url: event.target.value })} className="input-admin" /></Field>}
-      <Field label="內容說明"><textarea required rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="input-admin py-3" /></Field>
-      <div className="flex justify-end gap-3 pt-2"><button type="button" onClick={onCancel} className="min-h-11 px-4 font-bold">取消</button><button disabled={saving} className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50">{saving ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}建立內容</button></div>
+      {form.resource_type === "video" ? (
+        <Field key="youtube-url" label="YouTube 網址">
+          <input
+            required
+            type="url"
+            value={form.youtube_url}
+            onChange={(event) =>
+              setForm({ ...form, youtube_url: event.target.value })
+            }
+            className="input-admin"
+          />
+        </Field>
+      ) : (
+        <Field key="link-url" label="連結網址">
+          <input
+            required
+            type="url"
+            value={form.url}
+            onChange={(event) => setForm({ ...form, url: event.target.value })}
+            className="input-admin"
+          />
+        </Field>
+      )}
+      <Field label="內容說明">
+        <textarea
+          required
+          rows={3}
+          value={form.description}
+          onChange={(event) =>
+            setForm({ ...form, description: event.target.value })
+          }
+          className="input-admin py-3"
+        />
+      </Field>
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="min-h-11 px-4 font-bold"
+        >
+          取消
+        </button>
+        <button
+          disabled={saving}
+          className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50"
+        >
+          {saving ? (
+            <LoaderCircle className="animate-spin" size={17} />
+          ) : (
+            <Save size={17} />
+          )}
+          建立內容
+        </button>
+      </div>
     </form>
   );
 }
@@ -1161,20 +1284,112 @@ function NewSessionForm({
           <p className="text-xs font-bold text-accent">新增課堂</p>
           <h2 className="mt-1 text-xl font-black">{series.title}</h2>
         </div>
-        <button type="button" onClick={onCancel} aria-label="關閉新增課堂" className="grid size-11 place-items-center"><X size={19} /></button>
+        <button
+          type="button"
+          onClick={onCancel}
+          aria-label="關閉新增課堂"
+          className="grid size-11 place-items-center"
+        >
+          <X size={19} />
+        </button>
       </div>
-      <Field label="課堂名稱"><input required maxLength={200} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className="input-admin" /></Field>
+      <Field label="課堂名稱">
+        <input
+          required
+          maxLength={200}
+          value={form.title}
+          onChange={(event) => setForm({ ...form, title: event.target.value })}
+          className="input-admin"
+        />
+      </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="開始週次"><input required min={1} type="number" value={form.week_start} onChange={(event) => setForm({ ...form, week_start: event.target.value })} className="input-admin" /></Field>
-        <Field label="結束週次" required={false}><input min={Number(form.week_start) || 1} type="number" value={form.week_end} onChange={(event) => setForm({ ...form, week_end: event.target.value })} className="input-admin" /></Field>
+        <Field label="開始週次">
+          <input
+            required
+            min={1}
+            type="number"
+            value={form.week_start}
+            onChange={(event) =>
+              setForm({ ...form, week_start: event.target.value })
+            }
+            className="input-admin"
+          />
+        </Field>
+        <Field label="結束週次" required={false}>
+          <input
+            min={Number(form.week_start) || 1}
+            type="number"
+            value={form.week_end}
+            onChange={(event) =>
+              setForm({ ...form, week_end: event.target.value })
+            }
+            className="input-admin"
+          />
+        </Field>
       </div>
-      <Field label="上課時間"><input required type="datetime-local" value={form.starts_at} onChange={(event) => setForm({ ...form, starts_at: event.target.value })} className="input-admin" /></Field>
+      <Field label="上課時間">
+        <input
+          required
+          type="datetime-local"
+          value={form.starts_at}
+          onChange={(event) =>
+            setForm({ ...form, starts_at: event.target.value })
+          }
+          className="input-admin"
+        />
+      </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="顯示順序"><input required min={0} type="number" value={form.order_index} onChange={(event) => setForm({ ...form, order_index: Number(event.target.value) })} className="input-admin" /></Field>
-        <Field label="課堂權限"><VisibilitySelect value={form.visibility} onChange={(visibility) => setForm({ ...form, visibility })} /></Field>
+        <Field label="顯示順序">
+          <input
+            required
+            min={0}
+            type="number"
+            value={form.order_index}
+            onChange={(event) =>
+              setForm({ ...form, order_index: Number(event.target.value) })
+            }
+            className="input-admin"
+          />
+        </Field>
+        <Field label="課堂權限">
+          <SessionVisibilitySelect
+            value={form.visibility}
+            onChange={(visibility) => setForm({ ...form, visibility })}
+          />
+        </Field>
       </div>
-      <Field label="課堂摘要"><textarea required maxLength={500} rows={3} value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} className="input-admin py-3" /></Field>
-      <div className="flex justify-end gap-3 pt-2"><button type="button" onClick={onCancel} className="min-h-11 px-4 font-bold">取消</button><button disabled={saving} className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50">{saving ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}建立課堂</button></div>
+      <Field label="課堂摘要">
+        <textarea
+          required
+          maxLength={500}
+          rows={3}
+          value={form.summary}
+          onChange={(event) =>
+            setForm({ ...form, summary: event.target.value })
+          }
+          className="input-admin py-3"
+        />
+      </Field>
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="min-h-11 px-4 font-bold"
+        >
+          取消
+        </button>
+        <button
+          disabled={saving}
+          className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50"
+        >
+          {saving ? (
+            <LoaderCircle className="animate-spin" size={17} />
+          ) : (
+            <Save size={17} />
+          )}
+          建立課堂
+        </button>
+      </div>
     </form>
   );
 }
@@ -1252,6 +1467,25 @@ function VisibilitySelect({
     >
       <option value="public">公開</option>
       <option value="member">社員限定</option>
+    </select>
+  );
+}
+
+function SessionVisibilitySelect({
+  value,
+  onChange,
+}: {
+  value: Visibility;
+  onChange: (value: Visibility) => void;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value as Visibility)}
+      className="input-admin"
+    >
+      <option value="public">公開</option>
+      <option value="member">不公開</option>
     </select>
   );
 }

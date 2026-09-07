@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import or_, select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, with_loader_criteria
 
 from app.api.dependencies import require_member
 from app.db.session import get_db
@@ -37,7 +37,10 @@ def list_courses(db: Session = Depends(get_db)) -> list[CourseSeries]:
     return list(
         db.scalars(
             select(CourseSeries)
-            .options(selectinload(CourseSeries.sessions))
+            .options(
+                selectinload(CourseSeries.sessions),
+                with_loader_criteria(CourseSession, CourseSession.visibility == Visibility.PUBLIC),
+            )
             .order_by(CourseSeries.semester.desc())
         ).unique()
     )
@@ -47,7 +50,10 @@ def list_courses(db: Session = Depends(get_db)) -> list[CourseSeries]:
 def list_course_library(db: Session = Depends(get_db)) -> list[dict]:
     series_list = db.scalars(
         select(CourseSeries)
-        .options(selectinload(CourseSeries.sessions).selectinload(CourseSession.resources))
+        .options(
+            selectinload(CourseSeries.sessions).selectinload(CourseSession.resources),
+            with_loader_criteria(CourseSession, CourseSession.visibility == Visibility.PUBLIC),
+        )
         .order_by(CourseSeries.semester.desc())
     ).unique()
     return [
