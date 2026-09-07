@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.dependencies import require_admin
 from app.db.session import get_db
-from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource
+from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting
 from app.models.user import Membership, Role, User, UserRole
 from app.schemas.admin import (
     AdminUserSummary,
@@ -20,12 +20,30 @@ from app.schemas.admin import (
     MemberWrite,
     ResourceAdminSummary,
     ResourceWrite,
+    SiteSettingSummary,
+    SiteSettingWrite,
 )
 from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
 from app.services.memberships import taipei_today
 from app.services.passwords import hash_password
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
+
+
+@router.get("/settings", response_model=list[SiteSettingSummary], summary="列出網站文字設定")
+def list_settings(db: Session = Depends(get_db)) -> list[SiteSetting]:
+    return list(db.scalars(select(SiteSetting).order_by(SiteSetting.key)))
+
+
+@router.put("/settings/{key}", response_model=SiteSettingSummary, summary="更新網站文字設定")
+def update_setting(key: str, payload: SiteSettingWrite, db: Session = Depends(get_db)) -> SiteSetting:
+    item = db.get(SiteSetting, key)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到網站設定")
+    item.value = payload.value
+    db.commit()
+    db.refresh(item)
+    return item
 
 
 def serialize_user(user: User) -> AdminUserSummary:

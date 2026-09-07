@@ -30,6 +30,16 @@ class CourseTrack(str, enum.Enum):
     SUNDAY = "sunday"
 
 
+class SiteSetting(Base):
+    __tablename__ = "site_settings"
+
+    key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    label: Mapped[str] = mapped_column(String(200))
+    value: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(String(500), default="")
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
 class Announcement(Base):
     __tablename__ = "announcements"
 

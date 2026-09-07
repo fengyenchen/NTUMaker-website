@@ -102,3 +102,14 @@ class CourseSeriesAdminSummary(CourseSeriesWrite):
 
     id: UUID
     sessions: list[CourseSessionAdminSummary]
+
+
+class SiteSettingSummary(BaseModel):
+    key: str
+    label: str
+    value: str
+    description: str
+
+
+class SiteSettingWrite(BaseModel):
+    value: str = Field(max_length=5000)

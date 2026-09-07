@@ -6,11 +6,16 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.dependencies import require_member
 from app.db.session import get_db
-from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, Visibility
+from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting, Visibility
 from app.models.user import User
 from app.schemas.content import AnnouncementSummary, CourseSeriesCatalogSummary, CourseSeriesSummary, ResourceSummary
 
 router = APIRouter(prefix="/content", tags=["內容"])
+
+
+@router.get("/settings", summary="取得前台網站文字設定")
+def list_public_settings(db: Session = Depends(get_db)) -> list[dict[str, str]]:
+    return [{"key": item.key, "value": item.value} for item in db.scalars(select(SiteSetting).order_by(SiteSetting.key))]
 
 
 @router.get("/announcements", response_model=list[AnnouncementSummary], summary="取得公開公告")

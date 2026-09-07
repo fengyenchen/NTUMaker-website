@@ -13,6 +13,7 @@ import { HomeMotion } from "@/components/home-motion";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { courseTracks } from "@/data/course-schedule";
+import { getSiteSettings } from "@/lib/site-settings";
 
 const announcements = [
   { date: "09 / 08", type: "社課", title: "本學期第一次社課與社員說明會", detail: "一起認識課程雙軌與這學期的專案。" },
@@ -20,7 +21,9 @@ const announcements = [
   { date: "09 / 19", type: "公告", title: "社員招募與空間使用須知", detail: "加入方式、社員期限與工具借用規則。" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const settings = await getSiteSettings();
+  const [titleFirstLine, titleSecondLine = ""] = settings.home_title.split("\n");
   return (
     <HomeMotion>
       <main className="min-h-screen overflow-hidden bg-background">
@@ -31,14 +34,14 @@ export default function HomePage() {
         <div className="mx-auto grid min-h-170 max-w-330 items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative z-10" data-hero-copy>
             <div className="mb-7 inline-flex -rotate-2 items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm shadow-[2px_3px_0_var(--color-shadow-soft)]">
-              2026 秋季社課進行中
+              {settings.home_badge}
             </div>
             <h1 className="text-[clamp(3.25rem,7vw,6.75rem)] font-black leading-[1.1] tracking-tight">
-              把想法
-              <span className="block text-highlight">做成真的。</span>
+              {titleFirstLine}
+              <span className="block text-highlight">{titleSecondLine}</span>
             </h1>
             <p className="mt-7 max-w-xl text-lg leading-8 text-muted-foreground md:text-xl">
-              從電子、程式、設計到數位製造，和一群喜歡動手的人一起試、一起拆，再做出更好的版本。
+              {settings.home_description}
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
               <Link href="/courses" className="button-25d inline-flex min-h-12 items-center gap-3 rounded-xl px-6 font-bold">
@@ -69,7 +72,7 @@ export default function HomePage() {
 
       <section className="px-5 py-20 md:px-8 md:py-28" data-reveal>
         <div className="mx-auto max-w-330">
-          <SectionTitle label="每週社課" title="兩條路線，自由找到你的節奏。" />
+          <SectionTitle label="每週社課" title={settings.weekly_courses_title} />
           <div className="mt-12 grid gap-8 lg:grid-cols-2">
             <TrackCard
               day="星期二"
@@ -115,7 +118,7 @@ export default function HomePage() {
 
       <section className="px-5 py-20 md:px-8 md:py-28" data-reveal>
         <div className="mx-auto max-w-330">
-          <SectionTitle label="課程內容" title="每堂課的教材、影片與檔案，都收在一起。" />
+          <SectionTitle label="課程內容" title={settings.course_library_title} />
           <div className="mt-12 grid gap-8 lg:grid-cols-2">
             <CourseLibraryCard day="星期二" title={courseTracks[0].title} description="沿著循線車專案進度學習，每週課程內含講義、上課影片與實作附件。" items={courseTracks[0].sessions.slice(1, 3).map((session) => session.title)} />
             <CourseLibraryCard day="星期五" title={courseTracks[1].title} description="依主題選擇工作坊，每場的教材、示範影片與範例檔案集中整理。" items={courseTracks[1].sessions.slice(0, 2).map((session) => session.title)} blue />
