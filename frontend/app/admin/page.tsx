@@ -21,7 +21,8 @@ export default function AdminPage() {
   useEffect(() => {
     void fetch("/api/v1/admin/overview", { credentials: "include" })
       .then(async (response) => {
-        const data = await response.json();
+        const body = await response.text();
+        const data = body ? JSON.parse(body) : {};
         if (!response.ok) throw new Error(data.detail ?? "無法讀取總覽資料");
         setOverview(data);
       })

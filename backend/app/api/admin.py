@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.dependencies import require_admin
 from app.db.session import get_db
-from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting
+from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting, Visibility
 from app.models.user import Membership, Role, User, UserRole
 from app.schemas.admin import (
     AdminUserSummary,
