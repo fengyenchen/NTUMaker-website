@@ -205,7 +205,7 @@ export default function CoursesAdminPage() {
     await saveEditor("/api/v1/admin/course-sessions", "POST", {
       ...sessionForm,
       week_label: formatWeekLabel(sessionForm.week_start, sessionForm.week_end),
-        starts_at: new Date(`${sessionForm.starts_at}T12:00:00`).toISOString(),
+      starts_at: new Date(`${sessionForm.starts_at}T12:00:00`).toISOString(),
     });
     setNewSessionSeriesId(null);
   }
@@ -354,7 +354,9 @@ export default function CoursesAdminPage() {
         title: session.title,
         week_label: session.week_label,
         summary: session.summary,
-        starts_at: new Date(`${toLocalDate(session.starts_at)}T12:00:00`).toISOString(),
+        starts_at: new Date(
+          `${toLocalDate(session.starts_at)}T12:00:00`,
+        ).toISOString(),
         order_index: session.order_index,
         visibility: session.visibility,
       },
@@ -1089,7 +1091,21 @@ export default function CoursesAdminPage() {
                             </div>
                             {resource.resource_type === "video" ? (
                               <Field key="youtube-url" label="YouTube 網址">
-                                <input required type="url" value={resource.youtube_url ?? ""} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { youtube_url: event.target.value || null })} className="input-admin" />
+                                <input
+                                  required
+                                  type="url"
+                                  value={resource.youtube_url ?? ""}
+                                  onChange={(event) =>
+                                    updateResourceDraft(
+                                      selectedSession.id,
+                                      resource.id,
+                                      {
+                                        youtube_url: event.target.value || null,
+                                      },
+                                    )
+                                  }
+                                  className="input-admin"
+                                />
                               </Field>
                             ) : (
                               <Field key="link-url" label="連結網址">

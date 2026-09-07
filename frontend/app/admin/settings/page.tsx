@@ -215,7 +215,10 @@ export default function SettingsAdminPage() {
                         </p>
                       </div>
                       <button
-                        disabled={savingKey === orderSetting.key || !hasChanges(orderSetting)}
+                        disabled={
+                          savingKey === orderSetting.key ||
+                          !hasChanges(orderSetting)
+                        }
                         onClick={() => void saveSetting(orderSetting)}
                         className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -294,7 +297,9 @@ export default function SettingsAdminPage() {
                     </label>
                     <div className="mt-4 flex justify-end">
                       <button
-                        disabled={savingKey === setting.key || !hasChanges(setting)}
+                        disabled={
+                          savingKey === setting.key || !hasChanges(setting)
+                        }
                         onClick={() => void saveSetting(setting)}
                         className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
                       >

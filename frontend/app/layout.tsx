@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     default: "NTUMaker 台大自造者社",
     template: "%s｜NTUMaker",
   },
-  description: "NTUMaker 台大自造者社的公告、社課、工作坊、教材與社員學習平台。",
+  description: "NTUMaker 台大自造者社官方網站，記錄我們的活動、課程、工作坊與專案，一起動手把想法做出來。",
   icons: {
     icon: "/favicon.png",
   },
