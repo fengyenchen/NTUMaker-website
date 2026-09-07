@@ -13,8 +13,6 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:3000"
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/ntumaker"
     session_secret: str = "development-only-secret-please-replace"
-    email_from: str = "NTUMaker <no-reply@example.com>"
-    resend_api_key: str | None = None
     admin_email: EmailStr | None = None
     admin_password: str | None = None
 
