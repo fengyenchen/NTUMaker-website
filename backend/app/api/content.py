@@ -62,6 +62,7 @@ def list_course_library(db: Session = Depends(get_db)) -> list[dict]:
             "title": series.title,
             "semester": series.semester,
             "track": series.track,
+            "time": series.time,
             "description": series.description,
             "sessions": [
                 {

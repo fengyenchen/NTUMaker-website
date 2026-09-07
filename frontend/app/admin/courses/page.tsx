@@ -61,6 +61,7 @@ type CourseSeries = {
   title: string;
   semester: string;
   track: Track;
+  time: string;
   description: string;
   sessions: CourseSession[];
 };
@@ -71,6 +72,7 @@ const emptySeries = {
   title: "",
   semester: "115-1",
   track: "tuesday" as Track,
+  time: "19:00–21:00",
   description: "",
 };
 const emptySession = {
@@ -306,6 +308,7 @@ export default function CoursesAdminPage() {
         title: series.title,
         semester: series.semester,
         track: series.track,
+        time: series.time,
         description: series.description,
       },
       false,
@@ -467,6 +470,17 @@ export default function CoursesAdminPage() {
                   <option value="saturday">星期六</option>
                   <option value="sunday">星期日</option>
                 </select>
+              </Field>
+              <Field label="上課時間">
+                <input
+                  required
+                  maxLength={50}
+                  value={seriesForm.time}
+                  onChange={(event) =>
+                    setSeriesForm({ ...seriesForm, time: event.target.value })
+                  }
+                  className="input-admin"
+                />
               </Field>
               <Field label="路線簡介">
                 <textarea
@@ -798,6 +812,19 @@ export default function CoursesAdminPage() {
                           <option value="saturday">星期六</option>
                           <option value="sunday">星期日</option>
                         </select>
+                      </Field>
+                      <Field label="上課時間">
+                        <input
+                          required
+                          maxLength={50}
+                          value={series.time}
+                          onChange={(event) =>
+                            updateSeriesDraft(series.id, {
+                              time: event.target.value,
+                            })
+                          }
+                          className="input-admin"
+                        />
                       </Field>
                       <Field label="路線簡介">
                         <textarea

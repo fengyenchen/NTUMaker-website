@@ -35,6 +35,7 @@ class CourseSeriesSummary(BaseModel):
     title: str
     semester: str
     track: CourseTrack
+    time: str
     description: str
     sessions: list[CourseSessionSummary]
 
@@ -73,5 +74,6 @@ class CourseSeriesCatalogSummary(BaseModel):
     title: str
     semester: str
     track: CourseTrack
+    time: str
     description: str
     sessions: list[CourseSessionCatalogSummary]

@@ -63,6 +63,7 @@ class CourseSeries(Base):
     title: Mapped[str] = mapped_column(String(200))
     semester: Mapped[str] = mapped_column(String(30), index=True)
     track: Mapped[CourseTrack] = mapped_column(Enum(CourseTrack, name="course_track"), index=True)
+    time: Mapped[str] = mapped_column(String(50), default="19:00–21:00")
     description: Mapped[str] = mapped_column(Text)
     sessions: Mapped[list["CourseSession"]] = relationship(back_populates="series", cascade="all, delete-orphan")
 

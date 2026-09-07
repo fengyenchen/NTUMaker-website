@@ -10,12 +10,14 @@ type ApiSession = {
   week_label: string;
   summary: string;
   order_index: number;
+  starts_at: string;
   resources: ApiResource[];
 };
 
 type ApiCourseSeries = {
   title: string;
   track: string;
+  time: string;
   description: string;
   sessions: ApiSession[];
 };
@@ -34,7 +36,7 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
       .map((series): CourseTrack => ({
         id: series.track,
         day: trackDayLabel(series.track),
-        time: courseInfo.time,
+        time: series.time,
         title: series.title,
         description: series.description,
         sessions: [...series.sessions]
@@ -45,6 +47,7 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
             summary: session.summary,
             assets: session.resources.map((resource) => resource.title),
             isPublic: session.resources.some((resource) => resource.visibility === "public"),
+            startsAt: session.starts_at,
           })),
       }))
       .sort((a, b) => dayOrder(a.id) - dayOrder(b.id));

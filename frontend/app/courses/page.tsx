@@ -47,7 +47,7 @@ function CourseTimeline({ track }: { track: CourseTrack }) {
           <li key={session.title} className="grid min-h-28 grid-cols-[6.25rem_minmax(0,1fr)_1.25rem] items-start gap-x-4 gap-y-2 rounded-xl bg-background p-4">
             <span className={`grid min-h-9 w-full place-items-center self-start rounded-lg border px-2 text-xs font-bold ${orange ? "border-primary/40 bg-primary/10 text-primary" : "border-accent/40 bg-accent/10 text-accent"}`}>{session.week}</span>
             <span className="self-center font-bold">{session.title}</span>
-            {index < 2 ? <Check className="self-center text-success" size={18} aria-label="已規劃" /> : <span aria-hidden="true" />}
+            {session.startsAt && new Date(session.startsAt).getTime() + 2 * 60 * 60 * 1000 <= Date.now() ? <Check className="self-center text-success" size={18} aria-label="已結束" /> : <span aria-hidden="true" />}
             <p className="col-start-2 col-end-4 text-sm leading-6 text-muted-foreground">{session.summary}</p>
           </li>
         ))}

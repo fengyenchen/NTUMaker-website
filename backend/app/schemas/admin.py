@@ -60,6 +60,7 @@ class CourseSeriesWrite(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     semester: str = Field(min_length=1, max_length=30)
     track: CourseTrack
+    time: str = Field(min_length=1, max_length=50)
     description: str = Field(min_length=1)
 
 
