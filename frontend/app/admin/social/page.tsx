@@ -49,7 +49,15 @@ export default function SocialAdminPage() {
     try {
       const imageName = image?.name ?? null;
       const imageMimeType = image?.type ?? null;
-      if (image) throw new Error("Cloudflare R2 尚未設定，照片功能暫時無法使用。請先完成 R2 設定。");
+      let uploadedImage: { r2_object_key: string; image_name: string; image_mime_type: string } | null = null;
+      if (image) {
+        const formData = new FormData();
+        formData.append("file", image);
+        const uploadResponse = await fetch("/api/v1/admin/social-posts/upload-image", { method: "POST", credentials: "include", body: formData });
+        const uploadData = await uploadResponse.json();
+        if (!uploadResponse.ok) throw new Error(uploadData.detail ?? "圖片上傳失敗");
+        uploadedImage = uploadData;
+      }
       const response = await fetch("/api/v1/admin/social-posts", {
         method: "POST",
         credentials: "include",
@@ -60,8 +68,9 @@ export default function SocialAdminPage() {
           scheduled_at: scheduledAt
             ? new Date(scheduledAt).toISOString()
             : null,
-          image_name: imageName,
-          image_mime_type: imageMimeType,
+          r2_object_key: uploadedImage?.r2_object_key ?? null,
+          image_name: uploadedImage?.image_name ?? imageName,
+          image_mime_type: uploadedImage?.image_mime_type ?? imageMimeType,
         }),
       });
       const data = await response.json();

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
 from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session, selectinload
 
@@ -28,6 +28,7 @@ from app.schemas.admin import (
 from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
 from app.services.memberships import taipei_today
 from app.services.passwords import hash_password
+from app.services.r2 import upload_image
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
 
@@ -99,6 +100,11 @@ def update_setting(key: str, payload: SiteSettingWrite, db: Session = Depends(ge
 
 def serialize_social_post(item: SocialPost) -> SocialPostSummary:
     return SocialPostSummary.model_validate(item)
+
+
+@router.post("/social-posts/upload-image", summary="上傳社群圖片到 R2")
+def upload_social_image(file: UploadFile = File(...)) -> dict[str, str]:
+    return upload_image(file)
 
 
 @router.get("/social-posts", response_model=list[SocialPostSummary], summary="列出社群貼文")
