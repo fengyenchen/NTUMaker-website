@@ -111,11 +111,21 @@ class SocialPost(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     caption: Mapped[str] = mapped_column(Text)
     platforms: Mapped[list[str]] = mapped_column(JSON)
-    r2_object_key: Mapped[str | None] = mapped_column(String(500))
-    image_name: Mapped[str | None] = mapped_column(String(255))
-    image_mime_type: Mapped[str | None] = mapped_column(String(100))
     scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     status: Mapped[SocialPostStatus] = mapped_column(Enum(SocialPostStatus, name="social_post_status"), default=SocialPostStatus.DRAFT, index=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     error_message: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    images: Mapped[list["SocialPostImage"]] = relationship(back_populates="post", cascade="all, delete-orphan", order_by="SocialPostImage.order_index")
+
+
+class SocialPostImage(Base):
+    __tablename__ = "social_post_images"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    post_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("social_posts.id", ondelete="CASCADE"), index=True)
+    r2_object_key: Mapped[str] = mapped_column(String(500))
+    image_name: Mapped[str] = mapped_column(String(255))
+    image_mime_type: Mapped[str] = mapped_column(String(100))
+    order_index: Mapped[int] = mapped_column(Integer, default=0)
+    post: Mapped[SocialPost] = relationship(back_populates="images")

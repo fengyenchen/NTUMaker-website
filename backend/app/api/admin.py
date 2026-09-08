@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.dependencies import require_admin
 from app.db.session import get_db
-from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting, SocialPost, SocialPostStatus, Visibility
+from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting, SocialPost, SocialPostImage, SocialPostStatus, Visibility
 from app.models.user import Membership, Role, User, UserRole
 from app.schemas.admin import (
     AdminUserSummary,
@@ -120,7 +120,8 @@ def create_social_post(payload: SocialPostWrite, db: Session = Depends(get_db)) 
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="包含不支援的發布平台")
     if payload.image_name and not payload.r2_object_key:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Cloudflare R2 尚未設定，暫時無法上傳照片")
-    item = SocialPost(caption=payload.caption, platforms=platforms, r2_object_key=payload.r2_object_key, image_name=payload.image_name, image_mime_type=payload.image_mime_type, scheduled_at=payload.scheduled_at, status=SocialPostStatus.SCHEDULED if payload.scheduled_at else SocialPostStatus.DRAFT)
+    item = SocialPost(caption=payload.caption, platforms=platforms, scheduled_at=payload.scheduled_at, status=SocialPostStatus.SCHEDULED if payload.scheduled_at else SocialPostStatus.DRAFT)
+    item.images = [SocialPostImage(r2_object_key=image.r2_object_key, image_name=image.image_name, image_mime_type=image.image_mime_type, order_index=index) for index, image in enumerate(payload.images)]
     db.add(item)
     db.commit()
     db.refresh(item)

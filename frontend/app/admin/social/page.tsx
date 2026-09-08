@@ -4,6 +4,8 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import {
   CalendarClock,
   FileImage,
+  ArrowLeft,
+  ArrowRight,
   LoaderCircle,
   Plus,
   Trash2,
@@ -13,7 +15,7 @@ type Post = {
   id: string;
   caption: string;
   platforms: string[];
-  image_name: string | null;
+  images: { image_name: string }[];
   scheduled_at: string | null;
   status: string;
 };
@@ -28,7 +30,7 @@ export default function SocialAdminPage() {
   const [caption, setCaption] = useState("");
   const [platforms, setPlatforms] = useState<string[]>(["instagram", "facebook", "threads"]);
   const [scheduledAt, setScheduledAt] = useState("");
-  const [image, setImage] = useState<File | null>(null);
+  const [images, setImages] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,17 +49,15 @@ export default function SocialAdminPage() {
     setSaving(true);
     setError("");
     try {
-      const imageName = image?.name ?? null;
-      const imageMimeType = image?.type ?? null;
-      let uploadedImage: { r2_object_key: string; image_name: string; image_mime_type: string } | null = null;
-      if (image) {
+      if (images.length > 10) throw new Error("一次最多上傳 10 張照片");
+      const uploadedImages = await Promise.all(images.map(async (image) => {
         const formData = new FormData();
         formData.append("file", image);
         const uploadResponse = await fetch("/api/v1/admin/social-posts/upload-image", { method: "POST", credentials: "include", body: formData });
         const uploadData = await uploadResponse.json();
         if (!uploadResponse.ok) throw new Error(uploadData.detail ?? "圖片上傳失敗");
-        uploadedImage = uploadData;
-      }
+        return uploadData as { r2_object_key: string; image_name: string; image_mime_type: string };
+      }));
       const response = await fetch("/api/v1/admin/social-posts", {
         method: "POST",
         credentials: "include",
@@ -68,9 +68,7 @@ export default function SocialAdminPage() {
           scheduled_at: scheduledAt
             ? new Date(scheduledAt).toISOString()
             : null,
-          r2_object_key: uploadedImage?.r2_object_key ?? null,
-          image_name: uploadedImage?.image_name ?? imageName,
-          image_mime_type: uploadedImage?.image_mime_type ?? imageMimeType,
+          images: uploadedImages,
         }),
       });
       const data = await response.json();
@@ -78,7 +76,7 @@ export default function SocialAdminPage() {
       setPosts((current) => [data, ...current]);
       setCaption("");
       setScheduledAt("");
-      setImage(null);
+      setImages([]);
       const fileInput = document.querySelector(
         "input[type=file]",
       ) as HTMLInputElement | null;
@@ -143,12 +141,14 @@ export default function SocialAdminPage() {
                 <input
                   type="file"
                   accept="image/*"
+                  multiple
                   onChange={(event) =>
-                    setImage(event.target.files?.[0] ?? null)
+                    setImages(Array.from(event.target.files ?? []).slice(0, 10))
                   }
                 />
               </span>
             </label>
+            {images.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4"><p className="col-span-full text-sm text-muted-foreground">已選 {images.length} 張，發布順序如下（保留原圖比例）</p>{images.map((image, index) => <div key={`${image.name}-${index}`} className="border border-border bg-background p-2"><div className="flex aspect-[5/4] items-center justify-center overflow-hidden bg-surface-raised"><img src={URL.createObjectURL(image)} alt={image.name} className="max-h-full max-w-full object-contain" /></div><p className="mt-2 truncate text-xs">{index + 1}. {image.name}</p><div className="mt-2 flex justify-between"><button type="button" disabled={index === 0} onClick={() => setImages((current) => swap(current, index, index - 1))} aria-label={`將第 ${index + 1} 張照片往前`} className="min-h-9 min-w-9 border border-border disabled:opacity-30"><ArrowLeft size={15} /></button><button type="button" disabled={index === images.length - 1} onClick={() => setImages((current) => swap(current, index, index + 1))} aria-label={`將第 ${index + 1} 張照片往後`} className="min-h-9 min-w-9 border border-border disabled:opacity-30"><ArrowRight size={15} /></button></div></div>)}</div>}
             <fieldset>
               <legend className="text-sm font-bold">發布平台</legend>
               <div className="mt-2 flex flex-wrap gap-3">
@@ -223,7 +223,7 @@ export default function SocialAdminPage() {
                             ] ?? platform,
                         )
                         .join("、")}{" "}
-                      · {post.image_name ?? "未附照片"} ·{" "}
+                      · {post.images?.length ?? 0} 張照片 ·{" "}
                       {post.scheduled_at
                         ? `排程 ${formatDate(post.scheduled_at)}`
                         : "草稿"}
@@ -255,4 +255,10 @@ function formatDate(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function swap<T>(items: T[], first: number, second: number) {
+  const next = [...items];
+  [next[first], next[second]] = [next[second], next[first]];
+  return next;
 }

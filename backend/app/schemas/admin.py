@@ -121,10 +121,24 @@ class SiteSettingWrite(BaseModel):
 class SocialPostWrite(BaseModel):
     caption: str = Field(min_length=1, max_length=10000)
     platforms: list[str] = Field(min_length=1)
-    r2_object_key: str | None = Field(default=None, max_length=500)
-    image_name: str | None = Field(default=None, max_length=255)
-    image_mime_type: str | None = Field(default=None, max_length=100)
+    images: list["SocialPostImageWrite"] = Field(default_factory=list, max_length=10)
     scheduled_at: datetime | None = None
+
+
+class SocialPostImageWrite(BaseModel):
+    r2_object_key: str = Field(min_length=1, max_length=500)
+    image_name: str = Field(min_length=1, max_length=255)
+    image_mime_type: str = Field(min_length=1, max_length=100)
+
+
+class SocialPostImageSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    r2_object_key: str
+    image_name: str
+    image_mime_type: str
+    order_index: int
 
 
 class SocialPostSummary(BaseModel):
@@ -133,8 +147,7 @@ class SocialPostSummary(BaseModel):
     id: UUID
     caption: str
     platforms: list[str]
-    image_name: str | None
-    r2_object_key: str | None
+    images: list[SocialPostImageSummary]
     scheduled_at: datetime | None
     status: SocialPostStatus
     published_at: datetime | None
