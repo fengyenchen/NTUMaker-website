@@ -10,7 +10,7 @@ NTUMaker 的公開資訊、社課資源、社員影片與幹部管理平台。
 - 一般訪客：查看公告、社課與工作坊簡介、公開資源與作品。
 - 社員：以 Email 登入，在資格有效期間觀看限定資源與嵌入式 YouTube 課程影片，並管理顯示名稱與查看社員資格。
 - Admin：管理帳號、社員期限、公告、課程、資源與發布狀態。
-- 未來擴充：建立社群草稿、審核與排程流程，再串接 Instagram、Facebook 與 Threads。
+- 社群發布：建立草稿、排程，並由後端排程 worker 串接 Instagram、Facebook Page 與 Threads 發文。
 
 正式社群連結：
 
@@ -207,3 +207,9 @@ pnpm dev
 pnpm typecheck
 pnpm build
 ```
+
+### 社群排程發文設定
+
+要啟用實際發文，請在 `backend/.env` 設定 R2 公開圖片網域，以及各平台的帳號 ID 與 access token：`INSTAGRAM_USER_ID`、`INSTAGRAM_ACCESS_TOKEN`、`FACEBOOK_PAGE_ID`、`FACEBOOK_PAGE_ACCESS_TOKEN`、`THREADS_USER_ID`、`THREADS_ACCESS_TOKEN`。後端會每 30 秒檢查到期的排程，成功後標記為「已發布」，API 失敗則標記為「發布失敗」並保存錯誤原因。Meta 權限與 App Review 仍須由管理員在 Meta 開發者後台完成。
+
+正式啟用前可呼叫 `POST /api/v1/admin/social-posts/{id}/publish-test` 做安全測試；這個端點只驗證設定與預計發布的平台，不會呼叫 Meta API，也不會改變貼文狀態。

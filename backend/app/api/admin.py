@@ -33,6 +33,7 @@ from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
 from app.services.memberships import taipei_today
 from app.services.passwords import hash_password
 from app.services.r2 import delete_image, read_image, upload_image
+from app.services.social_publisher import SocialPublishError, dry_run_social_post, publish_social_post
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
 
@@ -243,6 +244,37 @@ def delete_social_post(item_id: UUID, db: Session = Depends(get_db)) -> None:
         delete_image(image.r2_object_key)
     db.delete(item)
     db.commit()
+
+
+@router.post("/social-posts/{item_id}/publish", response_model=SocialPostSummary, summary="立即發布社群貼文")
+def publish_social_post_now(item_id: UUID, db: Session = Depends(get_db)) -> SocialPostSummary:
+    item = db.scalar(select(SocialPost).options(selectinload(SocialPost.images)).where(SocialPost.id == item_id))
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到社群貼文")
+    try:
+        publish_social_post(item)
+    except SocialPublishError as error:
+        item.status = SocialPostStatus.FAILED
+        item.error_message = str(error)[:2000]
+        db.commit()
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(error)) from error
+    item.status = SocialPostStatus.PUBLISHED
+    item.published_at = datetime.now(timezone.utc)
+    item.error_message = None
+    db.commit()
+    db.refresh(item)
+    return serialize_social_post(item)
+
+
+@router.post("/social-posts/{item_id}/publish-test", summary="測試社群發文設定（不會實際發布）")
+def test_social_post_publish(item_id: UUID, db: Session = Depends(get_db)) -> dict:
+    item = db.scalar(select(SocialPost).options(selectinload(SocialPost.images)).where(SocialPost.id == item_id))
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到社群貼文")
+    try:
+        return dry_run_social_post(item)
+    except SocialPublishError as error:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)) from error
 
 
 def serialize_user(user: User) -> AdminUserSummary:

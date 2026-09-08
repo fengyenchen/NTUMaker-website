@@ -38,3 +38,10 @@ def read_image(key: str) -> tuple[bytes, str | None]:
 
 def delete_image(key: str) -> None:
     _client().delete_object(Bucket=get_settings().r2_bucket_name, Key=key)
+
+
+def public_image_url(key: str) -> str:
+    public_url = get_settings().r2_public_url
+    if not public_url:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="R2_PUBLIC_URL 尚未設定，無法讓社群平台讀取圖片")
+    return f"{public_url.rstrip('/')}/{key}"

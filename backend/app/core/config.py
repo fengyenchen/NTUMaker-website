@@ -21,6 +21,19 @@ class Settings(BaseSettings):
     r2_access_key_id: str | None = None
     r2_secret_access_key: str | None = None
     r2_public_url: str | None = None
+    meta_api_version: str = "v25.0"
+    meta_graph_base_url: str = "https://graph.facebook.com"
+    instagram_api_base_url: str = "https://graph.facebook.com"
+    threads_api_base_url: str = "https://graph.threads.net"
+    threads_api_version: str = "v1.0"
+    instagram_user_id: str | None = None
+    instagram_access_token: str | None = None
+    facebook_page_id: str | None = None
+    facebook_page_access_token: str | None = None
+    threads_user_id: str | None = None
+    threads_access_token: str | None = None
+    social_scheduler_enabled: bool = True
+    social_scheduler_interval_seconds: int = 30
 
     @field_validator("database_url", mode="before")
     @classmethod

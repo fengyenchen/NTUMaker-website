@@ -9,7 +9,7 @@ const navigation = [
   ["公告", "/admin/announcements", Megaphone],
   ["社課", "/admin/courses", CalendarDays],
   ["社員", "/admin/members", Users],
-  ["社群發布(開發中！不要用)", "/admin/social", FileText],
+  ["社群發布", "/admin/social", FileText],
   ["網站設定", "/admin/settings", Settings],
 ] as const;
 

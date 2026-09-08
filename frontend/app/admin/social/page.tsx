@@ -22,6 +22,7 @@ type Post = {
   images: { image_name: string; image_url?: string | null }[];
   scheduled_at: string | null;
   status: string;
+  error_message?: string | null;
 };
 const platformLabels = {
   instagram: "Instagram",
@@ -361,7 +362,7 @@ export default function SocialAdminPage() {
           <div className="border-b border-border p-5">
             <h2 className="font-black">草稿與排程</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              發布成功後，圖文內容會自動清除。
+              排程到期後會由後端自動嘗試發布，並回寫成功或失敗狀態。
             </p>
           </div>
           <div className="divide-y divide-border">
@@ -390,9 +391,13 @@ export default function SocialAdminPage() {
                       · {post.images?.length ?? 0} 張照片 ·{" "}
                       {post.status === "scheduled"
                         ? `排程 ${post.scheduled_at ? formatDate(post.scheduled_at) : "尚未設定"}`
-                        : post.scheduled_at
-                          ? `草稿 · 更新時間 ${formatDate(post.scheduled_at)}`
-                          : "草稿"}
+                        : post.status === "published"
+                          ? "已發布"
+                          : post.status === "failed"
+                            ? `發布失敗${post.error_message ? ` · ${post.error_message}` : ""}`
+                            : post.scheduled_at
+                              ? `草稿 · 更新時間 ${formatDate(post.scheduled_at)}`
+                              : "草稿"}
                     </p>
                   </div>
                   <button

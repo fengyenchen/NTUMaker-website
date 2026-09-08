@@ -27,7 +27,7 @@ def list_announcements(db: Session = Depends(get_db)) -> list[Announcement]:
                 Announcement.status == PublishStatus.PUBLISHED,
                 or_(Announcement.published_at.is_(None), Announcement.published_at <= datetime.now(timezone.utc)),
             )
-            .order_by(Announcement.published_at.desc())
+            .order_by(Announcement.published_at.desc().nullslast(), Announcement.created_at.desc())
         )
     )
 
