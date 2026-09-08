@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
+from fastapi.responses import Response
 from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session, selectinload
 
@@ -22,13 +23,16 @@ from app.schemas.admin import (
     ResourceWrite,
     SiteSettingSummary,
     SiteSettingWrite,
+    SocialPostImageOrderUpdate,
+    SocialPostImageSummary,
     SocialPostSummary,
+    SocialPostUpdate,
     SocialPostWrite,
 )
 from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
 from app.services.memberships import taipei_today
 from app.services.passwords import hash_password
-from app.services.r2 import upload_image
+from app.services.r2 import delete_image, read_image, upload_image
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
 
@@ -99,17 +103,41 @@ def update_setting(key: str, payload: SiteSettingWrite, db: Session = Depends(ge
 
 
 def serialize_social_post(item: SocialPost) -> SocialPostSummary:
-    return SocialPostSummary.model_validate(item)
-
-
-@router.post("/social-posts/upload-image", summary="上傳社群圖片到 R2")
-def upload_social_image(file: UploadFile = File(...)) -> dict[str, str]:
-    return upload_image(file)
+    return SocialPostSummary(
+        id=item.id,
+        caption=item.caption,
+        platforms=item.platforms,
+        images=[
+            SocialPostImageSummary(
+                id=image.id,
+                r2_object_key=image.r2_object_key,
+                image_name=image.image_name,
+                image_mime_type=image.image_mime_type,
+                order_index=image.order_index,
+                image_url=f"/api/v1/admin/social-posts/{item.id}/images/{image.id}/preview",
+            )
+            for image in item.images
+        ],
+        scheduled_at=item.scheduled_at,
+        status=item.status,
+        published_at=item.published_at,
+        error_message=item.error_message,
+        created_at=item.created_at,
+    )
 
 
 @router.get("/social-posts", response_model=list[SocialPostSummary], summary="列出社群貼文")
 def list_social_posts(db: Session = Depends(get_db)) -> list[SocialPostSummary]:
-    return [serialize_social_post(item) for item in db.scalars(select(SocialPost).order_by(SocialPost.created_at.desc()))]
+    posts = db.scalars(select(SocialPost).options(selectinload(SocialPost.images)).order_by(SocialPost.created_at.desc()))
+    return [serialize_social_post(item) for item in posts]
+
+
+@router.get("/social-posts/{item_id}", response_model=SocialPostSummary, summary="取得社群草稿或排程")
+def get_social_post(item_id: UUID, db: Session = Depends(get_db)) -> SocialPostSummary:
+    item = db.scalar(select(SocialPost).options(selectinload(SocialPost.images)).where(SocialPost.id == item_id))
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到社群草稿")
+    return serialize_social_post(item)
 
 
 @router.post("/social-posts", response_model=SocialPostSummary, status_code=status.HTTP_201_CREATED, summary="建立社群貼文草稿或排程")
@@ -118,9 +146,9 @@ def create_social_post(payload: SocialPostWrite, db: Session = Depends(get_db)) 
     platforms = list(dict.fromkeys(payload.platforms))
     if not set(platforms).issubset(allowed):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="包含不支援的發布平台")
-    if payload.image_name and not payload.r2_object_key:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Cloudflare R2 尚未設定，暫時無法上傳照片")
-    item = SocialPost(caption=payload.caption, platforms=platforms, scheduled_at=payload.scheduled_at, status=SocialPostStatus.SCHEDULED if payload.scheduled_at else SocialPostStatus.DRAFT)
+    if payload.status == SocialPostStatus.SCHEDULED and payload.scheduled_at is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="排程貼文必須設定排程時間")
+    item = SocialPost(caption=payload.caption, platforms=platforms, scheduled_at=payload.scheduled_at, status=payload.status)
     item.images = [SocialPostImage(r2_object_key=image.r2_object_key, image_name=image.image_name, image_mime_type=image.image_mime_type, order_index=index) for index, image in enumerate(payload.images)]
     db.add(item)
     db.commit()
@@ -128,11 +156,91 @@ def create_social_post(payload: SocialPostWrite, db: Session = Depends(get_db)) 
     return serialize_social_post(item)
 
 
+@router.put("/social-posts/{item_id}", response_model=SocialPostSummary, summary="編輯社群草稿或排程")
+def update_social_post(item_id: UUID, payload: SocialPostUpdate, db: Session = Depends(get_db)) -> SocialPostSummary:
+    item = db.scalar(select(SocialPost).options(selectinload(SocialPost.images)).where(SocialPost.id == item_id))
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到社群草稿")
+    allowed = {"instagram", "facebook", "threads"}
+    platforms = list(dict.fromkeys(payload.platforms))
+    if not set(platforms).issubset(allowed):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="包含不支援的發布平台")
+    if payload.status == SocialPostStatus.SCHEDULED and payload.scheduled_at is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="排程貼文必須設定排程時間")
+    item.caption = payload.caption
+    item.platforms = platforms
+    item.scheduled_at = payload.scheduled_at
+    item.status = payload.status
+    db.commit()
+    db.refresh(item)
+    return serialize_social_post(item)
+
+
+@router.post("/social-posts/{item_id}/images", response_model=SocialPostImageSummary, status_code=status.HTTP_201_CREATED, summary="為既有社群草稿上傳圖片")
+def add_social_post_image(item_id: UUID, file: UploadFile = File(...), db: Session = Depends(get_db)) -> SocialPostImage:
+    item = db.scalar(select(SocialPost).options(selectinload(SocialPost.images)).where(SocialPost.id == item_id))
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到社群草稿")
+    if len(item.images) >= 10:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="一則貼文最多 10 張照片")
+
+    uploaded = upload_image(file)
+    image = SocialPostImage(
+        r2_object_key=uploaded["r2_object_key"],
+        image_name=uploaded["image_name"],
+        image_mime_type=uploaded["image_mime_type"],
+        order_index=len(item.images),
+    )
+    item.images.append(image)
+    db.commit()
+    db.refresh(image)
+    return image
+
+
+@router.put("/social-posts/{item_id}/images/order", response_model=SocialPostSummary, summary="更新社群圖片順序")
+def reorder_social_post_images(item_id: UUID, payload: SocialPostImageOrderUpdate, db: Session = Depends(get_db)) -> SocialPostSummary:
+    item = db.scalar(select(SocialPost).options(selectinload(SocialPost.images)).where(SocialPost.id == item_id))
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到社群草稿")
+    current_ids = {image.id for image in item.images}
+    requested_ids = payload.image_ids
+    if len(requested_ids) != len(current_ids) or set(requested_ids) != current_ids:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="圖片順序資料不完整")
+    images_by_id = {image.id: image for image in item.images}
+    for index, image_id in enumerate(requested_ids):
+        images_by_id[image_id].order_index = index
+    item.images.sort(key=lambda image: image.order_index)
+    db.commit()
+    db.refresh(item)
+    return serialize_social_post(item)
+
+
+@router.get("/social-posts/{item_id}/images/{image_id}/preview", summary="預覽社群圖片")
+def preview_social_post_image(item_id: UUID, image_id: UUID, db: Session = Depends(get_db)) -> Response:
+    image = db.scalar(select(SocialPostImage).where(SocialPostImage.id == image_id, SocialPostImage.post_id == item_id))
+    if not image:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到圖片")
+    data, content_type = read_image(image.r2_object_key)
+    return Response(content=data, media_type=content_type or image.image_mime_type, headers={"Cache-Control": "private, max-age=3600"})
+
+
+@router.delete("/social-posts/{item_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT, summary="刪除社群圖片")
+def delete_social_post_image(item_id: UUID, image_id: UUID, db: Session = Depends(get_db)) -> None:
+    image = db.scalar(select(SocialPostImage).where(SocialPostImage.id == image_id, SocialPostImage.post_id == item_id))
+    if not image:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到圖片")
+    delete_image(image.r2_object_key)
+    db.delete(image)
+    db.commit()
+
+
 @router.delete("/social-posts/{item_id}", status_code=status.HTTP_204_NO_CONTENT, summary="刪除社群貼文")
 def delete_social_post(item_id: UUID, db: Session = Depends(get_db)) -> None:
-    item = db.get(SocialPost, item_id)
+    item = db.scalar(select(SocialPost).options(selectinload(SocialPost.images)).where(SocialPost.id == item_id))
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="找不到社群貼文")
+    for image in item.images:
+        delete_image(image.r2_object_key)
     db.delete(item)
     db.commit()
 

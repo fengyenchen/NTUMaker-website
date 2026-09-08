@@ -1,13 +1,17 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import {
   CalendarClock,
   FileImage,
   ArrowLeft,
   ArrowRight,
+  GripVertical,
+  ImagePlus,
   LoaderCircle,
   Plus,
+  SquarePen,
   Trash2,
 } from "lucide-react";
 
@@ -15,7 +19,7 @@ type Post = {
   id: string;
   caption: string;
   platforms: string[];
-  images: { image_name: string }[];
+  images: { image_name: string; image_url?: string | null }[];
   scheduled_at: string | null;
   status: string;
 };
@@ -24,13 +28,21 @@ const platformLabels = {
   facebook: "Facebook",
   threads: "Threads",
 } as const;
+const maxImageSize = 10 * 1024 * 1024;
 
 export default function SocialAdminPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [caption, setCaption] = useState("");
-  const [platforms, setPlatforms] = useState<string[]>(["instagram", "facebook", "threads"]);
+  const [platforms, setPlatforms] = useState<string[]>([
+    "instagram",
+    "facebook",
+    "threads",
+  ]);
   const [scheduledAt, setScheduledAt] = useState("");
   const [images, setImages] = useState<File[]>([]);
+  const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -49,15 +61,14 @@ export default function SocialAdminPage() {
     setSaving(true);
     setError("");
     try {
+      const intent = String(
+        new FormData(event.currentTarget as HTMLFormElement).get("intent") ??
+          "draft",
+      );
+      if (intent === "scheduled" && !scheduledAt) {
+        throw new Error("請先選擇排程時間");
+      }
       if (images.length > 10) throw new Error("一次最多上傳 10 張照片");
-      const uploadedImages = await Promise.all(images.map(async (image) => {
-        const formData = new FormData();
-        formData.append("file", image);
-        const uploadResponse = await fetch("/api/v1/admin/social-posts/upload-image", { method: "POST", credentials: "include", body: formData });
-        const uploadData = await uploadResponse.json();
-        if (!uploadResponse.ok) throw new Error(uploadData.detail ?? "圖片上傳失敗");
-        return uploadData as { r2_object_key: string; image_name: string; image_mime_type: string };
-      }));
       const response = await fetch("/api/v1/admin/social-posts", {
         method: "POST",
         credentials: "include",
@@ -68,12 +79,34 @@ export default function SocialAdminPage() {
           scheduled_at: scheduledAt
             ? new Date(scheduledAt).toISOString()
             : null,
-          images: uploadedImages,
+          status: intent === "scheduled" ? "scheduled" : "draft",
+          images: [],
         }),
       });
+      if (!response.ok)
+        throw new Error(await readResponseError(response, "無法儲存社群貼文"));
       const data = await response.json();
-      if (!response.ok) throw new Error(data.detail ?? "無法儲存社群貼文");
       setPosts((current) => [data, ...current]);
+
+      for (const image of images) {
+        const formData = new FormData();
+        formData.append("file", image);
+        const uploadResponse = await fetch(
+          `/api/v1/admin/social-posts/${data.id}/images`,
+          {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+          },
+        );
+        if (!uploadResponse.ok) {
+          throw new Error(
+            `草稿已儲存，但「${image.name}」上傳失敗：${await readResponseError(uploadResponse, "圖片上傳失敗")}`,
+          );
+        }
+      }
+
+      await loadPosts();
       setCaption("");
       setScheduledAt("");
       setImages([]);
@@ -134,21 +167,135 @@ export default function SocialAdminPage() {
                 placeholder="輸入要發布到社群平台的文字…"
               />
             </label>
-            <label className="grid gap-2 text-sm font-bold">
-              照片
-              <span className="flex min-h-11 items-center gap-2 border border-border bg-background px-3 font-normal">
-                <FileImage size={17} />
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(event) =>
-                    setImages(Array.from(event.target.files ?? []).slice(0, 10))
-                  }
-                />
-              </span>
-            </label>
-            {images.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4"><p className="col-span-full text-sm text-muted-foreground">已選 {images.length} 張，發布順序如下（保留原圖比例）</p>{images.map((image, index) => <div key={`${image.name}-${index}`} className="border border-border bg-background p-2"><div className="flex aspect-[5/4] items-center justify-center overflow-hidden bg-surface-raised"><img src={URL.createObjectURL(image)} alt={image.name} className="max-h-full max-w-full object-contain" /></div><p className="mt-2 truncate text-xs">{index + 1}. {image.name}</p><div className="mt-2 flex justify-between"><button type="button" disabled={index === 0} onClick={() => setImages((current) => swap(current, index, index - 1))} aria-label={`將第 ${index + 1} 張照片往前`} className="min-h-9 min-w-9 border border-border disabled:opacity-30"><ArrowLeft size={15} /></button><button type="button" disabled={index === images.length - 1} onClick={() => setImages((current) => swap(current, index, index + 1))} aria-label={`將第 ${index + 1} 張照片往後`} className="min-h-9 min-w-9 border border-border disabled:opacity-30"><ArrowRight size={15} /></button></div></div>)}</div>}
+            <section
+              aria-labelledby="new-images-heading"
+              className="grid gap-3"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 id="new-images-heading" className="text-sm font-bold">
+                    照片（{images.length} / 10）
+                  </h2>
+                  {images.length > 1 && (
+                    <p className="mt-1 text-xs font-normal text-muted-foreground">
+                      拖曳照片或使用箭頭調整順序。
+                    </p>
+                  )}
+                </div>
+                <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold transition-colors hover:bg-surface-raised has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
+                  <ImagePlus size={17} />
+                  新增照片
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={saving || images.length >= 10}
+                    className="sr-only"
+                    onChange={(event) => {
+                      const selected = Array.from(
+                        event.target.files ?? [],
+                      ).slice(0, 10 - images.length);
+                      const oversized = selected.find(
+                        (image) => image.size > maxImageSize,
+                      );
+                      if (oversized) {
+                        setError(
+                          `「${oversized.name}」超過 10 MB，請改用較小的照片。`,
+                        );
+                        event.target.value = "";
+                        return;
+                      }
+                      setError("");
+                      setImages((current) => [...current, ...selected]);
+                      event.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
+              <p className="text-sm font-normal text-muted-foreground">
+                會先建立草稿或排程，成功後才上傳照片。每張不超過 10 MB。
+              </p>
+              {images.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {images.map((image, index) => (
+                    <div
+                      key={`${image.name}-${index}`}
+                      draggable
+                      onDragStart={() => setDraggedImageIndex(index)}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        if (
+                          draggedImageIndex !== null &&
+                          draggedImageIndex !== index
+                        ) {
+                          setImages((current) =>
+                            swap(current, draggedImageIndex, index),
+                          );
+                        }
+                        setDraggedImageIndex(null);
+                      }}
+                      onDragEnd={() => setDraggedImageIndex(null)}
+                      className={`border border-border bg-background p-2 ${draggedImageIndex === index ? "opacity-50" : ""}`}
+                    >
+                      <div className="flex aspect-5/4 items-center justify-center overflow-hidden bg-surface-raised">
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={image.name}
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
+                      <p
+                        className="mt-2 flex min-h-5 min-w-0 items-center gap-1 truncate text-xs"
+                        title="拖曳以調整順序"
+                      >
+                        <GripVertical
+                          size={14}
+                          className="shrink-0 text-muted-foreground"
+                        />
+                        {index + 1}. {image.name}
+                      </p>
+                      <div className="mt-2 grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          onClick={() =>
+                            setImages((current) =>
+                              swap(current, index, index - 1),
+                            )
+                          }
+                          aria-label={`將第 ${index + 1} 張照片往前`}
+                          className="flex min-h-9 w-full items-center justify-center border border-border disabled:opacity-30"
+                        >
+                          <ArrowLeft size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === images.length - 1}
+                          onClick={() =>
+                            setImages((current) =>
+                              swap(current, index, index + 1),
+                            )
+                          }
+                          aria-label={`將第 ${index + 1} 張照片往後`}
+                          className="flex min-h-9 w-full items-center justify-center border border-border disabled:opacity-30"
+                        >
+                          <ArrowRight size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setImages((current) => current.filter((_, currentIndex) => currentIndex !== index))}
+                          aria-label={`刪除第 ${index + 1} 張照片`}
+                          className="flex min-h-9 w-full items-center justify-center border border-destructive text-destructive transition-colors hover:bg-destructive hover:text-on-primary"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
             <fieldset>
               <legend className="text-sm font-bold">發布平台</legend>
               <div className="mt-2 flex flex-wrap gap-3">
@@ -185,17 +332,29 @@ export default function SocialAdminPage() {
                 />
               </span>
             </label>
-            <button
-              disabled={saving || platforms.length === 0}
-              className="button-25d inline-flex min-h-11 w-fit items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50"
-            >
-              {saving ? (
-                <LoaderCircle className="animate-spin" size={17} />
-              ) : (
-                <Plus size={17} />
-              )}
-              {scheduledAt ? "建立排程" : "儲存草稿"}
-            </button>
+            <div className="flex flex-wrap gap-3">
+              <button
+                name="intent"
+                value="draft"
+                disabled={saving || platforms.length === 0}
+                className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50"
+              >
+                {saving ? (
+                  <LoaderCircle className="animate-spin" size={17} />
+                ) : (
+                  <Plus size={17} />
+                )}
+                儲存草稿
+              </button>
+              <button
+                name="intent"
+                value="scheduled"
+                disabled={saving || platforms.length === 0}
+                className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50"
+              >
+                <CalendarClock size={17} /> 建立排程
+              </button>
+            </div>
           </form>
         </section>
         <section className="mt-8 border border-border bg-surface">
@@ -210,9 +369,14 @@ export default function SocialAdminPage() {
               posts.map((post) => (
                 <article
                   key={post.id}
-                  className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between"
+                  className="group relative flex flex-col gap-4 p-5 transition-colors hover:bg-surface-raised md:flex-row md:items-center md:justify-between"
                 >
-                  <div>
+                  <Link
+                    href={`/admin/social/${post.id}`}
+                    aria-label={`預覽與編輯：${post.caption}`}
+                    className="absolute inset-0 z-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+                  />
+                  <div className="pointer-events-none relative z-10 min-w-0 flex-1">
                     <p className="line-clamp-2 font-bold">{post.caption}</p>
                     <p className="mt-2 text-sm text-muted-foreground">
                       {post.platforms
@@ -224,17 +388,18 @@ export default function SocialAdminPage() {
                         )
                         .join("、")}{" "}
                       · {post.images?.length ?? 0} 張照片 ·{" "}
-                      {post.scheduled_at
-                        ? `排程 ${formatDate(post.scheduled_at)}`
-                        : "草稿"}
+                      {post.status === "scheduled"
+                        ? `排程 ${post.scheduled_at ? formatDate(post.scheduled_at) : "尚未設定"}`
+                        : post.scheduled_at
+                          ? `草稿 · 更新時間 ${formatDate(post.scheduled_at)}`
+                          : "草稿"}
                     </p>
                   </div>
                   <button
                     onClick={() => void removePost(post.id)}
-                    className="inline-flex min-h-11 items-center gap-2 self-start font-bold text-destructive"
+                    className="relative z-10 inline-flex min-h-11 items-center gap-2 self-start rounded-md bg-surface border border-destructive px-3 font-bold text-destructive transition-colors hover:bg-destructive hover:text-on-primary focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
-                    <Trash2 size={17} />
-                    刪除
+                    <Trash2 size={17} /> 刪除
                   </button>
                 </article>
               ))
@@ -261,4 +426,15 @@ function swap<T>(items: T[], first: number, second: number) {
   const next = [...items];
   [next[first], next[second]] = [next[second], next[first]];
   return next;
+}
+
+async function readResponseError(response: Response, fallback: string) {
+  const body = await response.text();
+  try {
+    const data = JSON.parse(body) as { detail?: unknown };
+    if (typeof data.detail === "string") return data.detail;
+  } catch {
+    // Some proxies return a plain-text or HTML error page instead of JSON.
+  }
+  return body.trim() || fallback;
 }

@@ -32,7 +32,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: memberEmail }),
       });
-      const data = await response.json();
+      const data = await parseResponse(response);
       if (!response.ok) throw new Error(data.detail ?? "目前無法登入社員學習區");
       const returnTo = new URLSearchParams(window.location.search).get("returnTo");
       const destination =
@@ -57,7 +57,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: adminEmail, password: adminPassword }),
       });
-      const data = await response.json();
+      const data = await parseResponse(response);
       if (!response.ok) throw new Error(data.detail ?? "目前無法登入管理後台");
       window.location.assign(data.redirect_to ?? "/admin");
     } catch (error) {
@@ -100,4 +100,16 @@ export default function LoginPage() {
       </div>
     </main>
   );
+}
+
+type LoginResponse = { detail?: string; redirect_to?: string; message?: string };
+
+async function parseResponse(response: Response): Promise<LoginResponse> {
+  const text = await response.text();
+  try {
+    const data: unknown = JSON.parse(text);
+    return typeof data === "object" && data !== null ? data as LoginResponse : {};
+  } catch {
+    return { detail: text || "後端沒有回傳可讀取的錯誤訊息" };
+  }
 }

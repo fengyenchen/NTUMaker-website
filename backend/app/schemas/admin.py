@@ -123,12 +123,24 @@ class SocialPostWrite(BaseModel):
     platforms: list[str] = Field(min_length=1)
     images: list["SocialPostImageWrite"] = Field(default_factory=list, max_length=10)
     scheduled_at: datetime | None = None
+    status: SocialPostStatus = SocialPostStatus.DRAFT
+
+
+class SocialPostUpdate(BaseModel):
+    caption: str = Field(min_length=1, max_length=10000)
+    platforms: list[str] = Field(min_length=1)
+    scheduled_at: datetime | None = None
+    status: SocialPostStatus = SocialPostStatus.DRAFT
 
 
 class SocialPostImageWrite(BaseModel):
     r2_object_key: str = Field(min_length=1, max_length=500)
     image_name: str = Field(min_length=1, max_length=255)
     image_mime_type: str = Field(min_length=1, max_length=100)
+
+
+class SocialPostImageOrderUpdate(BaseModel):
+    image_ids: list[UUID] = Field(min_length=1, max_length=10)
 
 
 class SocialPostImageSummary(BaseModel):
@@ -139,6 +151,7 @@ class SocialPostImageSummary(BaseModel):
     image_name: str
     image_mime_type: str
     order_index: int
+    image_url: str | None = None
 
 
 class SocialPostSummary(BaseModel):
