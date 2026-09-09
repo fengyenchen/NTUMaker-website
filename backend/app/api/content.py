@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi.responses import Response
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload, with_loader_criteria
 
@@ -9,8 +10,15 @@ from app.db.session import get_db
 from app.models.content import Announcement, CourseSeries, CourseSession, PublishStatus, Resource, SiteSetting, Visibility
 from app.models.user import User
 from app.schemas.content import AnnouncementSummary, CourseSeriesCatalogSummary, CourseSeriesSummary, ResourceSummary
+from app.services.r2 import read_image
 
 router = APIRouter(prefix="/content", tags=["內容"])
+
+
+@router.get("/assets/{object_key:path}", include_in_schema=False)
+def get_public_asset(object_key: str = Path(min_length=1)) -> Response:
+    data, content_type = read_image(object_key)
+    return Response(content=data, media_type=content_type or "application/octet-stream", headers={"Cache-Control": "public, max-age=31536000, immutable"})
 
 
 @router.get("/settings", summary="取得前台網站文字設定")

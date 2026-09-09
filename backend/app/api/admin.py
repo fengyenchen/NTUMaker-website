@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
 from fastapi.responses import Response
@@ -43,7 +44,6 @@ PUBLISH_STATUS_LABELS = {
     PublishStatus.ARCHIVED: "已封存",
 }
 
-
 @router.get("/overview", summary="取得管理後台總覽")
 def get_overview(db: Session = Depends(get_db)) -> dict:
     today = taipei_today()
@@ -84,6 +84,18 @@ def get_overview(db: Session = Depends(get_db)) -> dict:
         "member_resources": member_resources,
         "next_session": {"title": next_session.title, "starts_at": next_session.starts_at} if next_session else None,
         "recent": recent[:5],
+    }
+
+
+@router.post("/uploads/images", summary="上傳管理後台圖片")
+def upload_admin_image(file: UploadFile = File(...)) -> dict[str, str]:
+    uploaded = upload_image(file)
+    public_url = uploaded["public_url"]
+    return {
+        "url": public_url or f"/api/v1/content/assets/{quote(uploaded['r2_object_key'], safe='/')}" ,
+        "r2_object_key": uploaded["r2_object_key"],
+        "image_name": uploaded["image_name"],
+        "image_mime_type": uploaded["image_mime_type"],
     }
 
 

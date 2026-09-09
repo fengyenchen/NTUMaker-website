@@ -2,6 +2,7 @@
 
 import {
   Dispatch,
+  ChangeEvent,
   FormEvent,
   ReactNode,
   SetStateAction,
@@ -14,7 +15,9 @@ import {
 import {
   BookOpen,
   CalendarPlus,
+  ChevronDown,
   Film,
+  ImagePlus,
   LoaderCircle,
   Plus,
   RefreshCw,
@@ -107,8 +110,12 @@ export default function CoursesAdminPage() {
   const [seriesForm, setSeriesForm] = useState(emptySeries);
   const [sessionForm, setSessionForm] = useState(emptySession);
   const [resourceForm, setResourceForm] = useState(emptyResource);
+  const [collapsedSeriesIds, setCollapsedSeriesIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
   const resourceEditorRef = useRef<HTMLDivElement>(null);
 
@@ -176,6 +183,15 @@ export default function CoursesAdminPage() {
     setError("");
   }
 
+  function toggleSeries(seriesId: string) {
+    setCollapsedSeriesIds((current) => {
+      const next = new Set(current);
+      if (next.has(seriesId)) next.delete(seriesId);
+      else next.add(seriesId);
+      return next;
+    });
+  }
+
   function openNewSession(series: CourseSeries) {
     setSessionForm({
       ...emptySession,
@@ -221,6 +237,33 @@ export default function CoursesAdminPage() {
           ? resourceForm.youtube_url || null
           : null,
     });
+  }
+
+  async function uploadResourceImage(
+    event: ChangeEvent<HTMLInputElement>,
+    onUploaded: (url: string) => void,
+  ) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setUploadingImage(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const response = await fetch("/api/v1/admin/uploads/images", {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(readError(data.detail, "圖片上傳失敗"));
+      onUploaded(data.url);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "圖片上傳失敗");
+    } finally {
+      setUploadingImage(false);
+    }
   }
 
   async function saveEditor(
@@ -658,7 +701,7 @@ export default function CoursesAdminPage() {
                       ...resourceForm,
                       resource_type: event.target.value,
                       url:
-                        event.target.value === "link" ? resourceForm.url : "",
+                        event.target.value === "link" || event.target.value === "article" || event.target.value === "image" ? resourceForm.url : "",
                       youtube_url:
                         event.target.value === "video"
                           ? resourceForm.youtube_url
@@ -668,6 +711,8 @@ export default function CoursesAdminPage() {
                   className="input-admin"
                 >
                   <option value="link">連結</option>
+                  <option value="article">文章</option>
+                  <option value="image">圖片</option>
                   <option value="video">YouTube 影片</option>
                 </select>
               </Field>
@@ -687,19 +732,11 @@ export default function CoursesAdminPage() {
                   />
                 </Field>
               ) : (
-                <Field key="link-url" label="連結網址">
-                  <input
-                    required
-                    type="url"
-                    value={resourceForm.url}
-                    onChange={(event) =>
-                      setResourceForm({
-                        ...resourceForm,
-                        url: event.target.value,
-                      })
-                    }
-                    className="input-admin"
-                  />
+                <Field key="link-url" label={resourceForm.resource_type === "image" ? "圖片網址" : "連結網址"}>
+                  <div className="flex gap-2">
+                    <input required type="url" value={resourceForm.url} onChange={(event) => setResourceForm({ ...resourceForm, url: event.target.value })} className="input-admin min-w-0 flex-1" />
+                    {resourceForm.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳"}<input type="file" accept="image/*" disabled={uploadingImage} onChange={(event) => void uploadResourceImage(event, (url) => setResourceForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
+                  </div>
                 </Field>
               )}
               <Field label="內容權限">
@@ -758,22 +795,41 @@ export default function CoursesAdminPage() {
                   key={series.id}
                   className="border border-border bg-surface p-5"
                 >
-                  <div className="grid gap-4 border-b border-border pb-5">
+                  <div className="flex items-center justify-between gap-3 border-b border-border pb-5">
                     <div className="flex items-center justify-between gap-3">
-                      <p
-                        className={`inline-flex border px-2 py-1 text-xs font-bold ${series.track === "tuesday" ? "border-primary text-primary" : "border-accent text-accent"}`}
-                      >
-                        {trackLabel(series.track)} · {series.semester}
-                      </p>
                       <button
-                        onClick={() => openNewSession(series)}
-                        className="inline-flex min-h-11 items-center gap-2 border border-border px-3 text-sm font-bold"
+                        type="button"
+                        onClick={() => toggleSeries(series.id)}
+                        aria-expanded={!collapsedSeriesIds.has(series.id)}
+                        aria-controls={`series-content-${series.id}`}
+                        className="inline-flex min-h-11 items-center gap-3 text-left"
                       >
-                        <CalendarPlus size={16} />
-                        新增課堂
+                        <span
+                          className={`inline-flex border px-2 py-1 text-xs font-bold ${series.track === "tuesday" ? "border-primary text-primary" : "border-accent text-accent"}`}
+                        >
+                          {series.title || "未命名路線"}
+                        </span>
+                        <ChevronDown
+                          size={18}
+                          aria-hidden="true"
+                          className={`text-muted-foreground transition-transform ${collapsedSeriesIds.has(series.id) ? "-rotate-90" : ""}`}
+                        />
                       </button>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => openNewSession(series)}
+                      className="inline-flex min-h-11 shrink-0 items-center gap-2 border border-border px-3 text-sm font-bold"
+                    >
+                      <CalendarPlus size={16} />
+                      新增課堂
+                    </button>
+                  </div>
+                  <div
+                    id={`series-content-${series.id}`}
+                    hidden={collapsedSeriesIds.has(series.id)}
+                  >
+                    <div className="grid gap-4 border-b border-border py-5 sm:grid-cols-2">
                       <Field label="路線名稱">
                         <input
                           value={series.title}
@@ -840,8 +896,7 @@ export default function CoursesAdminPage() {
                           className="input-admin py-3"
                         />
                       </Field>
-                    </div>
-                    <div className="flex justify-between gap-3">
+                    <div className="flex justify-between gap-3 sm:col-span-2">
                       <button
                         disabled={saving}
                         onClick={() => void deleteSeries(series)}
@@ -859,36 +914,37 @@ export default function CoursesAdminPage() {
                         儲存路線
                       </button>
                     </div>
-                  </div>
-                  <div className="mt-5 grid gap-2">
-                    {series.sessions.length === 0 ? (
-                      <p className="border-t border-border py-5 text-sm text-muted-foreground">
-                        這條路線還沒有課堂。
-                      </p>
-                    ) : (
-                      series.sessions.map((session) => (
-                        <button
-                          key={session.id}
-                          onClick={() => setSelectedSessionId(session.id)}
-                          className={`grid min-h-16 w-full grid-cols-[5rem_1fr_auto] items-center gap-3 border p-3 text-left transition-colors ${selectedSessionId === session.id ? "border-accent bg-accent/10" : "border-border hover:bg-background"}`}
-                        >
-                          <span className="font-mono text-xs text-muted-foreground">
-                            {session.week_label}
-                          </span>
-                          <span>
-                            <span className="block font-bold">
-                              {session.title}
+                    </div>
+                    <div className="mt-5 grid gap-2">
+                      {series.sessions.length === 0 ? (
+                        <p className="border-t border-border py-5 text-sm text-muted-foreground">
+                          這條路線還沒有課堂。
+                        </p>
+                      ) : (
+                        series.sessions.map((session) => (
+                          <button
+                            key={session.id}
+                            onClick={() => setSelectedSessionId(session.id)}
+                            className={`grid min-h-16 w-full grid-cols-[5rem_1fr_auto] items-center gap-3 border p-3 text-left transition-colors ${selectedSessionId === session.id ? "border-accent bg-accent/10" : "border-border hover:bg-background"}`}
+                          >
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {session.week_label}
                             </span>
-                            <span className="mt-1 block text-xs text-muted-foreground">
-                              {session.resources.length} 項內容
+                            <span>
+                              <span className="block font-bold">
+                                {session.title}
+                              </span>
+                              <span className="mt-1 block text-xs text-muted-foreground">
+                                {session.resources.length} 項內容
+                              </span>
                             </span>
-                          </span>
-                          <span className="text-xs font-bold text-accent">
-                            管理
-                          </span>
-                        </button>
-                      ))
-                    )}
+                            <span className="text-xs font-bold text-accent">
+                              管理
+                            </span>
+                          </button>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </section>
               ))}
@@ -908,7 +964,7 @@ export default function CoursesAdminPage() {
                 <>
                   <div className="border-b border-border pb-5">
                     <p className="mb-4 text-xs font-bold text-muted-foreground">
-                      {trackLabel(selectedSeries.track)} · 直接編輯本堂課
+                      {trackLabel(selectedSeries.track)} · {selectedSeries.title}
                     </p>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Field label="週次">
@@ -1060,7 +1116,7 @@ export default function CoursesAdminPage() {
                                       {
                                         resource_type: event.target.value,
                                         url:
-                                          event.target.value === "link"
+                                          event.target.value === "link" || event.target.value === "article" || event.target.value === "image"
                                             ? resource.url
                                             : null,
                                         youtube_url:
@@ -1073,6 +1129,8 @@ export default function CoursesAdminPage() {
                                   className="input-admin"
                                 >
                                   <option value="link">連結</option>
+                                  <option value="article">文章</option>
+                                  <option value="image">圖片</option>
                                   <option value="video">YouTube 影片</option>
                                 </select>
                               </Field>
@@ -1108,20 +1166,11 @@ export default function CoursesAdminPage() {
                                 />
                               </Field>
                             ) : (
-                              <Field key="link-url" label="連結網址">
-                                <input
-                                  required
-                                  type="url"
-                                  value={resource.url ?? ""}
-                                  onChange={(event) =>
-                                    updateResourceDraft(
-                                      selectedSession.id,
-                                      resource.id,
-                                      { url: event.target.value || null },
-                                    )
-                                  }
-                                  className="input-admin"
-                                />
+                              <Field key="link-url" label={resource.resource_type === "image" ? "圖片網址" : "連結網址"}>
+                                <div className="flex gap-2">
+                                  <input required type="url" value={resource.url ?? ""} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { url: event.target.value || null })} className="input-admin min-w-0 flex-1" />
+                                  {resource.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳"}<input type="file" accept="image/*" disabled={uploadingImage} onChange={(event) => void uploadResourceImage(event, (url) => updateResourceDraft(selectedSession.id, resource.id, { url }))} className="sr-only" /></label>}
+                                </div>
                               </Field>
                             )}
                             <Field label="內容說明">
@@ -1586,6 +1635,7 @@ function resourceTypeLabel(type: string) {
       {
         video: "YouTube 影片",
         link: "連結",
+        image: "圖片",
       } as Record<string, string>
     )[type] ?? type
   );

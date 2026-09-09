@@ -154,7 +154,11 @@ function ResourceCard({ resource }: { resource: ResourceItem }) {
         : BookOpen;
   const content = (
     <>
-      <Icon className="text-accent" aria-hidden="true" />
+      {resource.resource_type === "image" && resource.url ? (
+        <img src={resource.url} alt={resource.title} loading="lazy" className="mb-5 aspect-[5/4] w-full object-contain border border-border bg-background" />
+      ) : (
+        <Icon className="text-accent" aria-hidden="true" />
+      )}
       <p className="mt-7 text-sm text-muted-foreground">
         {resource.resource_type === "video" ? "課程影片" : "資源"}
       </p>

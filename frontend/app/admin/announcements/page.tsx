@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
-import { Edit3, Eye, LoaderCircle, Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { Edit3, Eye, ImagePlus, LoaderCircle, Pencil, Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { MarkdownContent } from "@/components/markdown-content";
 
 type PublishStatus = "draft" | "published" | "archived";
@@ -49,8 +49,10 @@ export default function AnnouncementsAdminPage() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
   const [previewBody, setPreviewBody] = useState(false);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -122,6 +124,40 @@ export default function AnnouncementsAdminPage() {
     }
   }
 
+  async function uploadBodyImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setUploadingImage(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const response = await fetch("/api/v1/admin/uploads/images", {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(readError(data.detail, "圖片上傳失敗"));
+      const markdown = `![${data.image_name ?? file.name}](${data.url})`;
+      const textarea = bodyRef.current;
+      const start = textarea?.selectionStart ?? form.body.length;
+      const end = textarea?.selectionEnd ?? start;
+      const nextBody = `${form.body.slice(0, start)}${markdown}${form.body.slice(end)}`;
+      setForm((current) => ({ ...current, body: nextBody }));
+      requestAnimationFrame(() => {
+        textarea?.focus();
+        const cursor = start + markdown.length;
+        textarea?.setSelectionRange(cursor, cursor);
+      });
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "圖片上傳失敗");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
   async function deleteAnnouncement(item: Announcement) {
     if (!window.confirm(`確定要刪除「${item.title}」嗎？刪除後無法復原。`)) return;
     setError("");
@@ -163,7 +199,7 @@ export default function AnnouncementsAdminPage() {
                 <Field label="網址代稱" hint="只能使用小寫英文、數字與連字號"><input required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={form.slug} onChange={(event) => setForm({ ...form, slug: event.target.value.toLowerCase() })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3 font-mono" /></Field>
               </div>
               <Field label="摘要" hint={`${form.summary.length} / 500`}><textarea required maxLength={500} rows={2} value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} className="w-full rounded-lg border border-border bg-background p-3 leading-6" /></Field>
-              <Field label="公告內容" hint="支援 Markdown"><div className="markdown-editor-shell overflow-hidden border border-border bg-background"><div className="flex border-b border-border"><button type="button" onClick={() => setPreviewBody(false)} className={`inline-flex min-h-10 items-center gap-2 px-3 text-sm font-bold ${!previewBody ? "bg-surface-raised" : "text-muted-foreground"}`}><Pencil size={15} />編輯</button><button type="button" onClick={() => setPreviewBody(true)} className={`inline-flex min-h-10 items-center gap-2 px-3 text-sm font-bold ${previewBody ? "bg-surface-raised" : "text-muted-foreground"}`}><Eye size={15} />預覽</button></div>{previewBody ? <MarkdownContent content={form.body || "尚未輸入公告內容。"} className="min-h-48 p-4" /> : <textarea required rows={8} value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} className="markdown-editor w-full bg-transparent p-3 leading-7" />}</div></Field>
+              <Field label="公告內容" hint="支援 Markdown"><div className="markdown-editor-shell overflow-hidden border border-border bg-background"><div className="flex flex-wrap items-center justify-between border-b border-border"><div className="flex"><button type="button" onClick={() => setPreviewBody(false)} className={`inline-flex min-h-10 items-center gap-2 px-3 text-sm font-bold ${!previewBody ? "bg-surface-raised" : "text-muted-foreground"}`}><Pencil size={15} />編輯</button><button type="button" onClick={() => setPreviewBody(true)} className={`inline-flex min-h-10 items-center gap-2 px-3 text-sm font-bold ${previewBody ? "bg-surface-raised" : "text-muted-foreground"}`}><Eye size={15} />預覽</button></div><label className="inline-flex min-h-10 cursor-pointer items-center gap-2 px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={15} />{uploadingImage ? "上傳中…" : "上傳圖片"}<input type="file" accept="image/*" disabled={uploadingImage} onChange={(event) => void uploadBodyImage(event)} className="sr-only" /></label></div>{previewBody ? <MarkdownContent content={form.body || "尚未輸入公告內容。"} className="min-h-48 p-4" /> : <textarea ref={bodyRef} required rows={8} value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} className="markdown-editor w-full bg-transparent p-3 leading-7" />}</div></Field>
               <div className="grid gap-5 md:grid-cols-2">
                 <Field label="發布狀態"><select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as AnnouncementForm["status"] })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3"><option value="draft">草稿</option><option value="published">發布</option></select></Field>
                 <Field label="發布時間" hint="發布狀態下留空會立即發布"><input type="datetime-local" value={form.published_at} onChange={(event) => setForm({ ...form, published_at: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
