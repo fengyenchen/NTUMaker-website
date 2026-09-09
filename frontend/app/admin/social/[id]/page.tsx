@@ -103,6 +103,16 @@ export default function SocialPostEditorPage({ params }: { params: Promise<{ id:
       });
       if (!response.ok) throw new Error(await readResponseError(response, "無法儲存變更"));
 
+      // Remove images marked for deletion first so their slots are available
+      // before pending local files are uploaded to R2.
+      for (const imageId of deletedImageIds) {
+        const imageResponse = await fetch(`/api/v1/admin/social-posts/${post.id}/images/${imageId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!imageResponse.ok) throw new Error(await readResponseError(imageResponse, "圖片刪除失敗"));
+      }
+
       const uploadedImages = new Map<string, SocialImage>();
       for (const image of post.images) {
         if (!image.file) continue;
@@ -115,14 +125,6 @@ export default function SocialPostEditorPage({ params }: { params: Promise<{ id:
         });
         if (!imageResponse.ok) throw new Error(await readResponseError(imageResponse, "圖片上傳失敗"));
         uploadedImages.set(image.id, (await imageResponse.json()) as SocialImage);
-      }
-
-      for (const imageId of deletedImageIds) {
-        const imageResponse = await fetch(`/api/v1/admin/social-posts/${post.id}/images/${imageId}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (!imageResponse.ok) throw new Error(await readResponseError(imageResponse, "圖片刪除失敗"));
       }
 
       const orderedImageIds = post.images.map((image) => uploadedImages.get(image.id)?.id ?? image.id);
