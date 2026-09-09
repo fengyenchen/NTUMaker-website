@@ -805,7 +805,7 @@ export default function CoursesAdminPage() {
                         className="inline-flex min-h-11 items-center gap-3 text-left"
                       >
                         <span
-                          className={`inline-flex border px-2 py-1 text-xs font-bold ${series.track === "tuesday" ? "border-primary text-primary" : "border-accent text-accent"}`}
+                          className={`inline-flex border px-2 py-1 text-xs font-bold ${isEvenWeekday(series.track) ? "border-primary text-primary" : "border-accent text-accent"}`}
                         >
                           {series.title || "未命名路線"}
                         </span>
@@ -1625,6 +1625,9 @@ function trackLabel(track: Track) {
       sunday: "星期日",
     } as Record<Track, string>
   )[track];
+}
+function isEvenWeekday(track: Track) {
+  return ({ monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 7 } as Record<Track, number>)[track] % 2 === 0;
 }
 function visibilityLabel(visibility: Visibility) {
   return visibility === "public" ? "公開" : "社員限定";

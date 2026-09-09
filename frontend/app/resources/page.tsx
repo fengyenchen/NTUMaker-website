@@ -27,8 +27,8 @@ export default async function ResourcesPage() {
       <section className="px-5 pb-28 md:px-8">
         <div className="mx-auto grid max-w-330 gap-10 lg:grid-cols-2">
           {courseTracks.map((track) => {
-            const orange = track.id === "tuesday";
-            const Icon = orange ? CalendarDays : Wrench;
+            const red = isEvenWeekday(track.id);
+            const Icon = red ? CalendarDays : Wrench;
             return (
               <article
                 key={track.id}
@@ -36,7 +36,7 @@ export default async function ResourcesPage() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <span
-                    className={`grid size-14 shrink-0 place-items-center rounded-2xl border ${orange ? "border-primary/40 bg-primary/10 text-primary" : "border-accent/40 bg-accent/10 text-accent"}`}
+                    className={`grid size-14 shrink-0 place-items-center rounded-2xl border ${red ? "border-primary/40 bg-primary/10 text-primary" : "border-accent/40 bg-accent/10 text-accent"}`}
                   >
                     <Icon aria-hidden="true" />
                   </span>
@@ -57,7 +57,7 @@ export default async function ResourcesPage() {
                     >
                       <div className="flex items-start gap-4">
                         <span
-                          className={`min-w-16 font-mono text-xs font-bold ${orange ? "text-primary" : "text-accent"}`}
+                          className={`min-w-16 font-mono text-xs font-bold ${red ? "text-primary" : "text-accent"}`}
                         >
                           {session.week}
                         </span>
@@ -105,6 +105,10 @@ export default async function ResourcesPage() {
       <SiteFooter />
     </main>
   );
+}
+
+function isEvenWeekday(track: string) {
+  return ({ monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6, sunday: 7 } as Record<string, number>)[track] % 2 === 0;
 }
 
 function AssetIcon({ label }: { label: string }) {
