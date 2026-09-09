@@ -8,7 +8,7 @@ NTUMaker 的公開資訊、社課資源、社員影片與幹部管理平台。
 ## 專案目標
 
 - 一般訪客：查看公告、社課與工作坊簡介、公開資源與作品。
-- 社員：以 Email 登入，在資格有效期間觀看限定資源與嵌入式 YouTube 課程影片，並管理顯示名稱與查看社員資格。
+- 社員：以 Email 登入，在資格有效期間觀看限定資源，並管理顯示名稱與查看社員資格。
 - Admin：管理帳號、社員期限、公告、課程、資源與發布狀態。
 - 社群發布：建立草稿、排程，並由後端排程 worker 串接 Instagram、Facebook Page 與 Threads 發文。
 
@@ -24,7 +24,7 @@ NTUMaker 的公開資訊、社課資源、社員影片與幹部管理平台。
 - API：FastAPI、SQLAlchemy、Alembic
 - Database：Neon PostgreSQL
 - Authentication：社員使用資料庫 Email 白名單；管理員使用 Email＋密碼；Session 使用 HttpOnly Cookie
-- Video：資料庫只保存 YouTube URL 與影片 metadata
+- Resource：資料庫保存連結、圖片、文件與純文字內容
 
 ```text
 Browser
@@ -60,7 +60,7 @@ Browser
 └─ 社員資格有效期限
 ```
 
-課程與資源統一由 `/resources` 進入；每堂課使用資料庫 `course_sessions.id` 作為網址識別，例如 `/resources/<session-uuid>`。YouTube 資源會直接在課程內容頁嵌入播放。
+課程與資源統一由 `/resources` 進入；每堂課使用資料庫 `course_sessions.id` 作為網址識別，例如 `/resources/<session-uuid>`。
 
 ### Admin 後台
 
@@ -97,7 +97,7 @@ Browser
 - `announcements`：公告與發布狀態
 - `course_series`：星期二基礎線／星期五工作坊線
 - `course_sessions`：每堂課的內容、講師與日期
-- `resources`：資源、YouTube URL、附件連結與可見層級
+- `resources`：資源連結、圖片、文件、純文字與可見層級
 - `events`、`projects`、`tags`
 - `audit_logs`：Admin 操作紀錄
 - `social_posts`、`social_publications`：未來跨平台發布
@@ -222,4 +222,6 @@ pnpm build
 - 如果用新圖片取代舊圖片，儲存時會先刪除標記的舊圖片，再上傳新增圖片，避免暫存期間超過 10 張的限制。
 - 草稿至少要有貼文文字或一張圖片；排程貼文需要貼文文字與排程時間，若發布到 Instagram 另需至少一張圖片。
 
-公告內文中的圖片使用 Markdown 網址保存。移除圖片語法時不會自動刪除 R2 物件，讓管理員之後仍可重新貼回同一個網址；R2 圖片清理應透過日後的手動或定期清理機制處理。
+公告內文中的圖片使用 Markdown 網址保存，預覽會透過網站圖片代理載入 R2 圖片。移除圖片語法時不會立即刪除 R2 物件，讓管理員有時間復原；後端每天會清理 `social/` 下已超過 24 小時、且未被公告、社課資源或社群貼文引用的圖片。清理週期與保留時間可用 `R2_CLEANUP_INTERVAL_SECONDS`、`R2_CLEANUP_GRACE_SECONDS` 調整，並可用 `R2_CLEANUP_ENABLED=false` 停用。
+
+社課資源支援連結、文件（含圖片與影片）與文字。圖片、影片與常見文件（PDF、Word、Excel、PowerPoint、ZIP、文字檔）可直接從管理後台上傳至 R2；系統會依檔案格式自動選擇圖片、影片或 PDF 預覽，無法預覽的格式則提供下載。文字內容直接儲存並提供選取複製。資源檔案會以 `resources/` 前綴保存，不會被社群圖片清理流程刪除。

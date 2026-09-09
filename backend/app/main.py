@@ -1,4 +1,5 @@
 import asyncio
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -7,17 +8,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import admin, auth, content
 from app.core.config import get_settings
 from app.services.social_publisher import publish_due_social_posts
+from app.services.r2_cleanup import cleanup_unreferenced_r2_images
 
 settings = get_settings()
 
 
 async def _social_scheduler() -> None:
+    last_cleanup_at = 0.0
     while True:
         try:
             await asyncio.to_thread(publish_due_social_posts)
         except Exception:
             # A failed polling cycle must not stop future scheduled posts.
             pass
+        if settings.r2_cleanup_enabled and time.monotonic() - last_cleanup_at >= max(60, settings.r2_cleanup_interval_seconds):
+            try:
+                await asyncio.to_thread(cleanup_unreferenced_r2_images)
+            except Exception:
+                # R2 暫時不可用時，下一個週期再試，不影響排程發文。
+                pass
+            last_cleanup_at = time.monotonic()
         await asyncio.sleep(max(10, settings.social_scheduler_interval_seconds))
 
 

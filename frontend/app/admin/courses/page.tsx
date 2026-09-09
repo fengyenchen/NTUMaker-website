@@ -16,7 +16,6 @@ import {
   BookOpen,
   CalendarPlus,
   ChevronDown,
-  Film,
   ImagePlus,
   LoaderCircle,
   Plus,
@@ -43,7 +42,6 @@ type Resource = {
   description: string;
   resource_type: string;
   url: string | null;
-  youtube_url: string | null;
   visibility: Visibility;
 };
 
@@ -77,6 +75,7 @@ const emptySeries = {
   track: "tuesday" as Track,
   time: "19:00–21:00",
   description: "",
+  content: "",
 };
 const emptySession = {
   series_id: "",
@@ -94,12 +93,12 @@ const emptyResource = {
   description: "",
   resource_type: "link",
   url: "",
-  youtube_url: "",
   visibility: "member" as Visibility,
 };
 
 export default function CoursesAdminPage() {
   const [seriesList, setSeriesList] = useState<CourseSeries[]>([]);
+  const [resourceSnapshots, setResourceSnapshots] = useState<Record<string, string>>({});
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null,
   );
@@ -131,6 +130,11 @@ export default function CoursesAdminPage() {
         throw new Error(readError(data.detail, "無法讀取課程資料"));
       const next = data as CourseSeries[];
       setSeriesList(next);
+      const snapshots: Record<string, string> = {};
+      next.forEach((series) => series.sessions.forEach((session) => session.resources.forEach((resource) => {
+        snapshots[resource.id] = serializeResource(resource);
+      })));
+      setResourceSnapshots(snapshots);
       setSelectedSessionId((current) =>
         next.some((series) =>
           series.sessions.some((session) => session.id === current),
@@ -231,11 +235,8 @@ export default function CoursesAdminPage() {
     await saveEditor("/api/v1/admin/resources", "POST", {
       ...resourceForm,
       url:
-        resourceForm.resource_type === "link" ? resourceForm.url || null : null,
-      youtube_url:
-        resourceForm.resource_type === "video"
-          ? resourceForm.youtube_url || null
-          : null,
+        ["link", "image", "file"].includes(resourceForm.resource_type) ? resourceForm.url || null : null,
+      description: resourceForm.resource_type === "text" ? resourceForm.content || "" : resourceForm.description,
     });
   }
 
@@ -261,6 +262,29 @@ export default function CoursesAdminPage() {
       onUploaded(data.url);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "圖片上傳失敗");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  async function uploadResourceFile(
+    event: ChangeEvent<HTMLInputElement>,
+    onUploaded: (url: string) => void,
+  ) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setUploadingImage(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const response = await fetch("/api/v1/admin/uploads/resources", { method: "POST", credentials: "include", body });
+      const data = await response.json();
+      if (!response.ok) throw new Error(readError(data.detail, "檔案上傳失敗"));
+      onUploaded(data.url);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "檔案上傳失敗");
     } finally {
       setUploadingImage(false);
     }
@@ -414,10 +438,9 @@ export default function CoursesAdminPage() {
       {
         session_id: resource.session_id,
         title: resource.title,
-        description: resource.description,
+        description: resource.description.trim() || "無說明",
         resource_type: resource.resource_type,
         url: resource.url || null,
-        youtube_url: resource.youtube_url || null,
         visibility: resource.visibility,
       },
       false,
@@ -701,41 +724,26 @@ export default function CoursesAdminPage() {
                       ...resourceForm,
                       resource_type: event.target.value,
                       url:
-                        event.target.value === "link" || event.target.value === "article" || event.target.value === "image" ? resourceForm.url : "",
-                      youtube_url:
-                        event.target.value === "video"
-                          ? resourceForm.youtube_url
-                          : "",
+                        ["link", "image", "file"].includes(event.target.value) ? resourceForm.url : "",
+                      content:
+                        event.target.value === "text" ? resourceForm.content : "",
                     })
                   }
                   className="input-admin"
                 >
                   <option value="link">連結</option>
-                  <option value="article">文章</option>
-                  <option value="image">圖片</option>
-                  <option value="video">YouTube 影片</option>
+                  <option value="file">文件</option>
+                  <option value="text">文字</option>
                 </select>
               </Field>
-              {resourceForm.resource_type === "video" ? (
-                <Field key="youtube-url" label="YouTube 網址">
-                  <input
-                    required
-                    type="url"
-                    value={resourceForm.youtube_url}
-                    onChange={(event) =>
-                      setResourceForm({
-                        ...resourceForm,
-                        youtube_url: event.target.value,
-                      })
-                    }
-                    className="input-admin"
-                  />
-                </Field>
+              {resourceForm.resource_type === "text" ? (
+                <Field key="text-content" label="文字內容"><textarea required rows={6} value={resourceForm.content ?? ""} onChange={(event) => setResourceForm({ ...resourceForm, content: event.target.value })} className="input-admin py-3" /></Field>
               ) : (
-                <Field key="link-url" label={resourceForm.resource_type === "image" ? "圖片網址" : "連結網址"}>
+                <Field key="link-url" label={resourceForm.resource_type === "image" ? "圖片" : resourceForm.resource_type === "file" ? "文件" : "連結網址"}>
                   <div className="flex gap-2">
-                    <input required type="url" value={resourceForm.url} onChange={(event) => setResourceForm({ ...resourceForm, url: event.target.value })} className="input-admin min-w-0 flex-1" />
-                    {resourceForm.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳"}<input type="file" accept="image/*" disabled={uploadingImage} onChange={(event) => void uploadResourceImage(event, (url) => setResourceForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
+                    <input required type={resourceForm.resource_type === "link" ? "url" : "text"} value={resourceForm.url} onChange={(event) => setResourceForm({ ...resourceForm, url: event.target.value })} className="input-admin min-w-0 flex-1" />
+                    {resourceForm.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳圖片"}<input type="file" accept="image/*" disabled={uploadingImage} onChange={(event) => void uploadResourceImage(event, (url) => setResourceForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
+                    {resourceForm.resource_type === "file" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳文件"}<input type="file" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" disabled={uploadingImage} onChange={(event) => void uploadResourceFile(event, (url) => setResourceForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
                   </div>
                 </Field>
               )}
@@ -748,9 +756,8 @@ export default function CoursesAdminPage() {
                 />
               </Field>
               <div className="md:col-span-2">
-                <Field label="內容說明">
+                  <Field label="內容說明（選填）">
                   <textarea
-                    required
                     rows={3}
                     value={resourceForm.description}
                     onChange={(event) =>
@@ -1079,17 +1086,7 @@ export default function CoursesAdminPage() {
                           className="border border-border bg-background p-4"
                         >
                           <div className="mb-4 flex items-center gap-3">
-                            {resource.resource_type === "video" ? (
-                              <Film
-                                className="shrink-0 text-primary"
-                                size={19}
-                              />
-                            ) : (
-                              <BookOpen
-                                className="shrink-0 text-accent"
-                                size={19}
-                              />
-                            )}
+                            <BookOpen className="shrink-0 text-accent" size={19} />
                           </div>
                           <div className="grid gap-4">
                             <Field label="內容名稱">
@@ -1115,13 +1112,9 @@ export default function CoursesAdminPage() {
                                       resource.id,
                                       {
                                         resource_type: event.target.value,
-                                        url:
-                                          event.target.value === "link" || event.target.value === "article" || event.target.value === "image"
+                        url:
+                                          ["link", "image", "file"].includes(event.target.value)
                                             ? resource.url
-                                            : null,
-                                        youtube_url:
-                                          event.target.value === "video"
-                                            ? resource.youtube_url
                                             : null,
                                       },
                                     )
@@ -1129,9 +1122,8 @@ export default function CoursesAdminPage() {
                                   className="input-admin"
                                 >
                                   <option value="link">連結</option>
-                                  <option value="article">文章</option>
-                                  <option value="image">圖片</option>
-                                  <option value="video">YouTube 影片</option>
+                                  <option value="file">文件</option>
+                                  <option value="text">文字</option>
                                 </select>
                               </Field>
                               <Field label="內容權限">
@@ -1147,33 +1139,18 @@ export default function CoursesAdminPage() {
                                 />
                               </Field>
                             </div>
-                            {resource.resource_type === "video" ? (
-                              <Field key="youtube-url" label="YouTube 網址">
-                                <input
-                                  required
-                                  type="url"
-                                  value={resource.youtube_url ?? ""}
-                                  onChange={(event) =>
-                                    updateResourceDraft(
-                                      selectedSession.id,
-                                      resource.id,
-                                      {
-                                        youtube_url: event.target.value || null,
-                                      },
-                                    )
-                                  }
-                                  className="input-admin"
-                                />
-                              </Field>
+                            {resource.resource_type === "text" ? (
+                              <Field key="text-content" label="文字內容"><textarea required rows={6} value={resource.description} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { description: event.target.value })} className="input-admin py-3" /></Field>
                             ) : (
-                              <Field key="link-url" label={resource.resource_type === "image" ? "圖片網址" : "連結網址"}>
+                              <Field key="link-url" label={resource.resource_type === "image" ? "圖片" : resource.resource_type === "file" ? "文件" : "連結網址"}>
                                 <div className="flex gap-2">
-                                  <input required type="url" value={resource.url ?? ""} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { url: event.target.value || null })} className="input-admin min-w-0 flex-1" />
+                                  <input required type={resource.resource_type === "link" ? "url" : "text"} value={resource.url ?? ""} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { url: event.target.value || null })} className="input-admin min-w-0 flex-1" />
                                   {resource.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳"}<input type="file" accept="image/*" disabled={uploadingImage} onChange={(event) => void uploadResourceImage(event, (url) => updateResourceDraft(selectedSession.id, resource.id, { url }))} className="sr-only" /></label>}
+                                  {resource.resource_type === "file" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳文件"}<input type="file" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" disabled={uploadingImage} onChange={(event) => void uploadResourceFile(event, (url) => updateResourceDraft(selectedSession.id, resource.id, { url }))} className="sr-only" /></label>}
                                 </div>
                               </Field>
                             )}
-                            <Field label="內容說明">
+        <Field label="內容說明（選填）">
                               <textarea
                                 rows={2}
                                 value={resource.description}
@@ -1201,7 +1178,7 @@ export default function CoursesAdminPage() {
                               </button>
                               <button
                                 type="button"
-                                disabled={saving}
+                                disabled={saving || !isResourceDirty(resource, resourceSnapshots)}
                                 onClick={() =>
                                   void saveResourceInline(resource)
                                 }
@@ -1223,6 +1200,9 @@ export default function CoursesAdminPage() {
                           saving={saving}
                           onSubmit={submitResource}
                           onCancel={() => setEditor(null)}
+                          uploading={uploadingImage}
+                          onUploadImage={(event, onUploaded) => void uploadResourceImage(event, onUploaded)}
+                          onUploadFile={(event, onUploaded) => void uploadResourceFile(event, onUploaded)}
                         />
                       </div>
                     )}
@@ -1250,12 +1230,18 @@ function NewResourceForm({
   saving,
   onSubmit,
   onCancel,
+  uploading,
+  onUploadImage,
+  onUploadFile,
 }: {
   form: ResourceForm;
   setForm: Dispatch<SetStateAction<ResourceForm>>;
   saving: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
+  uploading: boolean;
+  onUploadImage: (event: ChangeEvent<HTMLInputElement>, onUploaded: (url: string) => void) => void;
+  onUploadFile: (event: ChangeEvent<HTMLInputElement>, onUploaded: (url: string) => void) => void;
 }) {
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
@@ -1263,7 +1249,6 @@ function NewResourceForm({
       <Field label="內容名稱">
         <input
           autoFocus
-          required
           maxLength={200}
           value={form.title}
           onChange={(event) => setForm({ ...form, title: event.target.value })}
@@ -1278,15 +1263,15 @@ function NewResourceForm({
               setForm({
                 ...form,
                 resource_type: event.target.value,
-                url: event.target.value === "link" ? form.url : "",
-                youtube_url:
-                  event.target.value === "video" ? form.youtube_url : "",
+                url: ["link", "image", "file"].includes(event.target.value) ? form.url : "",
+                content: event.target.value === "text" ? form.content : "",
               })
             }
             className="input-admin"
           >
             <option value="link">連結</option>
-            <option value="video">YouTube 影片</option>
+            <option value="file">文件</option>
+            <option value="text">文字</option>
           </select>
         </Field>
         <Field label="內容權限">
@@ -1296,32 +1281,19 @@ function NewResourceForm({
           />
         </Field>
       </div>
-      {form.resource_type === "video" ? (
-        <Field key="youtube-url" label="YouTube 網址">
-          <input
-            required
-            type="url"
-            value={form.youtube_url}
-            onChange={(event) =>
-              setForm({ ...form, youtube_url: event.target.value })
-            }
-            className="input-admin"
-          />
-        </Field>
+      {form.resource_type === "text" ? (
+        <Field key="text-content" label="文字內容"><textarea required rows={6} value={form.content ?? ""} onChange={(event) => setForm({ ...form, content: event.target.value })} className="input-admin py-3" /></Field>
       ) : (
-        <Field key="link-url" label="連結網址">
-          <input
-            required
-            type="url"
-            value={form.url}
-            onChange={(event) => setForm({ ...form, url: event.target.value })}
-            className="input-admin"
-          />
+        <Field key="link-url" label={form.resource_type === "image" ? "圖片" : form.resource_type === "file" ? "文件" : "連結網址"}>
+          <div className="flex gap-2">
+            <input required type={form.resource_type === "link" ? "url" : "text"} value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} className="input-admin min-w-0 flex-1" />
+            {form.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent"><ImagePlus size={17} />{uploading ? "上傳中…" : "上傳圖片"}<input type="file" accept="image/*" disabled={uploading} onChange={(event) => onUploadImage(event, (url) => setForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
+            {form.resource_type === "file" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent"><ImagePlus size={17} />{uploading ? "上傳中…" : "上傳文件"}<input type="file" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" disabled={uploading} onChange={(event) => onUploadFile(event, (url) => setForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
+          </div>
         </Field>
       )}
-      <Field label="內容說明">
+      <Field label="內容說明（選填）">
         <textarea
-          required
           rows={3}
           value={form.description}
           onChange={(event) =>
@@ -1636,12 +1608,27 @@ function resourceTypeLabel(type: string) {
   return (
     (
       {
-        video: "YouTube 影片",
         link: "連結",
-        image: "圖片",
+        image: "文件",
+        file: "文件",
+        text: "文字",
       } as Record<string, string>
     )[type] ?? type
   );
+}
+
+function serializeResource(resource: Pick<Resource, "title" | "description" | "resource_type" | "url" | "visibility">) {
+  return JSON.stringify({
+    title: resource.title,
+    description: resource.description,
+    resource_type: resource.resource_type,
+    url: resource.url ?? null,
+    visibility: resource.visibility,
+  });
+}
+
+function isResourceDirty(resource: Resource, snapshots: Record<string, string>) {
+  return snapshots[resource.id] !== serializeResource(resource);
 }
 
 function toLocalDate(value: string) {

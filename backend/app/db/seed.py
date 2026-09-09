@@ -81,7 +81,7 @@ def ensure_courses(db: Session) -> None:
             for asset in assets:
                 resource = db.scalar(select(Resource).where(Resource.session_id == session.id, Resource.title == asset))
                 if not resource:
-                    db.add(Resource(session_id=session.id, title=asset, description=f"{title}的{asset}。", resource_type="video" if "影片" in asset else "file", visibility=Visibility.PUBLIC if title.startswith("迎新") else Visibility.MEMBER))
+                    db.add(Resource(session_id=session.id, title=asset, description=f"{title}的{asset}。", resource_type="file", visibility=Visibility.PUBLIC if title.startswith("迎新") else Visibility.MEMBER))
                 else:
                     resource.description = f"{title}的{asset}。"
 

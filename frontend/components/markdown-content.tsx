@@ -68,7 +68,7 @@ function inlineMarkdown(value: string): ReactNode[] {
   const parts = value.split(/(!\[[^\]]*\]\((?:https?:\/\/|\/)[^\)]+\)|\[[^\]]+\]\([^\)]+\)|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|`[^`]+`|\$[^$]+\$|\*[^*]+\*|_[^_]+_)/g);
   return parts.map((part, index) => {
     const image = part.match(/^!\[([^\]]*)\]\(((?:https?:\/\/|\/)[^\)]+)\)$/);
-    if (image) return <img key={index} src={image[2]} alt={image[1]} loading="lazy" />;
+    if (image) return <img key={index} src={normalizeImageSource(image[2])} alt={image[1]} loading="lazy" />;
     const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)$/);
     if (link) return <a key={index} href={link[2]} target="_blank" rel="noreferrer">{link[1]}</a>;
     if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) return <strong key={index}>{part.slice(2, -2)}</strong>;
@@ -78,6 +78,18 @@ function inlineMarkdown(value: string): ReactNode[] {
     if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) return <em key={index}>{part.slice(1, -1)}</em>;
     return <span key={index}>{part}</span>;
   });
+}
+
+function normalizeImageSource(source: string) {
+  try {
+    const parsed = new URL(source, "http://localhost");
+    if (parsed.pathname.startsWith("/social/") && (parsed.hostname.endsWith(".r2.dev") || parsed.hostname === "localhost")) {
+      return `/api/v1/content/assets${parsed.pathname}`;
+    }
+  } catch {
+    // Keep malformed or non-R2 URLs unchanged so the editor remains forgiving.
+  }
+  return source;
 }
 
 function renderMath(value: string, displayMode: boolean) {

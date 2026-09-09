@@ -7,7 +7,6 @@ type ApiResource = {
   description: string;
   resource_type: string;
   url: string | null;
-  youtube_url: string | null;
   visibility: "public" | "member";
 };
 

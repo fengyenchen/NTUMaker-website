@@ -33,7 +33,7 @@ from app.schemas.admin import (
 from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
 from app.services.memberships import taipei_today
 from app.services.passwords import hash_password
-from app.services.r2 import delete_image, read_image, upload_image
+from app.services.r2 import delete_image, read_image, upload_image, upload_resource_file
 from app.services.social_publisher import SocialPublishError, dry_run_social_post, publish_social_post
 
 router = APIRouter(prefix="/admin", tags=["管理後台"], dependencies=[Depends(require_admin)])
@@ -90,9 +90,23 @@ def get_overview(db: Session = Depends(get_db)) -> dict:
 @router.post("/uploads/images", summary="上傳管理後台圖片")
 def upload_admin_image(file: UploadFile = File(...)) -> dict[str, str]:
     uploaded = upload_image(file)
-    public_url = uploaded["public_url"]
+    proxy_url = f"/api/v1/content/assets/{quote(uploaded['r2_object_key'], safe='/')}"
     return {
-        "url": public_url or f"/api/v1/content/assets/{quote(uploaded['r2_object_key'], safe='/')}" ,
+        "url": proxy_url,
+        "public_url": uploaded["public_url"],
+        "r2_object_key": uploaded["r2_object_key"],
+        "image_name": uploaded["image_name"],
+        "image_mime_type": uploaded["image_mime_type"],
+    }
+
+
+@router.post("/uploads/resources", summary="上傳社課教材檔案")
+def upload_admin_resource(file: UploadFile = File(...)) -> dict[str, str]:
+    uploaded = upload_resource_file(file)
+    proxy_url = f"/api/v1/content/assets/{quote(uploaded['r2_object_key'], safe='/')}"
+    return {
+        "url": proxy_url,
+        "public_url": uploaded["public_url"],
         "r2_object_key": uploaded["r2_object_key"],
         "image_name": uploaded["image_name"],
         "image_mime_type": uploaded["image_mime_type"],

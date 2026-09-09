@@ -78,9 +78,8 @@ class ResourceWrite(BaseModel):
     session_id: UUID
     title: str = Field(min_length=1, max_length=200)
     description: str = Field(min_length=1)
-    resource_type: str = Field(default="article", min_length=1, max_length=40)
+    resource_type: str = Field(default="link", min_length=1, max_length=40)
     url: str | None = Field(default=None, max_length=2000)
-    youtube_url: str | None = Field(default=None, max_length=2000)
     visibility: Visibility = Visibility.MEMBER
 
 

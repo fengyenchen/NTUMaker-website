@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     threads_access_token: str | None = None
     social_scheduler_enabled: bool = True
     social_scheduler_interval_seconds: int = 30
+    r2_cleanup_enabled: bool = True
+    r2_cleanup_interval_seconds: int = 86400
+    r2_cleanup_grace_seconds: int = 86400
 
     @field_validator("database_url", mode="before")
     @classmethod

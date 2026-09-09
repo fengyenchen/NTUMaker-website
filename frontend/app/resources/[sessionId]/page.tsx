@@ -6,7 +6,6 @@ import {
   ExternalLink,
   FileText,
   LockKeyhole,
-  Play,
 } from "lucide-react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -144,23 +143,23 @@ export default async function SessionResourcePage({
 }
 
 function ResourceCard({ resource }: { resource: ResourceItem }) {
-  const href = resource.youtube_url ?? resource.url;
-  const youtubeEmbedUrl = getYouTubeEmbedUrl(resource.youtube_url);
   const Icon =
-    resource.resource_type === "video"
-      ? Play
-      : resource.resource_type === "article"
-        ? FileText
-        : BookOpen;
+    resource.resource_type === "file" ? FileText : BookOpen;
   const content = (
     <>
-      {resource.resource_type === "image" && resource.url ? (
+      {resource.url && (resource.resource_type === "image" || (resource.resource_type === "file" && isImageUrl(resource.url))) ? (
         <img src={resource.url} alt={resource.title} loading="lazy" className="mb-5 aspect-[5/4] w-full object-contain border border-border bg-background" />
+      ) : resource.url && resource.resource_type === "file" && isVideoUrl(resource.url) ? (
+        <video controls preload="metadata" className="mb-5 max-h-96 w-full border border-border bg-black"><source src={resource.url} /></video>
+      ) : resource.url && resource.resource_type === "file" && isPdfUrl(resource.url) ? (
+        <iframe src={resource.url} title={resource.title} className="mb-5 h-96 w-full border border-border bg-background" />
+      ) : resource.resource_type === "text" ? (
+        <pre className="mb-5 max-h-80 overflow-auto whitespace-pre-wrap border border-border bg-background p-4 text-sm leading-6 select-text">{resource.description}</pre>
       ) : (
         <Icon className="text-accent" aria-hidden="true" />
       )}
       <p className="mt-7 text-sm text-muted-foreground">
-        {resource.resource_type === "video" ? "課程影片" : "資源"}
+        {resource.resource_type === "file" ? "文件" : resource.resource_type === "text" ? "文字" : "資源"}
       </p>
       <h3 className="mt-2 text-xl font-black">{resource.title}</h3>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -169,32 +168,9 @@ function ResourceCard({ resource }: { resource: ResourceItem }) {
     </>
   );
 
-  return youtubeEmbedUrl ? (
-    <article className="border border-border bg-surface p-6">
-      <div className="mb-6 overflow-hidden border border-border bg-black">
-        <iframe
-          src={youtubeEmbedUrl}
-          title={`${resource.title} YouTube 影片`}
-          loading="lazy"
-          className="aspect-video w-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
-      </div>
-      {content}
-      <a
-        href={resource.youtube_url ?? "#"}
-        target="_blank"
-        rel="noreferrer"
-        className="card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent"
-      >
-        在 YouTube 開啟
-        <ExternalLink className="card-link-arrow" size={16} aria-hidden="true" />
-      </a>
-    </article>
-  ) : href ? (
+  return resource.url ? (
     <a
-      href={href}
+      href={resource.url}
       target="_blank"
       rel="noreferrer"
       className="card-interactive block border border-border bg-surface p-6"
@@ -213,18 +189,14 @@ function ResourceCard({ resource }: { resource: ResourceItem }) {
   );
 }
 
-function getYouTubeEmbedUrl(url: string | null) {
-  if (!url) return null;
-  try {
-    const parsed = new URL(url);
-    const videoId =
-      parsed.hostname === "youtu.be"
-        ? parsed.pathname.slice(1)
-        : parsed.hostname.endsWith("youtube.com")
-          ? parsed.searchParams.get("v") ?? parsed.pathname.split("/").filter(Boolean).pop()
-          : null;
-    return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}` : null;
-  } catch {
-    return null;
-  }
+function isImageUrl(url: string) {
+  return /\.(?:png|jpe?g|gif|webp|svg)(?:[?#].*)?$/i.test(url);
+}
+
+function isVideoUrl(url: string) {
+  return /\.(?:mp4|webm|mov|ogv)(?:[?#].*)?$/i.test(url);
+}
+
+function isPdfUrl(url: string) {
+  return /\.pdf(?:[?#].*)?$/i.test(url);
 }

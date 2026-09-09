@@ -50,7 +50,6 @@ class ResourceSummary(BaseModel):
     description: str
     resource_type: str
     url: str | None
-    youtube_url: str | None
     visibility: Visibility
 
 
