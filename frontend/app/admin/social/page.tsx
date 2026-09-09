@@ -45,6 +45,7 @@ export default function SocialAdminPage() {
     null,
   );
   const [saving, setSaving] = useState(false);
+  const [savingIntent, setSavingIntent] = useState<"draft" | "scheduled" | null>(null);
   const [error, setError] = useState("");
 
   const loadPosts = useCallback(async () => {
@@ -62,10 +63,11 @@ export default function SocialAdminPage() {
     setSaving(true);
     setError("");
     try {
-      const intent = String(
-        new FormData(event.currentTarget as HTMLFormElement).get("intent") ??
-          "draft",
-      );
+      const submitter = (event.nativeEvent as SubmitEvent).submitter as
+        | HTMLButtonElement
+        | null;
+      const intent = submitter?.value ?? "draft";
+      setSavingIntent(intent === "scheduled" ? "scheduled" : "draft");
       if (intent === "scheduled" && !scheduledAt) {
         throw new Error("請先選擇排程時間");
       }
@@ -125,6 +127,7 @@ export default function SocialAdminPage() {
       );
     } finally {
       setSaving(false);
+      setSavingIntent(null);
     }
   }
 
@@ -184,7 +187,7 @@ export default function SocialAdminPage() {
                     </p>
                   )}
                 </div>
-                <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold transition-colors hover:bg-surface-raised has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
+                <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold transition-colors hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50">
                   <ImagePlus size={17} />
                   新增照片
                   <input
@@ -336,25 +339,32 @@ export default function SocialAdminPage() {
             </label>
             <div className="flex flex-wrap gap-3">
               <button
+                type="submit"
                 name="intent"
                 value="draft"
                 disabled={saving || platforms.length === 0}
                 className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50"
               >
-                {saving ? (
+                {saving && savingIntent === "draft" ? (
                   <LoaderCircle className="animate-spin" size={17} />
                 ) : (
                   <Plus size={17} />
                 )}
-                儲存草稿
+                {saving && savingIntent === "draft" ? "儲存中…" : "儲存草稿"}
               </button>
               <button
+                type="submit"
                 name="intent"
                 value="scheduled"
                 disabled={saving || platforms.length === 0}
                 className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50"
               >
-                <CalendarClock size={17} /> 建立排程
+                {saving && savingIntent === "scheduled" ? (
+                  <LoaderCircle className="animate-spin" size={17} />
+                ) : (
+                  <CalendarClock size={17} />
+                )}
+                {saving && savingIntent === "scheduled" ? "建立中…" : "建立排程"}
               </button>
             </div>
           </form>
@@ -397,7 +407,7 @@ export default function SocialAdminPage() {
                           : post.status === "failed"
                             ? `發布失敗${post.error_message ? ` · ${post.error_message}` : ""}`
                             : post.scheduled_at
-                              ? `草稿 · 更新時間 ${formatDate(post.scheduled_at)}`
+                              ? `草稿 · 預計排程時間 ${formatDate(post.scheduled_at)}`
                               : "草稿"}
                     </p>
                   </div>
