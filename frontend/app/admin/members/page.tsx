@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarCheck2,
   LoaderCircle,
   Plus,
   RefreshCw,
+  Search,
   Trash2,
   UserRoundCheck,
   X,
@@ -47,8 +48,20 @@ export default function MembersAdminPage() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [searchTerm, setSearchTerm] = useState("");
   const [expiryDrafts, setExpiryDrafts] = useState<Record<string, string>>({});
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
+
+  const filteredMembers = useMemo(() => {
+    const keyword = searchTerm.trim().toLocaleLowerCase();
+    if (!keyword) return members;
+    return members.filter((member) =>
+      [member.display_name ?? "", member.email]
+        .join(" ")
+        .toLocaleLowerCase()
+        .includes(keyword),
+    );
+  }, [members, searchTerm]);
 
   const loadMembers = useCallback(async () => {
     setLoading(true);
@@ -298,20 +311,39 @@ export default function MembersAdminPage() {
         )}
 
         <section className="mt-8 overflow-hidden border border-border bg-surface">
-          <div className="flex items-center justify-between border-b border-border p-5">
+          <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="font-black">社員名單</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                共 {members.length} 個帳號
+                {searchTerm.trim()
+                  ? `顯示 ${filteredMembers.length} / ${members.length} 個帳號`
+                  : `共 ${members.length} 個帳號`}
               </p>
             </div>
-            <button
-              onClick={() => void loadMembers()}
-              className="inline-flex min-h-11 items-center gap-2 px-3 font-bold"
-            >
-              <RefreshCw size={17} />
-              重新整理
-            </button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <label className="relative block sm:w-64">
+                <span className="sr-only">搜尋社員姓名或 Email</span>
+                <Search
+                  size={17}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="搜尋姓名或 Email"
+                  className="min-h-11 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm outline-none transition-colors focus:border-accent"
+                />
+              </label>
+              <button
+                onClick={() => void loadMembers()}
+                className="inline-flex min-h-11 items-center justify-center gap-2 px-3 font-bold"
+              >
+                <RefreshCw size={17} />
+                重新整理
+              </button>
+            </div>
           </div>
           {loading ? (
             <div className="flex min-h-52 items-center justify-center gap-3 text-muted-foreground">
@@ -321,6 +353,10 @@ export default function MembersAdminPage() {
           ) : members.length === 0 ? (
             <div className="min-h-52 p-8 text-center text-muted-foreground">
               目前沒有社員資料，可以從右上角新增第一位社員。
+            </div>
+          ) : filteredMembers.length === 0 ? (
+            <div className="min-h-52 p-8 text-center text-muted-foreground">
+              找不到符合「{searchTerm.trim()}」的社員。
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -335,7 +371,7 @@ export default function MembersAdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {members.map((member) => {
+                  {filteredMembers.map((member) => {
                     const expiryDraft =
                       expiryDrafts[member.id] ??
                       member.membership_expires_at ??
