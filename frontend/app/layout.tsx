@@ -43,7 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="zh-TW">
       <head>
-        <link rel="preload" href="/crownCork.glb" as="fetch" crossOrigin="anonymous" />
+        <link rel="preload" href="/crownCork.glb" as="fetch" type="model/gltf-binary" crossOrigin="anonymous" />
       </head>
       <body>{children}</body>
     </html>

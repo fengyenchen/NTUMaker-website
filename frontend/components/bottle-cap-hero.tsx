@@ -2,8 +2,11 @@
 
 import dynamic from "next/dynamic";
 
+// 頁面載入時就啟動 3D 元件的下載，不等到瀏覽器完成互動後才開始抓取。
+const bottleCapScene = import("./bottle-cap-scene").then((module) => module.BottleCapScene);
+
 const BottleCapScene = dynamic(
-  () => import("./bottle-cap-scene").then((module) => module.BottleCapScene),
+  () => bottleCapScene,
   {
     ssr: false,
     loading: () => (

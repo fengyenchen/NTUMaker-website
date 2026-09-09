@@ -12,10 +12,10 @@ function CrownCork() {
   useFrame((state) => {
     if (!model.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const elapsed = state.clock.getElapsedTime();
-    model.current.position.y = 0.04 * Math.sin(elapsed);
-    model.current.position.x = 0.02 * Math.cos(elapsed * 0.8);
-    model.current.rotation.x = MathUtils.lerp(model.current.rotation.x, 0.15 * state.pointer.y, 0.05);
-    model.current.rotation.z = MathUtils.lerp(model.current.rotation.z, 0.175 * state.pointer.x, 0.05);
+    model.current.position.y = 0.06 * Math.sin(elapsed);
+    model.current.position.x = 0.03 * Math.cos(elapsed * 0.8);
+    model.current.rotation.x = MathUtils.lerp(model.current.rotation.x, 0.2 * state.pointer.y, 0.05);
+    model.current.rotation.z = MathUtils.lerp(model.current.rotation.z, 0.23 * state.pointer.x, 0.05);
   });
 
   return <primitive ref={model} object={scene} />;
