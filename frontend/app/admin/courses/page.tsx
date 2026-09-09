@@ -75,7 +75,6 @@ const emptySeries = {
   track: "tuesday" as Track,
   time: "19:00–21:00",
   description: "",
-  content: "",
 };
 const emptySession = {
   series_id: "",
@@ -99,6 +98,8 @@ const emptyResource = {
 export default function CoursesAdminPage() {
   const [seriesList, setSeriesList] = useState<CourseSeries[]>([]);
   const [resourceSnapshots, setResourceSnapshots] = useState<Record<string, string>>({});
+  const [seriesSnapshots, setSeriesSnapshots] = useState<Record<string, string>>({});
+  const [sessionSnapshots, setSessionSnapshots] = useState<Record<string, string>>({});
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null,
   );
@@ -131,10 +132,20 @@ export default function CoursesAdminPage() {
       const next = data as CourseSeries[];
       setSeriesList(next);
       const snapshots: Record<string, string> = {};
-      next.forEach((series) => series.sessions.forEach((session) => session.resources.forEach((resource) => {
-        snapshots[resource.id] = serializeResource(resource);
-      })));
+      const nextSeriesSnapshots: Record<string, string> = {};
+      const nextSessionSnapshots: Record<string, string> = {};
+      next.forEach((series) => {
+        nextSeriesSnapshots[series.id] = serializeSeries(series);
+        series.sessions.forEach((session) => {
+          nextSessionSnapshots[session.id] = serializeSession(session);
+          session.resources.forEach((resource) => {
+            snapshots[resource.id] = serializeResource(resource);
+          });
+        });
+      });
       setResourceSnapshots(snapshots);
+      setSeriesSnapshots(nextSeriesSnapshots);
+      setSessionSnapshots(nextSessionSnapshots);
       setSelectedSessionId((current) =>
         next.some((series) =>
           series.sessions.some((session) => session.id === current),
@@ -235,8 +246,8 @@ export default function CoursesAdminPage() {
     await saveEditor("/api/v1/admin/resources", "POST", {
       ...resourceForm,
       url:
-        ["link", "image", "file"].includes(resourceForm.resource_type) ? resourceForm.url || null : null,
-      description: resourceForm.resource_type === "text" ? resourceForm.content || "" : resourceForm.description,
+        ["link", "image", "file", "text"].includes(resourceForm.resource_type) ? resourceForm.url || null : null,
+      description: resourceForm.description,
     });
   }
 
@@ -438,7 +449,7 @@ export default function CoursesAdminPage() {
       {
         session_id: resource.session_id,
         title: resource.title,
-        description: resource.description.trim() || "無說明",
+        description: resource.description.trim(),
         resource_type: resource.resource_type,
         url: resource.url || null,
         visibility: resource.visibility,
@@ -724,9 +735,7 @@ export default function CoursesAdminPage() {
                       ...resourceForm,
                       resource_type: event.target.value,
                       url:
-                        ["link", "image", "file"].includes(event.target.value) ? resourceForm.url : "",
-                      content:
-                        event.target.value === "text" ? resourceForm.content : "",
+                        ["link", "image", "file", "text"].includes(event.target.value) ? resourceForm.url : "",
                     })
                   }
                   className="input-admin"
@@ -737,11 +746,11 @@ export default function CoursesAdminPage() {
                 </select>
               </Field>
               {resourceForm.resource_type === "text" ? (
-                <Field key="text-content" label="文字內容"><textarea required rows={6} value={resourceForm.content ?? ""} onChange={(event) => setResourceForm({ ...resourceForm, content: event.target.value })} className="input-admin py-3" /></Field>
+                <Field key="text-content" label="文字內容"><textarea required rows={6} value={resourceForm.url} onChange={(event) => setResourceForm({ ...resourceForm, url: event.target.value })} className="input-admin py-3" /></Field>
               ) : (
                 <Field key="link-url" label={resourceForm.resource_type === "image" ? "圖片" : resourceForm.resource_type === "file" ? "文件" : "連結網址"}>
                   <div className="flex gap-2">
-                    <input required type={resourceForm.resource_type === "link" ? "url" : "text"} value={resourceForm.url} onChange={(event) => setResourceForm({ ...resourceForm, url: event.target.value })} className="input-admin min-w-0 flex-1" />
+                    <input required readOnly={resourceForm.resource_type === "file"} type={resourceForm.resource_type === "link" ? "url" : "text"} value={resourceForm.url} onChange={(event) => setResourceForm({ ...resourceForm, url: event.target.value })} className="input-admin min-w-0 flex-1 read-only:cursor-not-allowed read-only:bg-surface-raised" />
                     {resourceForm.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳圖片"}<input type="file" accept="image/*" disabled={uploadingImage} onChange={(event) => void uploadResourceImage(event, (url) => setResourceForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
                     {resourceForm.resource_type === "file" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳文件"}<input type="file" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" disabled={uploadingImage} onChange={(event) => void uploadResourceFile(event, (url) => setResourceForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
                   </div>
@@ -756,7 +765,7 @@ export default function CoursesAdminPage() {
                 />
               </Field>
               <div className="md:col-span-2">
-                  <Field label="內容說明（選填）">
+                  <Field label="內容說明（選填）" required={false}>
                   <textarea
                     rows={3}
                     value={resourceForm.description}
@@ -913,7 +922,7 @@ export default function CoursesAdminPage() {
                         刪除路線
                       </button>
                       <button
-                        disabled={saving}
+                        disabled={saving || !isSeriesDirty(series, seriesSnapshots)}
                         onClick={() => void saveSeriesInline(series)}
                         className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -1055,7 +1064,7 @@ export default function CoursesAdminPage() {
                         刪除課堂
                       </button>
                       <button
-                        disabled={saving}
+                        disabled={saving || !isSessionDirty(selectedSession, sessionSnapshots)}
                         onClick={() => void saveSessionInline(selectedSession)}
                         className="inline-flex min-h-11 items-center gap-2 px-3 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -1140,17 +1149,17 @@ export default function CoursesAdminPage() {
                               </Field>
                             </div>
                             {resource.resource_type === "text" ? (
-                              <Field key="text-content" label="文字內容"><textarea required rows={6} value={resource.description} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { description: event.target.value })} className="input-admin py-3" /></Field>
+                              <Field key="text-content" label="文字內容"><textarea required rows={6} value={resource.url ?? ""} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { url: event.target.value || null })} className="input-admin py-3" /></Field>
                             ) : (
                               <Field key="link-url" label={resource.resource_type === "image" ? "圖片" : resource.resource_type === "file" ? "文件" : "連結網址"}>
                                 <div className="flex gap-2">
-                                  <input required type={resource.resource_type === "link" ? "url" : "text"} value={resource.url ?? ""} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { url: event.target.value || null })} className="input-admin min-w-0 flex-1" />
+                                  <input required readOnly={resource.resource_type === "file"} type={resource.resource_type === "link" ? "url" : "text"} value={resource.url ?? ""} onChange={(event) => updateResourceDraft(selectedSession.id, resource.id, { url: event.target.value || null })} className="input-admin min-w-0 flex-1 read-only:cursor-not-allowed read-only:bg-surface-raised" />
                                   {resource.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳"}<input type="file" accept="image/*" disabled={uploadingImage} onChange={(event) => void uploadResourceImage(event, (url) => updateResourceDraft(selectedSession.id, resource.id, { url }))} className="sr-only" /></label>}
                                   {resource.resource_type === "file" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent hover:bg-surface-raised has-disabled:cursor-not-allowed has-disabled:opacity-50"><ImagePlus size={17} />{uploadingImage ? "上傳中…" : "上傳文件"}<input type="file" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" disabled={uploadingImage} onChange={(event) => void uploadResourceFile(event, (url) => updateResourceDraft(selectedSession.id, resource.id, { url }))} className="sr-only" /></label>}
                                 </div>
                               </Field>
                             )}
-        <Field label="內容說明（選填）">
+        <Field label="內容說明（選填）" required={false}>
                               <textarea
                                 rows={2}
                                 value={resource.description}
@@ -1263,8 +1272,7 @@ function NewResourceForm({
               setForm({
                 ...form,
                 resource_type: event.target.value,
-                url: ["link", "image", "file"].includes(event.target.value) ? form.url : "",
-                content: event.target.value === "text" ? form.content : "",
+                url: ["link", "image", "file", "text"].includes(event.target.value) ? form.url : "",
               })
             }
             className="input-admin"
@@ -1282,17 +1290,17 @@ function NewResourceForm({
         </Field>
       </div>
       {form.resource_type === "text" ? (
-        <Field key="text-content" label="文字內容"><textarea required rows={6} value={form.content ?? ""} onChange={(event) => setForm({ ...form, content: event.target.value })} className="input-admin py-3" /></Field>
+        <Field key="text-content" label="文字內容"><textarea required rows={6} value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} className="input-admin py-3" /></Field>
       ) : (
         <Field key="link-url" label={form.resource_type === "image" ? "圖片" : form.resource_type === "file" ? "文件" : "連結網址"}>
           <div className="flex gap-2">
-            <input required type={form.resource_type === "link" ? "url" : "text"} value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} className="input-admin min-w-0 flex-1" />
+            <input required readOnly={form.resource_type === "file"} type={form.resource_type === "link" ? "url" : "text"} value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} className="input-admin min-w-0 flex-1 read-only:cursor-not-allowed read-only:bg-surface-raised" />
             {form.resource_type === "image" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent"><ImagePlus size={17} />{uploading ? "上傳中…" : "上傳圖片"}<input type="file" accept="image/*" disabled={uploading} onChange={(event) => onUploadImage(event, (url) => setForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
             {form.resource_type === "file" && <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border border-border px-3 text-sm font-bold text-accent"><ImagePlus size={17} />{uploading ? "上傳中…" : "上傳文件"}<input type="file" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" disabled={uploading} onChange={(event) => onUploadFile(event, (url) => setForm((current) => ({ ...current, url })))} className="sr-only" /></label>}
           </div>
         </Field>
       )}
-      <Field label="內容說明（選填）">
+      <Field label="內容說明（選填）" required={false}>
         <textarea
           rows={3}
           value={form.description}
@@ -1627,8 +1635,38 @@ function serializeResource(resource: Pick<Resource, "title" | "description" | "r
   });
 }
 
+function serializeSeries(series: Pick<CourseSeries, "title" | "semester" | "track" | "time" | "description">) {
+  return JSON.stringify({
+    title: series.title,
+    semester: series.semester,
+    track: series.track,
+    time: series.time,
+    description: series.description,
+  });
+}
+
+function serializeSession(session: Pick<CourseSession, "series_id" | "title" | "week_label" | "summary" | "starts_at" | "order_index" | "visibility">) {
+  return JSON.stringify({
+    series_id: session.series_id,
+    title: session.title,
+    week_label: session.week_label,
+    summary: session.summary,
+    starts_at: toLocalDate(session.starts_at),
+    order_index: session.order_index,
+    visibility: session.visibility,
+  });
+}
+
 function isResourceDirty(resource: Resource, snapshots: Record<string, string>) {
   return snapshots[resource.id] !== serializeResource(resource);
+}
+
+function isSeriesDirty(series: CourseSeries, snapshots: Record<string, string>) {
+  return snapshots[series.id] !== serializeSeries(series);
+}
+
+function isSessionDirty(session: CourseSession, snapshots: Record<string, string>) {
+  return snapshots[session.id] !== serializeSession(session);
 }
 
 function toLocalDate(value: string) {

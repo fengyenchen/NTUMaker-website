@@ -3,12 +3,15 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   BookOpen,
+  Download,
   ExternalLink,
   FileText,
   LockKeyhole,
+  Link2,
 } from "lucide-react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { CopyLinkButton, CopyTextButton } from "@/components/copy-link-button";
 import {
   getCurrentUser,
   getMemberResources,
@@ -143,8 +146,7 @@ export default async function SessionResourcePage({
 }
 
 function ResourceCard({ resource }: { resource: ResourceItem }) {
-  const Icon =
-    resource.resource_type === "file" ? FileText : BookOpen;
+  const Icon = resource.resource_type === "link" ? Link2 : resource.resource_type === "file" ? FileText : BookOpen;
   const content = (
     <>
       {resource.url && (resource.resource_type === "image" || (resource.resource_type === "file" && isImageUrl(resource.url))) ? (
@@ -154,12 +156,12 @@ function ResourceCard({ resource }: { resource: ResourceItem }) {
       ) : resource.url && resource.resource_type === "file" && isPdfUrl(resource.url) ? (
         <iframe src={resource.url} title={resource.title} className="mb-5 h-96 w-full border border-border bg-background" />
       ) : resource.resource_type === "text" ? (
-        <pre className="mb-5 max-h-80 overflow-auto whitespace-pre-wrap border border-border bg-background p-4 text-sm leading-6 select-text">{resource.description}</pre>
+        <pre className="mb-5 max-h-80 overflow-auto whitespace-pre-wrap border border-border bg-background p-4 text-sm leading-6 select-text">{resource.url}</pre>
       ) : (
         <Icon className="text-accent" aria-hidden="true" />
       )}
       <p className="mt-7 text-sm text-muted-foreground">
-        {resource.resource_type === "file" ? "文件" : resource.resource_type === "text" ? "文字" : "資源"}
+        {resource.resource_type === "file" ? "文件" : resource.resource_type === "text" ? "文字" : resource.resource_type === "link" ? "連結" : "資源"}
       </p>
       <h3 className="mt-2 text-xl font-black">{resource.title}</h3>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -168,17 +170,33 @@ function ResourceCard({ resource }: { resource: ResourceItem }) {
     </>
   );
 
-  return resource.url ? (
+  return resource.resource_type === "text" ? (
+    <article className="border border-border bg-surface p-6">
+      {content}
+      {resource.url && <div className="mt-7"><CopyTextButton text={resource.url} /></div>}
+    </article>
+  ) : resource.url && resource.resource_type === "link" ? (
+    <article className="border border-border bg-surface p-6">
+      {content}
+      <div className="mt-7 flex flex-wrap items-center gap-5">
+        <a href={resource.url} target="_blank" rel="noreferrer" className="resource-action card-inline-link no-arrow-motion inline-flex min-h-11 items-center gap-2 font-bold">
+          開啟連結 <ExternalLink className="card-link-arrow" size={16} aria-hidden="true" />
+        </a>
+        <CopyLinkButton url={resource.url} />
+      </div>
+    </article>
+  ) : resource.url ? (
     <a
       href={resource.url}
+      download={resource.resource_type === "file" ? resource.title : undefined}
       target="_blank"
       rel="noreferrer"
       className="card-interactive block border border-border bg-surface p-6"
     >
       {content}
-      <span className="card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold text-accent">
-        開啟內容
-        <ExternalLink className="card-link-arrow" size={16} aria-hidden="true" />
+      <span className={`resource-action card-inline-link mt-7 inline-flex min-h-11 items-center gap-2 font-bold ${resource.resource_type === "file" ? "no-arrow-motion" : ""}`}>
+        {resource.resource_type === "file" ? "下載文件" : "開啟內容"}
+        {resource.resource_type === "file" ? <Download className="card-link-arrow" size={16} aria-hidden="true" /> : <ExternalLink className="card-link-arrow" size={16} aria-hidden="true" />}
       </span>
     </a>
   ) : (

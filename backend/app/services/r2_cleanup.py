@@ -46,24 +46,25 @@ def _referenced_keys() -> set[str]:
 
 
 def cleanup_unreferenced_r2_images() -> int:
-    """刪除超過保留時間且沒有被任何內容引用的 social/ 圖片。"""
+    """刪除超過保留時間且沒有被任何內容引用的社群或教材檔案。"""
     settings = get_settings()
     cutoff = datetime.now(timezone.utc) - timedelta(seconds=max(0, settings.r2_cleanup_grace_seconds))
     referenced = _referenced_keys()
     deleted = 0
-    for item in list_image_objects("social/"):
-        key = item.get("Key")
-        last_modified = item.get("LastModified")
-        if not key or key in referenced or not last_modified:
-            continue
-        if last_modified.tzinfo is None:
-            last_modified = last_modified.replace(tzinfo=timezone.utc)
-        if last_modified >= cutoff:
-            continue
-        try:
-            delete_image(key)
-            deleted += 1
-        except Exception:
-            # 單一物件刪除失敗不應中斷後續清理。
-            continue
+    for prefix in ("social/", "resources/"):
+        for item in list_image_objects(prefix):
+            key = item.get("Key")
+            last_modified = item.get("LastModified")
+            if not key or key in referenced or not last_modified:
+                continue
+            if last_modified.tzinfo is None:
+                last_modified = last_modified.replace(tzinfo=timezone.utc)
+            if last_modified >= cutoff:
+                continue
+            try:
+                delete_image(key)
+                deleted += 1
+            except Exception:
+                # 單一物件刪除失敗不應中斷後續清理。
+                continue
     return deleted

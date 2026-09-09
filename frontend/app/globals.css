@@ -101,6 +101,14 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .card-link-arrow {
   transition: transform 180ms ease;
 }
+.resource-action {
+  color: var(--color-accent);
+  transition: color 180ms ease;
+}
+.resource-action:hover,
+.resource-action:focus-visible {
+  color: color-mix(in srgb, var(--color-accent) 62%, var(--color-foreground));
+}
 .markdown-content { display: grid; gap: 0.75rem; line-height: 1.8; }
 .markdown-content h2, .markdown-content h3, .markdown-content h4 { color: var(--color-foreground); font-weight: 800; line-height: 1.35; }
 .markdown-content h2 { font-size: 1.35rem; }
@@ -123,6 +131,10 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .card-inline-link:not(.card-interactive):hover .card-link-arrow,
 .card-inline-link:not(.card-interactive):focus-visible .card-link-arrow {
   transform: translateX(4px);
+}
+.card-inline-link.no-arrow-motion:hover .card-link-arrow,
+.card-inline-link.no-arrow-motion:focus-visible .card-link-arrow {
+  transform: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
