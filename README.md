@@ -166,11 +166,20 @@ copy backend\.env.example backend\.env
 
 ### 3. 啟動 FastAPI
 
+第一次設定後端環境才需要建立虛擬環境與安裝套件：
+
 ```bat
 cd backend
 python -m venv .venv
 .venv\Scripts\activate.bat
 pip install -r requirements.txt
+```
+
+之後平常啟動只需要：
+
+```bat
+cd backend
+.venv\Scripts\activate.bat
 alembic upgrade head
 python -m app.db.seed
 python -m uvicorn app.main:app --reload --port 8000
@@ -180,7 +189,7 @@ python -m uvicorn app.main:app --reload --port 8000
 
 API 文件啟動後位於 `http://localhost:8000/docs`。
 
-`python -m app.db.seed` 會將社博課程表建立為 115-1 假資料，重複執行不會重複新增。請在 `backend/.env` 設定 `ADMIN_EMAIL` 與至少 12 字元的 `ADMIN_PASSWORD`；該帳號會取得初始管理員權限，並可從登入頁的「管理員」分頁登入。
+`python -m app.db.seed` 會建立或更新初始管理員，並補齊 115-1 課程假資料；重複執行不會重複新增，也不會刪除其他資料。請在 `backend/.env` 設定 `ADMIN_EMAIL` 與至少 12 字元的 `ADMIN_PASSWORD`；該帳號會取得初始管理員權限，並可從登入頁的「管理員」分頁登入。
 
 登入頁分為兩種身分：
 
@@ -224,4 +233,4 @@ pnpm build
 
 公告與社課資源中的圖片／文件不會立即刪除，讓管理員有時間復原；後端每天會清理 `social/` 與 `resources/` 下已超過 24 小時、且未被公告、社課資源或社群貼文引用的檔案。清理週期與保留時間可用 `R2_CLEANUP_INTERVAL_SECONDS`、`R2_CLEANUP_GRACE_SECONDS` 調整，並可用 `R2_CLEANUP_ENABLED=false` 停用。
 
-社課資源支援連結、文件（含圖片與影片）與文字。圖片、影片與常見文件（PDF、Word、Excel、PowerPoint、ZIP、文字檔）可直接從管理後台上傳至 R2；系統會依檔案格式自動選擇圖片、影片或 PDF 預覽，無法預覽的格式則提供下載。文字內容直接儲存並提供選取複製。資源檔案會以 `resources/` 前綴保存，不會被社群圖片清理流程刪除。
+社課資源支援連結、文件（含圖片與影片）與文字。圖片、影片與常見文件（PDF、Word、Excel、PowerPoint、ZIP、文字檔）可直接從管理後台上傳至 R2；系統會依檔案格式自動選擇圖片、影片或 PDF 預覽，無法預覽的格式則提供下載。文字內容直接儲存並提供選取複製。資源檔案會以 `resources/` 前綴保存，未使用檔案會依保留期限自動清理。
