@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarDays, FileText, LayoutDashboard, Menu, Megaphone, Settings, Users, X } from "lucide-react";
 import { useState } from "react";
+import { AdminAccount } from "@/components/admin-account";
 
 const navigation = [
   ["總覽", "/admin", LayoutDashboard],
@@ -28,6 +29,7 @@ export function AdminNav() {
         const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
         return <Link key={href} href={href} onClick={() => setOpen(false)} aria-current={active ? "page" : undefined} className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-bold transition-colors hover:bg-background ${active ? "bg-background text-accent" : "text-muted-foreground"}`}><Icon size={18} />{label}</Link>;
       })}
+      <AdminAccount />
       </nav>
     </>
   );

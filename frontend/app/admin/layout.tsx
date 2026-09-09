@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AdminAccount } from "@/components/admin-account";
 import { AdminNav } from "@/components/admin-nav";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -8,7 +7,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <h1 className="flex min-h-12 items-center px-3 text-xl font-black">NTUMaker</h1>
       <p className="px-3 pb-4 text-xs text-muted-foreground">管理後台</p>
       <AdminNav />
-      <AdminAccount />
     </aside>
     <div className="min-w-0 overflow-x-hidden">{children}</div>
   </div>;
