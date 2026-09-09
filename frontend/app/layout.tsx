@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-TW">
+    <html lang="zh-TW" suppressHydrationWarning>
       <head>
         <link rel="preload" href="/crownCork.glb" as="fetch" type="model/gltf-binary" crossOrigin="anonymous" fetchPriority="high" />
       </head>

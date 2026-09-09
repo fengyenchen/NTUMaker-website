@@ -84,7 +84,7 @@ export default async function HomePage() {
       </section>
 
       <div className="flex flex-col">
-      <section style={sectionPosition("weekly_courses")} className="px-5 py-20 md:px-8 md:py-28" data-reveal>
+      <section style={sectionPosition("weekly_courses")} className="deferred-section px-5 py-20 md:px-8 md:py-28" data-reveal>
         <div className="mx-auto max-w-330">
           <SectionTitle label="每週社課" title={settings.weekly_courses_title} />
           <div className="mt-12 grid gap-8 lg:grid-cols-2">
@@ -100,7 +100,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section style={sectionPosition("next_event")} className="px-5 py-20 md:px-8 md:py-28" data-reveal>
+      <section style={sectionPosition("next_event")} className="deferred-section px-5 py-20 md:px-8 md:py-28" data-reveal>
         <div className="mx-auto grid max-w-330 gap-8 lg:grid-cols-[0.75fr_1.25fr]">
           <div className="flex min-h-105 flex-col justify-between rounded-2xl border border-border bg-surface-raised p-8 text-foreground shadow-[6px_7px_0_var(--color-shadow-soft)] md:p-10">
             <div>
@@ -122,7 +122,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section style={sectionPosition("course_library")} className="px-5 py-20 md:px-8 md:py-28" data-reveal>
+      <section style={sectionPosition("course_library")} className="deferred-section px-5 py-20 md:px-8 md:py-28" data-reveal>
         <div className="mx-auto max-w-330">
           <SectionTitle label="課程內容" title={settings.course_library_title} />
           <div className="mt-12 grid gap-8 lg:grid-cols-2">
@@ -139,7 +139,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section style={sectionPosition("share")} className="px-5 pb-24 pt-12 md:px-8 md:pb-32" data-reveal>
+      <section style={sectionPosition("share")} className="deferred-section px-5 pb-24 pt-12 md:px-8 md:pb-32" data-reveal>
         <div className="mx-auto flex max-w-330 flex-col gap-8 overflow-hidden rounded-2xl border border-border bg-surface p-8 shadow-[6px_7px_0_var(--color-shadow-soft)] md:flex-row md:items-end md:justify-between md:p-12">
           <div><p className="mb-3 text-sm font-bold text-primary">BUILD · LEARN · SHARE</p><h2 className="max-w-3xl text-4xl text-foreground font-black leading-tight md:text-6xl">{settings.share_title}</h2></div>
           <div className="flex shrink-0 flex-wrap gap-4">

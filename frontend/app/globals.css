@@ -67,6 +67,10 @@ button, a { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .hero-glow {
   background: var(--color-background);
 }
+.deferred-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 640px;
+}
 .button-25d {
   border: 1px solid var(--color-foreground);
   background: var(--color-surface);
