@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LogoutButton } from "@/components/logout-button";
 
 export function AdminAccount() {
   const [email, setEmail] = useState("正在讀取帳號…");
@@ -12,5 +13,5 @@ export function AdminAccount() {
       .catch(() => setEmail("管理員"));
   }, []);
 
-  return <div className="mt-5 border-t border-border px-3 pt-4 lg:mt-8 lg:border lg:bg-background lg:p-3 lg:pt-3"><p className="break-all text-sm font-bold">{email}</p><p className="mt-1 text-xs text-muted-foreground">管理員</p></div>;
+  return <div className="mt-5 border-t border-border px-3 pt-4 lg:mt-8 lg:border lg:bg-background lg:p-3 lg:pt-3"><p className="break-all text-sm font-bold">{email}</p><p className="mt-1 text-xs text-muted-foreground">管理員</p><LogoutButton className="mt-3 w-full justify-start rounded-lg px-0 text-sm text-muted-foreground transition-colors hover:bg-background lg:px-3" /></div>;
 }

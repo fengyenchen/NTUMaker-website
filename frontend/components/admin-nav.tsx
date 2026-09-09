@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarDays, FileText, LayoutDashboard, Menu, Megaphone, Settings, Users, X } from "lucide-react";
-import { LogoutButton } from "@/components/logout-button";
 import { useState } from "react";
 
 const navigation = [
@@ -29,7 +28,6 @@ export function AdminNav() {
         const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
         return <Link key={href} href={href} onClick={() => setOpen(false)} aria-current={active ? "page" : undefined} className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-bold transition-colors hover:bg-background ${active ? "bg-background text-accent" : "text-muted-foreground"}`}><Icon size={18} />{label}</Link>;
       })}
-      <LogoutButton className="w-full justify-start rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-background" />
       </nav>
     </>
   );
