@@ -70,6 +70,9 @@ export default function SocialAdminPage() {
         throw new Error("請先選擇排程時間");
       }
       if (images.length > 10) throw new Error("一次最多上傳 10 張照片");
+      if (intent === "draft" && !caption.trim() && images.length === 0) {
+        throw new Error("請至少填寫貼文文字或新增一張照片");
+      }
       const response = await fetch("/api/v1/admin/social-posts", {
         method: "POST",
         credentials: "include",
@@ -87,7 +90,6 @@ export default function SocialAdminPage() {
       if (!response.ok)
         throw new Error(await readResponseError(response, "無法儲存社群貼文"));
       const data = await response.json();
-      setPosts((current) => [data, ...current]);
 
       for (const image of images) {
         const formData = new FormData();
@@ -156,11 +158,10 @@ export default function SocialAdminPage() {
         )}
         <section className="mt-7 border border-border bg-surface p-5 shadow-[4px_5px_0_var(--color-shadow-soft)] md:p-7">
           <h2 className="text-xl font-black">新增社群貼文</h2>
-          <form onSubmit={submit} className="mt-6 grid gap-5">
+          <form noValidate onSubmit={submit} className="mt-6 grid gap-5">
             <label className="grid gap-2 text-sm font-bold">
               貼文文字
               <textarea
-                required
                 rows={8}
                 value={caption}
                 onChange={(event) => setCaption(event.target.value)}

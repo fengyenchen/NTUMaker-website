@@ -71,8 +71,11 @@ export default function SocialPostEditorPage({ params }: { params: Promise<{ id:
       const targetStatus = intent === "convert"
         ? post.status === "scheduled" ? "draft" : "scheduled"
         : post.status;
-      if (!caption.trim()) {
+      if (targetStatus === "scheduled" && !caption.trim()) {
         throw new Error("請輸入貼文文字");
+      }
+      if (targetStatus === "draft" && !caption.trim() && post.images.length === 0) {
+        throw new Error("請至少填寫貼文文字或保留一張照片");
       }
       if (platforms.length === 0) {
         throw new Error("請至少選擇一個發布平台");
@@ -234,11 +237,11 @@ export default function SocialPostEditorPage({ params }: { params: Promise<{ id:
         {error && <p role="alert" className="mt-5 border border-destructive bg-destructive/10 p-4 font-bold text-destructive">{error}</p>}
 
         <div className="mt-7 max-w-3xl">
-          <form onSubmit={savePost} className="grid content-start self-start gap-5 border border-border bg-surface p-5 shadow-[4px_5px_0_var(--color-shadow-soft)] md:p-7">
+          <form noValidate onSubmit={savePost} className="grid content-start self-start gap-5 border border-border bg-surface p-5 shadow-[4px_5px_0_var(--color-shadow-soft)] md:p-7">
             <h2 className="text-xl font-black">編輯內容</h2>
             <label className="grid gap-2 text-sm font-bold">
               貼文文字
-              <textarea required rows={10} value={caption} onChange={(event) => setCaption(event.target.value)} className="w-full border border-border bg-background p-3 leading-7" />
+              <textarea rows={10} value={caption} onChange={(event) => setCaption(event.target.value)} className="w-full border border-border bg-background p-3 leading-7" />
             </label>
             <section aria-labelledby="images-heading" className="grid gap-3">
               <div className="flex flex-wrap items-center justify-between gap-3">

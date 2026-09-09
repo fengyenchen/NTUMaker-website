@@ -149,6 +149,8 @@ def create_social_post(payload: SocialPostWrite, db: Session = Depends(get_db)) 
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="包含不支援的發布平台")
     if payload.status == SocialPostStatus.SCHEDULED and payload.scheduled_at is None:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="排程貼文必須設定排程時間")
+    if payload.status == SocialPostStatus.SCHEDULED and not payload.caption.strip():
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="排程貼文必須輸入貼文文字")
     item = SocialPost(caption=payload.caption, platforms=platforms, scheduled_at=payload.scheduled_at, status=payload.status)
     item.images = [SocialPostImage(r2_object_key=image.r2_object_key, image_name=image.image_name, image_mime_type=image.image_mime_type, order_index=index) for index, image in enumerate(payload.images)]
     db.add(item)
@@ -168,6 +170,8 @@ def update_social_post(item_id: UUID, payload: SocialPostUpdate, db: Session = D
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="包含不支援的發布平台")
     if payload.status == SocialPostStatus.SCHEDULED and payload.scheduled_at is None:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="排程貼文必須設定排程時間")
+    if payload.status == SocialPostStatus.SCHEDULED and not payload.caption.strip():
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="排程貼文必須輸入貼文文字")
     item.caption = payload.caption
     item.platforms = platforms
     item.scheduled_at = payload.scheduled_at

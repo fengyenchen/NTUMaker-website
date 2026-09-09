@@ -119,7 +119,7 @@ class SiteSettingWrite(BaseModel):
 
 
 class SocialPostWrite(BaseModel):
-    caption: str = Field(min_length=1, max_length=10000)
+    caption: str = Field(default="", max_length=10000)
     platforms: list[str] = Field(min_length=1)
     images: list["SocialPostImageWrite"] = Field(default_factory=list, max_length=10)
     scheduled_at: datetime | None = None
@@ -127,7 +127,7 @@ class SocialPostWrite(BaseModel):
 
 
 class SocialPostUpdate(BaseModel):
-    caption: str = Field(min_length=1, max_length=10000)
+    caption: str = Field(default="", max_length=10000)
     platforms: list[str] = Field(min_length=1)
     scheduled_at: datetime | None = None
     status: SocialPostStatus = SocialPostStatus.DRAFT
