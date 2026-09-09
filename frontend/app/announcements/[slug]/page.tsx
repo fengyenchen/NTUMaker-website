@@ -12,7 +12,7 @@ type Announcement = { title: string; summary: string; body: string; published_at
 async function getAnnouncement(slug: string): Promise<Announcement | null> {
   const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
   try {
-    const response = await fetch(`${apiUrl}/api/v1/content/announcements/${encodeURIComponent(slug)}`, { cache: "no-store" });
+    const response = await fetch(`${apiUrl}/api/v1/content/announcements/${encodeURIComponent(slug)}`, { next: { revalidate: 15 } });
     if (!response.ok) return null;
     return await response.json() as Announcement;
   } catch { return null; }

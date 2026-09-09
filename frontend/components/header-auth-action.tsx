@@ -62,7 +62,7 @@ export function HeaderAuthAction({ links }: { links: readonly HeaderLink[] }) {
           {user.roles.includes("admin") ? (
             <Link href="/admin" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-3 font-bold text-accent transition-colors hover:bg-surface-raised">後台</Link>
           ) : null}
-          <Link href="/setting" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-3 font-bold text-accent transition-colors hover:bg-surface-raised">設定</Link>
+          <Link href="/setting" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-3 font-bold text-foreground transition-colors hover:bg-surface-raised">設定</Link>
           <LogoutButton redirectTo="/" className="justify-center rounded-lg border border-border px-3 transition-colors hover:bg-surface-raised" />
         </div>
         <button type="button" className="grid size-11 place-items-center rounded-lg text-foreground transition-colors hover:bg-surface-raised lg:hidden" aria-label={menuOpen ? "收起社員選單" : "展開社員選單"} aria-expanded={menuOpen} aria-controls="member-mobile-navigation" onClick={() => setMenuOpen((current) => !current)}>

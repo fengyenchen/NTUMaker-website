@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import katex from "katex";
-import "katex/dist/katex.min.css";
 
 type MarkdownContentProps = { content: string; className?: string };
 

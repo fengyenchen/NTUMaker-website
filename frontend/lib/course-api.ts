@@ -33,7 +33,7 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
   const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
   try {
     const response = await fetch(`${apiUrl}/api/v1/content/course-library`, {
-      cache: "no-store",
+      next: { revalidate: 15 },
       signal: AbortSignal.timeout(2000),
     });
     if (!response.ok) return courseTracks;
@@ -70,7 +70,7 @@ export async function getPublicResources(): Promise<PublicResource[]> {
   const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
   try {
     const response = await fetch(`${apiUrl}/api/v1/content/resources`, {
-      cache: "no-store",
+      next: { revalidate: 15 },
       signal: AbortSignal.timeout(2000),
     });
     return response.ok ? ((await response.json()) as PublicResource[]) : [];

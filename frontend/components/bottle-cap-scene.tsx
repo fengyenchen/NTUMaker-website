@@ -5,12 +5,12 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { MathUtils, type Group } from "three";
 
-function CrownCork() {
+function CrownCork({ reducedMotion }: { reducedMotion: boolean }) {
   const { scene } = useGLTF("/crownCork.glb");
   const model = useRef<Group>(null);
 
   useFrame((state) => {
-    if (!model.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!model.current || reducedMotion) return;
     const elapsed = state.clock.getElapsedTime();
     model.current.position.y = 0.06 * Math.sin(elapsed);
     model.current.position.x = 0.03 * Math.cos(elapsed * 0.8);
@@ -37,24 +37,45 @@ function SceneLights() {
 
 export function BottleCapScene() {
   const [mobile, setMobile] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
+    const motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setMobile(media.matches);
+    const updateMotion = () => setReducedMotion(motionMedia.matches);
     update();
+    updateMotion();
     media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    motionMedia.addEventListener("change", updateMotion);
+    return () => {
+      media.removeEventListener("change", update);
+      motionMedia.removeEventListener("change", updateMotion);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!container.current || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0.05 },
+    );
+    observer.observe(container.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <div className="relative h-full min-h-90 w-full" aria-label="會隨游標輕微傾斜的 NTUMaker 瓶蓋模型" role="img">
+    <div ref={container} className="relative h-full min-h-90 w-full" aria-label="會隨游標輕微傾斜的 NTUMaker 瓶蓋模型" role="img">
       <Canvas
         camera={{ position: mobile ? [1.4, 4.8, 2.8] : [1.2, 4.6, 2.6], fov: mobile ? 48 : 45 }}
         dpr={[1, 1.5]}
+        frameloop={reducedMotion || !visible ? "demand" : "always"}
         gl={{ antialias: true, alpha: true }}
       >
         <SceneLights />
-        <Suspense fallback={null}><CrownCork /></Suspense>
+        <Suspense fallback={null}><CrownCork reducedMotion={reducedMotion} /></Suspense>
       </Canvas>
     </div>
   );

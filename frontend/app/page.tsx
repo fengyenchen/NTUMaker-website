@@ -19,7 +19,7 @@ type Announcement = { id: string; slug: string; title: string; summary: string; 
 async function getAnnouncements(): Promise<Announcement[]> {
   const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
   try {
-    const response = await fetch(`${apiUrl}/api/v1/content/announcements`, { cache: "no-store" });
+    const response = await fetch(`${apiUrl}/api/v1/content/announcements`, { next: { revalidate: 15 } });
     if (!response.ok) return [];
     return await response.json() as Announcement[];
   } catch { return []; }

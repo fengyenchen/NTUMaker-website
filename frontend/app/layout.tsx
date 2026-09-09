@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "katex/dist/katex.min.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -43,7 +44,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="zh-TW">
       <head>
-        <link rel="preload" href="/crownCork.glb" as="fetch" type="model/gltf-binary" crossOrigin="anonymous" />
+        <link rel="preload" href="/crownCork.glb" as="fetch" type="model/gltf-binary" crossOrigin="anonymous" fetchPriority="high" />
       </head>
       <body>{children}</body>
     </html>
