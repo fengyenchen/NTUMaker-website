@@ -213,3 +213,11 @@ pnpm build
 要啟用實際發文，請在 `backend/.env` 設定 R2 公開圖片網域，以及各平台的帳號 ID 與 access token：`INSTAGRAM_USER_ID`、`INSTAGRAM_ACCESS_TOKEN`、`FACEBOOK_PAGE_ID`、`FACEBOOK_PAGE_ACCESS_TOKEN`、`THREADS_USER_ID`、`THREADS_ACCESS_TOKEN`。後端會每 30 秒檢查到期的排程，成功後標記為「已發布」，API 失敗則標記為「發布失敗」並保存錯誤原因。Meta 權限與 App Review 仍須由管理員在 Meta 開發者後台完成。
 
 正式啟用前可呼叫 `POST /api/v1/admin/social-posts/{id}/publish-test` 做安全測試；這個端點只驗證設定與預計發布的平台，不會呼叫 Meta API，也不會改變貼文狀態。
+
+#### 社群圖片編輯流程
+
+- 每則貼文最多 10 張圖片，每張圖片目前最多 10 MB。
+- 在編輯頁新增的圖片只會先暫存在瀏覽器，按下「儲存」或「轉成排程」後才會上傳至 Cloudflare R2。
+- 點擊刪除圖片時，畫面會先暫時移除；按下儲存後才會同步刪除資料庫紀錄與 R2 物件。
+- 如果用新圖片取代舊圖片，儲存時會先刪除標記的舊圖片，再上傳新增圖片，避免暫存期間超過 10 張的限制。
+- 草稿至少要有貼文文字或一張圖片；排程貼文需要貼文文字與排程時間，若發布到 Instagram 另需至少一張圖片。
