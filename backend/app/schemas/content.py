@@ -15,6 +15,7 @@ class AnnouncementSummary(BaseModel):
     summary: str
     body: str
     published_at: datetime | None
+    is_pinned: bool
 
 
 class CourseSessionSummary(BaseModel):

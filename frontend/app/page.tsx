@@ -14,7 +14,7 @@ import { SiteHeader } from "@/components/site-header";
 import { getCourseTracks } from "@/lib/course-api";
 import { getSiteSettings } from "@/lib/site-settings";
 
-type Announcement = { id: string; slug: string; title: string; summary: string; published_at: string | null };
+type Announcement = { id: string; slug: string; title: string; summary: string; published_at: string | null; is_pinned: boolean };
 
 async function getAnnouncements(): Promise<Announcement[]> {
   const apiUrl = (process.env.API_URL ?? "http://localhost:8000").replace(/\/$/, "");
@@ -113,7 +113,7 @@ export default async function HomePage() {
           <div className="space-y-4">
             {announcements.slice(0, 3).map((item, index) => (
               <Link href={`/announcements/${item.slug}`} key={item.id} className="card-interactive card-inline-link group grid gap-5 rounded-2xl border border-border bg-surface p-6 md:grid-cols-[92px_1fr_auto] md:items-center">
-                <div><p className="font-mono text-sm text-primary">{item.published_at ? formatShortDate(item.published_at) : "未設定"}</p><p className="mt-1 text-xs text-muted-foreground">公告</p></div>
+                <div><p className="font-mono text-sm text-primary">{item.published_at ? formatShortDate(item.published_at) : "未設定"}</p><p className={`mt-1 text-xs ${item.is_pinned ? "font-bold text-primary" : "text-muted-foreground"}`}>{item.is_pinned ? "置頂公告" : "公告"}</p></div>
                 <div><h3 className="text-lg font-bold">{item.title}</h3><p className="mt-1 text-sm text-muted-foreground">{item.summary}</p></div>
                 <span className={`hidden size-11 items-center justify-center rounded-xl bg-surface-raised text-primary md:inline-flex ${index % 2 ? "rotate-3" : "-rotate-3"}`}><ArrowRight className="card-link-arrow" size={18} /></span>
               </Link>

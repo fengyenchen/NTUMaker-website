@@ -408,7 +408,7 @@ def delete_member(
 
 @router.get("/announcements", response_model=list[AnnouncementAdminSummary], summary="列出所有公告")
 def list_admin_announcements(db: Session = Depends(get_db)) -> list[Announcement]:
-    return list(db.scalars(select(Announcement).order_by(Announcement.updated_at.desc())))
+    return list(db.scalars(select(Announcement).order_by(Announcement.is_pinned.desc(), Announcement.updated_at.desc())))
 
 
 @router.post("/announcements", response_model=AnnouncementAdminSummary, status_code=status.HTTP_201_CREATED, summary="新增公告")

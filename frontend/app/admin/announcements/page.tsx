@@ -13,6 +13,7 @@ type Announcement = {
   summary: string;
   body: string;
   status: PublishStatus;
+  is_pinned: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -24,6 +25,7 @@ type AnnouncementForm = {
   summary: string;
   body: string;
   status: Exclude<PublishStatus, "archived">;
+  is_pinned: boolean;
   published_at: string;
 };
 
@@ -33,6 +35,7 @@ const emptyForm: AnnouncementForm = {
   summary: "",
   body: "",
   status: "draft",
+  is_pinned: false,
   published_at: "",
 };
 
@@ -89,6 +92,7 @@ export default function AnnouncementsAdminPage() {
       summary: item.summary,
       body: item.body,
       status: item.status === "published" ? "published" : "draft",
+      is_pinned: item.is_pinned,
       published_at: item.published_at ? toLocalDateTime(item.published_at) : "",
     });
     setShowForm(true);
@@ -204,6 +208,7 @@ export default function AnnouncementsAdminPage() {
                 <Field label="發布狀態"><select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as AnnouncementForm["status"] })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3"><option value="draft">草稿</option><option value="published">發布</option></select></Field>
                 <Field label="發布時間" hint="發布狀態下留空會立即發布"><input type="datetime-local" value={form.published_at} onChange={(event) => setForm({ ...form, published_at: event.target.value })} className="min-h-11 w-full rounded-lg border border-border bg-background px-3" /></Field>
               </div>
+              <label className="inline-flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm font-bold"><input type="checkbox" checked={form.is_pinned} onChange={(event) => setForm({ ...form, is_pinned: event.target.checked })} className="size-4 accent-primary" />置頂這則公告<span className="font-normal text-muted-foreground">前台會優先顯示</span></label>
               <div className="flex justify-end gap-3"><button type="button" onClick={() => setShowForm(false)} className="min-h-11 px-4 font-bold">取消</button><button disabled={saving} className="button-25d inline-flex min-h-11 items-center gap-2 rounded-lg px-4 font-bold disabled:opacity-50">{saving ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />}{editingId ? "儲存變更" : "建立公告"}</button></div>
             </form>
           </section>
@@ -212,7 +217,7 @@ export default function AnnouncementsAdminPage() {
         <section className="mt-8 overflow-hidden border border-border bg-surface">
           <div className="flex items-center justify-between border-b border-border p-5"><div><h2 className="font-black">所有公告</h2><p className="mt-1 text-xs text-muted-foreground">共 {items.length} 則</p></div><button onClick={() => void loadItems()} className="inline-flex min-h-11 items-center gap-2 px-3 font-bold"><RefreshCw size={17} />重新整理</button></div>
           {loading ? <div className="flex min-h-52 items-center justify-center gap-3 text-muted-foreground"><LoaderCircle className="animate-spin" />正在讀取公告…</div> : items.length === 0 ? <div className="min-h-52 p-8 text-center text-muted-foreground">目前沒有公告，可以從右上角建立第一則公告。</div> : (
-            <div className="divide-y divide-border">{items.map((item) => <article key={item.id} className="grid gap-4 p-5 md:grid-cols-[1fr_9rem_11rem] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><h3 className="font-bold">{item.title}</h3><StatusBadge status={item.status} /></div><p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{item.summary}</p><p className="mt-2 font-mono text-xs text-muted-foreground">/{item.slug}</p></div><div className="text-sm"><p className="text-xs text-muted-foreground">發布時間</p><p className="mt-1">{item.published_at ? formatDate(item.published_at) : "尚未設定"}</p></div><div className="flex justify-end gap-2"><button onClick={() => openEdit(item)} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold"><Edit3 size={16} />編輯</button><button onClick={() => void deleteAnnouncement(item)} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold text-destructive"><Trash2 size={16} />刪除</button></div></article>)}</div>
+            <div className="divide-y divide-border">{items.map((item) => <article key={item.id} className="grid gap-4 p-5 md:grid-cols-[1fr_9rem_11rem] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><h3 className="font-bold">{item.title}</h3><StatusBadge status={item.status} />{item.is_pinned && <span className="border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-bold text-primary">置頂</span>}</div><p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{item.summary}</p><p className="mt-2 font-mono text-xs text-muted-foreground">/{item.slug}</p></div><div className="text-sm"><p className="text-xs text-muted-foreground">發布時間</p><p className="mt-1">{item.published_at ? formatDate(item.published_at) : "尚未設定"}</p></div><div className="flex justify-end gap-2"><button onClick={() => openEdit(item)} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold"><Edit3 size={16} />編輯</button><button onClick={() => void deleteAnnouncement(item)} className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold text-destructive"><Trash2 size={16} />刪除</button></div></article>)}</div>
           )}
         </section>
       </div>

@@ -45,6 +45,7 @@ class AnnouncementWrite(BaseModel):
     summary: str = Field(min_length=1, max_length=500)
     body: str = Field(min_length=1)
     status: PublishStatus = PublishStatus.DRAFT
+    is_pinned: bool = False
     published_at: datetime | None = None
 
 
