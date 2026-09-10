@@ -181,15 +181,12 @@ pip install -r requirements.txt
 cd backend
 .venv\Scripts\activate.bat
 alembic upgrade head
-python -m app.db.seed
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-如果專案資料夾曾從 `api` 政名為 `backend`，舊 `.venv` 內的 Python 路徑可能仍指向原資料夾。請先刪除舊的 `backend\.venv`，再依上方指令重新建立；不要直接沿用改名前的虛擬環境。
-
 API 文件啟動後位於 `http://localhost:8000/docs`。
 
-`python -m app.db.seed` 會建立或更新初始管理員，並補齊 115-1 課程假資料；重複執行不會重複新增，也不會刪除其他資料。請在 `backend/.env` 設定 `ADMIN_EMAIL` 與至少 12 字元的 `ADMIN_PASSWORD`；該帳號會取得初始管理員權限，並可從登入頁的「管理員」分頁登入。
+只有第一次建立或需要更新初始管理員時，才手動執行 `python -m app.db.seed`。此指令只會建立或更新初始管理員，不會建立課程、課堂或資源假資料，也不會刪除既有資料。請先在 `backend/.env` 設定 `ADMIN_EMAIL` 與至少 12 字元的 `ADMIN_PASSWORD`；該帳號會取得初始管理員權限，並可從登入頁的「管理員」分頁登入。
 
 登入頁分為兩種身分：
 
