@@ -23,9 +23,13 @@ class Settings(BaseSettings):
     r2_public_url: str | None = None
     meta_api_version: str = "v25.0"
     meta_graph_base_url: str = "https://graph.facebook.com"
+    meta_app_id: str | None = None
+    meta_app_secret: str | None = None
     instagram_api_base_url: str = "https://graph.facebook.com"
+    instagram_app_secret: str | None = None
     threads_api_base_url: str = "https://graph.threads.net"
     threads_api_version: str = "v1.0"
+    threads_app_secret: str | None = None
     instagram_user_id: str | None = None
     instagram_access_token: str | None = None
     facebook_page_id: str | None = None
@@ -34,6 +38,8 @@ class Settings(BaseSettings):
     threads_access_token: str | None = None
     social_scheduler_enabled: bool = True
     social_scheduler_interval_seconds: int = 30
+    social_token_check_interval_seconds: int = 21600
+    social_token_refresh_before_seconds: int = 604800
     r2_cleanup_enabled: bool = True
     r2_cleanup_interval_seconds: int = 86400
     r2_cleanup_grace_seconds: int = 86400

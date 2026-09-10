@@ -30,7 +30,6 @@ export function HomeMotion({ children }: { children: ReactNode }) {
 
       gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((section) => {
         gsap.from(section, {
-          autoAlpha: 0,
           y: 12,
           duration: 0.4,
           ease: "power1.out",

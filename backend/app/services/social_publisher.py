@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.models.content import SocialPost, SocialPostImage, SocialPostStatus
 from app.services.r2 import public_image_url
+from app.services.social_tokens import get_social_access_token
 
 
 class SocialPublishError(RuntimeError):
@@ -56,7 +57,8 @@ def _image_urls(images: list[SocialPostImage]) -> list[str]:
 
 def _publish_instagram(post: SocialPost, images: list[SocialPostImage]) -> str:
     settings = _settings()
-    if not settings.instagram_user_id or not settings.instagram_access_token:
+    instagram_token = get_social_access_token("instagram")
+    if not settings.instagram_user_id or not instagram_token:
         raise SocialPublishError("尚未設定 INSTAGRAM_USER_ID 或 INSTAGRAM_ACCESS_TOKEN")
     urls = _image_urls(images)
     if not urls:
@@ -65,63 +67,65 @@ def _publish_instagram(post: SocialPost, images: list[SocialPostImage]) -> str:
         raise SocialPublishError("Instagram 輪播貼文最多 10 張圖片")
 
     if len(urls) == 1:
-        container = _post(f"{settings.instagram_user_id}/media", token=settings.instagram_access_token, data={"image_url": urls[0], "caption": post.caption, "media_type": "IMAGE"}, base_url=settings.instagram_api_base_url)
+        container = _post(f"{settings.instagram_user_id}/media", token=instagram_token, data={"image_url": urls[0], "caption": post.caption, "media_type": "IMAGE"}, base_url=settings.instagram_api_base_url)
     else:
         children = []
         for url in urls:
-            child = _post(f"{settings.instagram_user_id}/media", token=settings.instagram_access_token, data={"image_url": url, "media_type": "IMAGE", "is_carousel_item": "true"}, base_url=settings.instagram_api_base_url)
+            child = _post(f"{settings.instagram_user_id}/media", token=instagram_token, data={"image_url": url, "media_type": "IMAGE", "is_carousel_item": "true"}, base_url=settings.instagram_api_base_url)
             children.append(str(child.get("id", "")))
         if not all(children):
             raise SocialPublishError("Instagram 圖片容器建立失敗")
-        container = _post(f"{settings.instagram_user_id}/media", token=settings.instagram_access_token, data={"media_type": "CAROUSEL", "children": ",".join(children), "caption": post.caption}, base_url=settings.instagram_api_base_url)
+        container = _post(f"{settings.instagram_user_id}/media", token=instagram_token, data={"media_type": "CAROUSEL", "children": ",".join(children), "caption": post.caption}, base_url=settings.instagram_api_base_url)
     creation_id = container.get("id")
     if not creation_id:
         raise SocialPublishError("Instagram 貼文容器未回傳 ID")
-    published = _post(f"{settings.instagram_user_id}/media_publish", token=settings.instagram_access_token, data={"creation_id": str(creation_id)}, base_url=settings.instagram_api_base_url)
+    published = _post(f"{settings.instagram_user_id}/media_publish", token=instagram_token, data={"creation_id": str(creation_id)}, base_url=settings.instagram_api_base_url)
     return str(published.get("id", creation_id))
 
 
 def _publish_facebook(post: SocialPost, images: list[SocialPostImage]) -> str:
     settings = _settings()
-    if not settings.facebook_page_id or not settings.facebook_page_access_token:
+    facebook_token = get_social_access_token("facebook")
+    if not settings.facebook_page_id or not facebook_token:
         raise SocialPublishError("尚未設定 FACEBOOK_PAGE_ID 或 FACEBOOK_PAGE_ACCESS_TOKEN")
     urls = _image_urls(images)
     if not urls:
-        result = _post(f"{settings.facebook_page_id}/feed", token=settings.facebook_page_access_token, data={"message": post.caption})
+        result = _post(f"{settings.facebook_page_id}/feed", token=facebook_token, data={"message": post.caption})
         return str(result.get("id", ""))
 
     attached_media = []
     for url in urls:
-        photo = _post(f"{settings.facebook_page_id}/photos", token=settings.facebook_page_access_token, data={"url": url, "published": "false"})
+        photo = _post(f"{settings.facebook_page_id}/photos", token=facebook_token, data={"url": url, "published": "false"})
         photo_id = photo.get("id")
         if not photo_id:
             raise SocialPublishError("Facebook 圖片上傳未回傳 ID")
         attached_media.append(json.dumps({"media_fbid": photo_id}))
     feed_data = {"message": post.caption}
     feed_data.update({f"attached_media[{index}]": media for index, media in enumerate(attached_media)})
-    result = _post(f"{settings.facebook_page_id}/feed", token=settings.facebook_page_access_token, data=feed_data)
+    result = _post(f"{settings.facebook_page_id}/feed", token=facebook_token, data=feed_data)
     return str(result.get("id", ""))
 
 
 def _publish_threads(post: SocialPost, images: list[SocialPostImage]) -> str:
     settings = _settings()
-    if not settings.threads_user_id or not settings.threads_access_token:
+    threads_token = get_social_access_token("threads")
+    if not settings.threads_user_id or not threads_token:
         raise SocialPublishError("尚未設定 THREADS_USER_ID 或 THREADS_ACCESS_TOKEN")
     urls = _image_urls(images)
     if not urls:
-        container = _post(f"{settings.threads_user_id}/threads", token=settings.threads_access_token, data={"media_type": "TEXT", "text": post.caption}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
+        container = _post(f"{settings.threads_user_id}/threads", token=threads_token, data={"media_type": "TEXT", "text": post.caption}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
     elif len(urls) == 1:
-        container = _post(f"{settings.threads_user_id}/threads", token=settings.threads_access_token, data={"media_type": "IMAGE", "image_url": urls[0], "text": post.caption}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
+        container = _post(f"{settings.threads_user_id}/threads", token=threads_token, data={"media_type": "IMAGE", "image_url": urls[0], "text": post.caption}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
     else:
         children = []
         for url in urls[:10]:
-            child = _post(f"{settings.threads_user_id}/threads", token=settings.threads_access_token, data={"media_type": "IMAGE", "image_url": url, "is_carousel_item": "true"}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
+            child = _post(f"{settings.threads_user_id}/threads", token=threads_token, data={"media_type": "IMAGE", "image_url": url, "is_carousel_item": "true"}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
             children.append(str(child.get("id", "")))
-        container = _post(f"{settings.threads_user_id}/threads", token=settings.threads_access_token, data={"media_type": "CAROUSEL", "children": ",".join(children), "text": post.caption}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
+        container = _post(f"{settings.threads_user_id}/threads", token=threads_token, data={"media_type": "CAROUSEL", "children": ",".join(children), "text": post.caption}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
     creation_id = container.get("id")
     if not creation_id:
         raise SocialPublishError("Threads 貼文容器未回傳 ID")
-    published = _post(f"{settings.threads_user_id}/threads_publish", token=settings.threads_access_token, data={"creation_id": str(creation_id)}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
+    published = _post(f"{settings.threads_user_id}/threads_publish", token=threads_token, data={"creation_id": str(creation_id)}, base_url=settings.threads_api_base_url, version=settings.threads_api_version)
     return str(published.get("id", creation_id))
 
 
@@ -148,17 +152,17 @@ def dry_run_social_post(post: SocialPost) -> dict:
     actions = []
     for platform in post.platforms:
         if platform == "instagram":
-            if not settings.instagram_user_id or not settings.instagram_access_token:
+            if not settings.instagram_user_id or not get_social_access_token("instagram"):
                 raise SocialPublishError("尚未設定 INSTAGRAM_USER_ID 或 INSTAGRAM_ACCESS_TOKEN")
             if not urls:
                 raise SocialPublishError("Instagram 貼文至少需要一張圖片")
             actions.append({"platform": platform, "media_count": len(urls), "mode": "carousel" if len(urls) > 1 else "image"})
         elif platform == "facebook":
-            if not settings.facebook_page_id or not settings.facebook_page_access_token:
+            if not settings.facebook_page_id or not get_social_access_token("facebook"):
                 raise SocialPublishError("尚未設定 FACEBOOK_PAGE_ID 或 FACEBOOK_PAGE_ACCESS_TOKEN")
             actions.append({"platform": platform, "media_count": len(urls), "mode": "photos" if urls else "text"})
         elif platform == "threads":
-            if not settings.threads_user_id or not settings.threads_access_token:
+            if not settings.threads_user_id or not get_social_access_token("threads"):
                 raise SocialPublishError("尚未設定 THREADS_USER_ID 或 THREADS_ACCESS_TOKEN")
             actions.append({"platform": platform, "media_count": len(urls), "mode": "carousel" if len(urls) > 1 else "image" if urls else "text"})
         else:

@@ -9,18 +9,27 @@ from app.api import admin, auth, content
 from app.core.config import get_settings
 from app.services.social_publisher import publish_due_social_posts
 from app.services.r2_cleanup import cleanup_unreferenced_r2_images
+from app.services.social_tokens import check_and_refresh_social_tokens
 
 settings = get_settings()
 
 
 async def _social_scheduler() -> None:
     last_cleanup_at = 0.0
+    last_token_check_at = 0.0
     while True:
         try:
             await asyncio.to_thread(publish_due_social_posts)
         except Exception:
             # A failed polling cycle must not stop future scheduled posts.
             pass
+        if time.monotonic() - last_token_check_at >= max(300, settings.social_token_check_interval_seconds):
+            try:
+                await asyncio.to_thread(check_and_refresh_social_tokens)
+            except Exception:
+                # Token 狀態會留在資料庫，下一個週期再檢查。
+                pass
+            last_token_check_at = time.monotonic()
         if settings.r2_cleanup_enabled and time.monotonic() - last_cleanup_at >= max(60, settings.r2_cleanup_interval_seconds):
             try:
                 await asyncio.to_thread(cleanup_unreferenced_r2_images)

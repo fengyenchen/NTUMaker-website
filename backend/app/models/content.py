@@ -49,6 +49,18 @@ class SiteSetting(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
+class SocialToken(Base):
+    __tablename__ = "social_tokens"
+
+    platform: Mapped[str] = mapped_column(String(30), primary_key=True)
+    access_token: Mapped[str] = mapped_column(Text)
+    source_token_hash: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_error: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
 class Announcement(Base):
     __tablename__ = "announcements"
 

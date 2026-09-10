@@ -180,7 +180,7 @@ pip install -r requirements.txt
 ```bat
 cd backend
 .venv\Scripts\activate.bat
-alembic upgrade head
+python -m alembic upgrade head
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
@@ -193,7 +193,7 @@ API 文件啟動後位於 `http://localhost:8000/docs`。
 - 社員：輸入後台已建立、帳號啟用且資格有效的 Email，核對成功後會回到登入前頁面；若無回跳位置則進入 `/setting`。
 - 管理員：輸入具有 Admin 角色的 Email 與密碼，進入 `/admin`。密碼只以 PBKDF2-SHA256 雜湊保存在資料庫。
 
-修改資料模型後請再次執行 `alembic upgrade head`。現有管理員第一次加入密碼欄位後，重新執行 `python -m app.db.seed` 即可依 `.env` 設定密碼。
+修改資料模型後請再次執行 `python -m alembic upgrade head`。現有管理員第一次加入密碼欄位後，重新執行 `python -m app.db.seed` 即可依 `.env` 設定密碼。
 
 ### 4. 啟動 Next.js
 
