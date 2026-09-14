@@ -263,7 +263,7 @@ export default function CoursesAdminPage() {
     try {
       const body = new FormData();
       body.append("file", file);
-      const response = await fetch("/api/v1/admin/uploads/images", {
+      const response = await fetch("/api/v1/admin/uploads/resources", {
         method: "POST",
         credentials: "include",
         body,

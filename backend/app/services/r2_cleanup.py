@@ -36,7 +36,9 @@ def _referenced_keys() -> set[str]:
         for body in db.scalars(select(Announcement.body)):
             for match in MARKDOWN_IMAGE_RE.finditer(body or ""):
                 key = _object_key_from_url(match.group(1))
-                if key:
+                # 舊版公告圖片誤存於 social/；這些檔案允許隨清理週期移除。
+                # 新版公告圖片使用 announcements/，仍會受到引用保護。
+                if key and not key.startswith("social/"):
                     keys.add(key)
         for url in db.scalars(select(Resource.url)):
             key = _object_key_from_url(url)
@@ -51,7 +53,7 @@ def cleanup_unreferenced_r2_images() -> int:
     cutoff = datetime.now(timezone.utc) - timedelta(seconds=max(0, settings.r2_cleanup_grace_seconds))
     referenced = _referenced_keys()
     deleted = 0
-    for prefix in ("social/", "resources/"):
+    for prefix in ("social/", "announcements/", "resources/"):
         for item in list_image_objects(prefix):
             key = item.get("Key")
             last_modified = item.get("LastModified")

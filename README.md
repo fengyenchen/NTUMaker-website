@@ -228,6 +228,6 @@ pnpm build
 - 如果用新圖片取代舊圖片，儲存時會先刪除標記的舊圖片，再上傳新增圖片，避免暫存期間超過 10 張的限制。
 - 草稿至少要有貼文文字或一張圖片；排程貼文需要貼文文字與排程時間，若發布到 Instagram 另需至少一張圖片。
 
-公告與社課資源中的圖片／文件不會立即刪除，讓管理員有時間復原；後端每天會清理 `social/` 與 `resources/` 下已超過 24 小時、且未被公告、社課資源或社群貼文引用的檔案。清理週期與保留時間可用 `R2_CLEANUP_INTERVAL_SECONDS`、`R2_CLEANUP_GRACE_SECONDS` 調整，並可用 `R2_CLEANUP_ENABLED=false` 停用。
+公告與社課資源中的圖片／文件不會立即刪除，讓管理員有時間復原；後端每天會清理 `social/`、`announcements/` 與 `resources/` 下已超過 24 小時、且未被內容引用的檔案。公告圖片會保存於 `announcements/`，社課資源檔案會保存於 `resources/`；舊版誤存於 `social/` 的公告圖片不列入引用保護，會依保留期限清理。清理週期與保留時間可用 `R2_CLEANUP_INTERVAL_SECONDS`、`R2_CLEANUP_GRACE_SECONDS` 調整，並可用 `R2_CLEANUP_ENABLED=false` 停用。
 
 社課資源支援連結、文件（含圖片與影片）與文字。圖片、影片與常見文件（PDF、Word、Excel、PowerPoint、ZIP、文字檔）可直接從管理後台上傳至 R2；系統會依檔案格式自動選擇圖片、影片或 PDF 預覽，無法預覽的格式則提供下載。文字內容直接儲存並提供選取複製。資源檔案會以 `resources/` 前綴保存，未使用檔案會依保留期限自動清理。

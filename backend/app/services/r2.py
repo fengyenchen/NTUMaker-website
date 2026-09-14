@@ -15,16 +15,26 @@ def _client():
     return boto3.client("s3", endpoint_url=settings.r2_endpoint, aws_access_key_id=settings.r2_access_key_id, aws_secret_access_key=settings.r2_secret_access_key, region_name="auto")
 
 
-def upload_image(file: UploadFile) -> dict[str, str]:
+def _upload_image_to_prefix(file: UploadFile, prefix: str) -> dict[str, str]:
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="只接受圖片檔案")
     data = file.file.read()
     if len(data) > 10 * 1024 * 1024:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="圖片不可超過 10 MB")
-    key = f"social/{uuid.uuid4()}-{file.filename or 'image'}"
+    key = f"{prefix.rstrip('/')}/{uuid.uuid4()}-{file.filename or 'image'}"
     _client().put_object(Bucket=get_settings().r2_bucket_name, Key=key, Body=data, ContentType=file.content_type)
     public_url = get_settings().r2_public_url
     return {"r2_object_key": key, "public_url": f"{public_url.rstrip('/')}/{key}" if public_url else "", "image_name": file.filename or "image", "image_mime_type": file.content_type}
+
+
+def upload_image(file: UploadFile) -> dict[str, str]:
+    """上傳社群圖片（保留舊 API 相容性）。"""
+    return _upload_image_to_prefix(file, "social")
+
+
+def upload_announcement_image(file: UploadFile) -> dict[str, str]:
+    """上傳公告內文圖片，與社群及社課資源分開存放。"""
+    return _upload_image_to_prefix(file, "announcements")
 
 
 def upload_resource_file(file: UploadFile) -> dict[str, str]:

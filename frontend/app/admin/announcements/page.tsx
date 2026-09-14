@@ -137,7 +137,7 @@ export default function AnnouncementsAdminPage() {
     try {
       const body = new FormData();
       body.append("file", file);
-      const response = await fetch("/api/v1/admin/uploads/images", {
+      const response = await fetch("/api/v1/admin/uploads/announcement-images", {
         method: "POST",
         credentials: "include",
         body,
