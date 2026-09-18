@@ -33,7 +33,7 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
   try {
     const response = await fetch(`${apiUrl}/api/v1/content/course-library`, {
       cache: "no-store",
-      signal: AbortSignal.timeout(2000),
+      signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) return courseTracks;
     const data = (await response.json()) as ApiCourseSeries[];
@@ -49,6 +49,7 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
           .sort((a, b) => a.order_index - b.order_index)
           .map((session) => ({
             id: session.id,
+            trackTitle: series.title,
             week: session.week_label,
             title: session.title,
             summary: session.summary,

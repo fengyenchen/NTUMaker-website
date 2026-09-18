@@ -1,5 +1,6 @@
 export type CourseSession = {
   id?: string;
+  trackTitle?: string;
   week: string;
   title: string;
   summary: string;

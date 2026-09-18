@@ -77,7 +77,7 @@ export default async function HomePage() {
             <div className="absolute bottom-[8%] right-0 max-w-52 rotate-3 rounded-2xl border border-warm-accent bg-surface px-5 py-4 text-foreground shadow-[3px_3px_0_var(--color-warm-accent)]">
               <p className="text-xs font-bold opacity-70">NEXT CLASS</p>
               <p className="mt-1 font-bold">{nextSession?.startsAt ? formatNextClassTime(nextSession.startsAt) : "尚未安排"}</p>
-              <p className="truncate text-sm" title={nextSession?.title}>{nextSession?.title ?? "敬請期待"}</p>
+              <p className="truncate text-sm" title={nextSession?.title}>{nextSession ? `${nextSession.trackTitle ? `${nextSession.trackTitle} · ` : ""}${nextSession.title}` : "敬請期待"}</p>
             </div>
           </div>
         </div>
@@ -161,12 +161,13 @@ function formatShortDate(value: string) { return new Intl.DateTimeFormat("zh-TW"
 function formatNextClassTime(value: string) {
   const date = new Date(value);
   const weekday = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"][date.getDay()];
+  const dateLabel = new Intl.DateTimeFormat("zh-TW", { month: "2-digit", day: "2-digit" }).format(date).replace("/", " / ");
   const time = new Intl.DateTimeFormat("zh-TW", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   }).format(date);
-  return `${weekday} ${time}`;
+  return `${dateLabel}・${weekday} ${time}`;
 }
 
 function SectionTitle({ label, title }: { label: string; title: string }) {
