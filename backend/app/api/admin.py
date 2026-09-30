@@ -494,6 +494,7 @@ def list_admin_course_library(db: Session = Depends(get_db)) -> list[dict]:
                     "week_label": session.week_label,
                     "summary": session.summary,
                     "starts_at": session.starts_at,
+                    "ends_at": session.ends_at,
                     "order_index": session.order_index,
                     "visibility": session.visibility,
                     "resources": sorted(session.resources, key=lambda resource: resource.created_at),

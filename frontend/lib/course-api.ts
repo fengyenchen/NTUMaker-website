@@ -17,6 +17,7 @@ type ApiSession = {
   summary: string;
   order_index: number;
   starts_at: string;
+  ends_at: string;
   resources: ApiResource[];
 };
 
@@ -56,6 +57,7 @@ export async function getCourseTracks(): Promise<CourseTrack[]> {
             assets: session.resources.map((resource) => resource.title),
             isPublic: session.resources.some((resource) => resource.visibility === "public"),
             startsAt: session.starts_at,
+            endsAt: session.ends_at,
           })),
       }))
       .sort((a, b) => dayOrder(a.id) - dayOrder(b.id));

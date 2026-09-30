@@ -26,6 +26,7 @@ class CourseSessionSummary(BaseModel):
     week_label: str
     summary: str
     starts_at: datetime
+    ends_at: datetime
     order_index: int
     visibility: Visibility
 

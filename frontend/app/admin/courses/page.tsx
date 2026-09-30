@@ -52,6 +52,7 @@ type CourseSession = {
   week_label: string;
   summary: string;
   starts_at: string;
+  ends_at: string;
   order_index: number;
   visibility: Visibility;
   resources: Resource[];
@@ -83,6 +84,7 @@ const emptySession = {
   week_end: "",
   summary: "",
   starts_at: "",
+  ends_at: "",
   order_index: 0,
   visibility: "public" as Visibility,
 };
@@ -237,6 +239,7 @@ export default function CoursesAdminPage() {
       ...sessionForm,
       week_label: formatWeekLabel(sessionForm.week_start, sessionForm.week_end),
       starts_at: new Date(`${sessionForm.starts_at}T12:00:00`).toISOString(),
+      ends_at: new Date(`${sessionForm.ends_at || sessionForm.starts_at}T12:00:00`).toISOString(),
     });
     setNewSessionSeriesId(null);
   }
@@ -434,6 +437,9 @@ export default function CoursesAdminPage() {
         summary: session.summary,
         starts_at: new Date(
           `${toLocalDate(session.starts_at)}T12:00:00`,
+        ).toISOString(),
+        ends_at: new Date(
+          `${toLocalDate(session.ends_at || session.starts_at)}T12:00:00`,
         ).toISOString(),
         order_index: session.order_index,
         visibility: session.visibility,
@@ -658,6 +664,18 @@ export default function CoursesAdminPage() {
                       ...sessionForm,
                       starts_at: event.target.value,
                     })
+                  }
+                  className="input-admin"
+                />
+              </Field>
+              <Field label="結束日期">
+                <input
+                  required
+                  type="date"
+                  min={sessionForm.starts_at}
+                  value={sessionForm.ends_at || sessionForm.starts_at}
+                  onChange={(event) =>
+                    setSessionForm({ ...sessionForm, ends_at: event.target.value })
                   }
                   className="input-admin"
                 />
@@ -1001,6 +1019,19 @@ export default function CoursesAdminPage() {
                           onChange={(event) =>
                             updateSessionDraft(selectedSession.id, {
                               starts_at: event.target.value,
+                            })
+                          }
+                          className="input-admin"
+                        />
+                      </Field>
+                      <Field label="結束日期">
+                        <input
+                          type="date"
+                          value={toLocalDate(selectedSession.ends_at || selectedSession.starts_at)}
+                          min={toLocalDate(selectedSession.starts_at)}
+                          onChange={(event) =>
+                            updateSessionDraft(selectedSession.id, {
+                              ends_at: event.target.value,
                             })
                           }
                           className="input-admin"
@@ -1410,6 +1441,18 @@ function NewSessionForm({
           className="input-admin"
         />
       </Field>
+      <Field label="結束日期">
+        <input
+          required
+          type="date"
+          min={form.starts_at}
+          value={form.ends_at || form.starts_at}
+          onChange={(event) =>
+            setForm({ ...form, ends_at: event.target.value })
+          }
+          className="input-admin"
+        />
+      </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="顯示順序">
           <input
@@ -1645,13 +1688,14 @@ function serializeSeries(series: Pick<CourseSeries, "title" | "semester" | "trac
   });
 }
 
-function serializeSession(session: Pick<CourseSession, "series_id" | "title" | "week_label" | "summary" | "starts_at" | "order_index" | "visibility">) {
+function serializeSession(session: Pick<CourseSession, "series_id" | "title" | "week_label" | "summary" | "starts_at" | "ends_at" | "order_index" | "visibility">) {
   return JSON.stringify({
     series_id: session.series_id,
     title: session.title,
     week_label: session.week_label,
     summary: session.summary,
     starts_at: toLocalDate(session.starts_at),
+    ends_at: toLocalDate(session.ends_at || session.starts_at),
     order_index: session.order_index,
     visibility: session.visibility,
   });

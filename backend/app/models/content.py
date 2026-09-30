@@ -97,6 +97,7 @@ class CourseSession(Base):
     week_label: Mapped[str] = mapped_column(String(30), default="")
     summary: Mapped[str] = mapped_column(String(500))
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     order_index: Mapped[int] = mapped_column(Integer, default=0)
     visibility: Mapped[Visibility] = mapped_column(Enum(Visibility, name="content_visibility"), default=Visibility.PUBLIC)
     series: Mapped[CourseSeries] = relationship(back_populates="sessions")

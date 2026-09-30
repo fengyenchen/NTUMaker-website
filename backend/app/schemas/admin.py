@@ -71,8 +71,15 @@ class CourseSessionWrite(BaseModel):
     week_label: str = Field(min_length=1, max_length=30)
     summary: str = Field(min_length=1, max_length=500)
     starts_at: datetime
+    ends_at: datetime
     order_index: int = Field(default=0, ge=0)
     visibility: Visibility = Visibility.PUBLIC
+
+    @model_validator(mode="after")
+    def validate_date_range(self) -> "CourseSessionWrite":
+        if self.ends_at < self.starts_at:
+            raise ValueError("結束日期不可早於開始日期")
+        return self
 
 
 class ResourceWrite(BaseModel):

@@ -45,7 +45,7 @@ function CourseTimeline({ track }: { track: CourseTrack }) {
           <li key={session.title} className="grid min-h-28 grid-cols-[6.25rem_minmax(0,1fr)_1.25rem] items-start gap-x-4 gap-y-2 rounded-xl bg-background p-4">
             <span className="grid min-h-9 w-full place-items-center self-start rounded-lg border border-accent/40 bg-accent/10 px-2 text-xs font-bold text-accent">{session.week}</span>
             <span className="self-center font-bold">{session.title}</span>
-            {session.startsAt && isSessionEnded(session.startsAt) ? <Check className="self-center text-success" size={18} aria-label="已結束" /> : <span aria-hidden="true" />}
+            {session.endsAt && isSessionEnded(session.endsAt) ? <Check className="self-center text-success" size={18} aria-label="已結束" /> : <span aria-hidden="true" />}
             <p className="col-start-2 col-end-4 text-sm leading-6 text-muted-foreground">{session.summary}</p>
           </li>
         ))}
@@ -54,8 +54,8 @@ function CourseTimeline({ track }: { track: CourseTrack }) {
   );
 }
 
-function isSessionEnded(startsAt: string) {
-  const endOfDate = new Date(startsAt);
+function isSessionEnded(endsAt: string) {
+  const endOfDate = new Date(endsAt);
   endOfDate.setHours(23, 59, 59, 999);
   return endOfDate.getTime() <= Date.now();
 }

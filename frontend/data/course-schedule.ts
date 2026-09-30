@@ -7,6 +7,7 @@ export type CourseSession = {
   assets: string[];
   isPublic?: boolean;
   startsAt?: string;
+  endsAt?: string;
 };
 
 export type CourseTrack = {
