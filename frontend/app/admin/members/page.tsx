@@ -1,8 +1,10 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { MemberCsvImport } from "../../../components/member-csv-import";
 import {
   CalendarCheck2,
+  Pencil,
   LoaderCircle,
   Plus,
   RefreshCw,
@@ -47,9 +49,13 @@ export default function MembersAdminPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [searchTerm, setSearchTerm] = useState("");
   const [expiryDrafts, setExpiryDrafts] = useState<Record<string, string>>({});
+  const [profileDrafts, setProfileDrafts] = useState<Record<string, { display_name: string; email: string }>>({});
+  const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
+  const [editingMemberIds, setEditingMemberIds] = useState<string[]>([]);
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
 
   const filteredMembers = useMemo(() => {
@@ -75,6 +81,8 @@ export default function MembersAdminPage() {
       setMembers(
         data.filter((member: Member) => !member.roles.includes("admin")),
       );
+      setProfileDrafts({});
+      setEditingMemberIds([]);
       setExpiryDrafts(
         Object.fromEntries(
           data.map((member: Member) => [
@@ -134,9 +142,10 @@ export default function MembersAdminPage() {
 
   async function updateMember(
     member: Member,
-    changes: Partial<Pick<Member, "is_active">> & { expires_at?: string },
+    changes: Partial<Pick<Member, "is_active" | "display_name" | "email">> & { expires_at?: string },
   ) {
     setError("");
+    setUpdatingMemberId(member.id);
     try {
       const response = await fetch(`/api/v1/admin/users/${member.id}`, {
         method: "PATCH",
@@ -149,6 +158,13 @@ export default function MembersAdminPage() {
       setMembers((current) =>
         current.map((item) => (item.id === member.id ? data : item)),
       );
+      if ("email" in changes || "display_name" in changes) {
+        setEditingMemberIds((current) => current.filter((id) => id !== member.id));
+        setProfileDrafts((current) => {
+          const { [member.id]: _removed, ...remaining } = current;
+          return remaining;
+        });
+      }
       if (data.membership_expires_at)
         setExpiryDrafts((current) => ({
           ...current,
@@ -160,6 +176,8 @@ export default function MembersAdminPage() {
           ? requestError.message
           : "無法更新社員資料",
       );
+    } finally {
+      setUpdatingMemberId(null);
     }
   }
 
@@ -207,9 +225,11 @@ export default function MembersAdminPage() {
               社員管理
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              管理社員 Email、資格期限與帳號狀態。
+              管理社員姓名、Email、資格期限與帳號狀態。
             </p>
           </div>
+          <div className="flex gap-3">
+          <button type="button" onClick={() => setShowImport(true)} className="button-25d inline-flex min-h-11 items-center justify-center rounded-lg px-4 font-bold">匯入 CSV</button>
           <button
             onClick={() => setShowForm(true)}
             className="button-25d inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 font-bold"
@@ -217,6 +237,7 @@ export default function MembersAdminPage() {
             <Plus size={18} />
             新增社員
           </button>
+          </div>
         </div>
 
         {error && (
@@ -227,6 +248,8 @@ export default function MembersAdminPage() {
             {error}
           </div>
         )}
+
+        {showImport && <MemberCsvImport today={taipeiToday()} onImported={loadMembers} onClose={() => setShowImport(false)} />}
 
         {showForm && (
           <section className="mt-7 border border-border bg-surface p-5 shadow-[4px_5px_0_var(--color-shadow-soft)]">
@@ -366,12 +389,18 @@ export default function MembersAdminPage() {
                     <th className="px-5 py-3">社員</th>
                     <th className="px-5 py-3">開始日期</th>
                     <th className="px-5 py-3">結束日期</th>
-                    <th className="px-5 py-3">狀態</th>
+                    <th className="px-5 py-3">編輯</th>
                     <th className="px-5 py-3">操作</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMembers.map((member) => {
+                    const profileDraft = profileDrafts[member.id] ?? {
+                      display_name: member.display_name ?? "",
+                      email: member.email,
+                    };
+                    const editing = editingMemberIds.includes(member.id);
+                    const busy = updatingMemberId !== null || deletingMemberId === member.id;
                     const expiryDraft =
                       expiryDrafts[member.id] ??
                       member.membership_expires_at ??
@@ -382,18 +411,37 @@ export default function MembersAdminPage() {
                     return (
                       <tr key={member.id} className="border-t border-border">
                         <td className="px-5 py-4">
-                          <p className="font-bold">
-                            {member.display_name || "未設定名稱"}
-                          </p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {member.email}
-                          </p>
+                          <form id={`member-${member.id}`} onSubmit={(event) => {
+                            event.preventDefault();
+                            if (!editing || busy) return;
+                            void updateMember(member, {
+                              display_name: profileDraft.display_name.trim() || null,
+                              email: profileDraft.email.trim(),
+                              ...(expiryDraft && expiryDraft !== member.membership_expires_at ? { expires_at: expiryDraft } : {}),
+                            });
+                          }} className="grid min-w-52 gap-2">
+                            {editing ? <>
+                            <Field label="姓名" hideLabel>
+                              <input maxLength={100} value={profileDraft.display_name} disabled={busy}
+                                onChange={(event) => setProfileDrafts((current) => ({ ...current, [member.id]: { ...profileDraft, display_name: event.target.value } }))}
+                                className="min-h-11 w-full border border-border bg-background px-3 font-normal" />
+                            </Field>
+                            <Field label="Email" hideLabel>
+                              <input required type="email" value={profileDraft.email} disabled={busy}
+                                onChange={(event) => setProfileDrafts((current) => ({ ...current, [member.id]: { ...profileDraft, email: event.target.value } }))}
+                                className="min-h-11 w-full border border-border bg-background px-3 font-normal" />
+                            </Field>
+                            </> : <div>
+                              <p className="font-bold">{member.display_name || "未設定名稱"}</p>
+                              <p className="mt-1 text-xs text-muted-foreground">{member.email}</p>
+                            </div>}
+                          </form>
                         </td>
                         <td className="px-5 py-4 font-mono">
                           {member.membership_starts_at ?? "未設定"}
                         </td>
                         <td className="px-5 py-4">
-                          <label
+                          {editing ? <><label
                             className="sr-only"
                             htmlFor={`expiry-${member.id}`}
                           >
@@ -401,6 +449,8 @@ export default function MembersAdminPage() {
                           </label>
                           <input
                             id={`expiry-${member.id}`}
+                            form={`member-${member.id}`}
+                            disabled={busy}
                             type="date"
                             min={member.membership_starts_at ?? taipeiToday()}
                             value={expiryDraft}
@@ -412,6 +462,7 @@ export default function MembersAdminPage() {
                             }
                             className="min-h-11 border border-border bg-background px-3 font-mono"
                           />
+                          </> : <p className="font-mono">{member.membership_expires_at ?? "未設定"}</p>}
                           <p
                             className={`mt-1 text-xs ${expired ? "text-destructive" : "text-success"}`}
                           >
@@ -419,26 +470,37 @@ export default function MembersAdminPage() {
                           </p>
                         </td>
                         <td className="px-5 py-4">
-                          {member.is_active ? "啟用中" : "已停用"}
+                          {editing ? <button
+                              key="save"
+                              type="button"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                const form = document.getElementById(`member-${member.id}`);
+                                if (form instanceof HTMLFormElement) form.requestSubmit();
+                              }}
+                              disabled={busy}
+                              className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              {updatingMemberId === member.id ? <LoaderCircle className="animate-spin" size={16} /> : <CalendarCheck2 size={16} />}
+                              儲存
+                            </button> : <button
+                              key="edit"
+                              type="button"
+                              disabled={busy}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                setEditingMemberIds((current) => [...current, member.id]);
+                              }}
+                              className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold disabled:opacity-40"
+                            >
+                              <Pencil size={16} />
+                              編輯
+                            </button>}
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex gap-2">
                             <button
-                              disabled={
-                                !expiryDraft ||
-                                expiryDraft === member.membership_expires_at
-                              }
-                              onClick={() =>
-                                void updateMember(member, {
-                                  expires_at: expiryDraft,
-                                })
-                              }
-                              className="inline-flex min-h-11 items-center gap-1 border border-border px-3 font-bold disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                              <CalendarCheck2 size={16} />
-                              儲存
-                            </button>
-                            <button
+                              disabled={busy}
                               onClick={() =>
                                 void updateMember(member, {
                                   is_active: !member.is_active,
@@ -450,7 +512,7 @@ export default function MembersAdminPage() {
                               {member.is_active ? "停用" : "啟用"}
                             </button>
                             <button
-                              disabled={deletingMemberId === member.id}
+                              disabled={busy}
                               onClick={() => void deleteMember(member)}
                               className="inline-flex min-h-11 items-center gap-1 border border-destructive px-3 font-bold text-destructive transition-colors hover:bg-destructive hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-40"
                             >
@@ -479,13 +541,15 @@ export default function MembersAdminPage() {
 function Field({
   label,
   children,
+  hideLabel = false,
 }: {
   label: string;
   children: React.ReactNode;
+  hideLabel?: boolean;
 }) {
   return (
     <label className="grid gap-2 text-sm font-bold">
-      <span>{label}</span>
+      <span className={hideLabel ? "sr-only" : undefined}>{label}</span>
       {children}
     </label>
   );

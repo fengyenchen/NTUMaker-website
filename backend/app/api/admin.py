@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.exc import IntegrityError
+from pydantic import ValidationError
 
 from app.api.dependencies import require_admin
 from app.db.session import get_db
@@ -19,6 +21,7 @@ from app.schemas.admin import (
     CourseSeriesWrite,
     CourseSessionWrite,
     MemberUpdate,
+    MemberImport,
     MemberWrite,
     ResourceAdminSummary,
     ResourceWrite,
@@ -364,6 +367,44 @@ def create_member(payload: MemberWrite, db: Session = Depends(get_db)) -> AdminU
     return serialize_user(load_user(db, user.id))
 
 
+@router.post("/users/import", summary="批量匯入社員")
+def import_members(payload: MemberImport, db: Session = Depends(get_db)) -> dict:
+    starts_at = taipei_today()
+    if payload.expires_at < starts_at:
+        raise HTTPException(status_code=422, detail="結束日期不可早於今天")
+    skipped = []
+    imported = 0
+    seen = set()
+    for row in payload.rows:
+        try:
+            member = MemberWrite(email=row.email.strip(), display_name=row.display_name.strip(), expires_at=payload.expires_at)
+            if not member.display_name:
+                raise ValueError("姓名不可為空")
+        except (ValidationError, ValueError):
+            skipped.append({"row_number": row.row_number, "reason": "姓名空白、過長或 Email 格式不正確"})
+            continue
+        email = member.email.lower()
+        if email in seen:
+            skipped.append({"row_number": row.row_number, "reason": "CSV 中 Email 重複"})
+            continue
+        seen.add(email)
+        if db.scalar(select(User.id).where(User.email == email)):
+            skipped.append({"row_number": row.row_number, "reason": "Email 已存在，保留原帳號"})
+            continue
+        try:
+            with db.begin_nested():
+                user = User(email=email, display_name=member.display_name)
+                user.roles.append(UserRole(role=Role.MEMBER))
+                user.memberships.append(Membership(starts_at=starts_at, expires_at=payload.expires_at))
+                db.add(user)
+                db.flush()
+            imported += 1
+        except IntegrityError:
+            skipped.append({"row_number": row.row_number, "reason": "Email 已存在，保留原帳號"})
+    db.commit()
+    return {"imported": imported, "skipped": skipped}
+
+
 @router.patch("/users/{user_id}", response_model=AdminUserSummary, summary="更新社員資料")
 def update_member(
     user_id: UUID,
@@ -373,6 +414,13 @@ def update_member(
 ) -> AdminUserSummary:
     user = load_user(db, user_id)
     values = payload.model_dump(exclude_unset=True)
+    if "email" in values:
+        if payload.email is None:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Email 不可為空")
+        normalized_email = payload.email.lower()
+        if db.scalar(select(User).where(User.email == normalized_email, User.id != user.id)):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="這個 Email 已存在")
+        user.email = normalized_email
     if user.id == current_admin.id and (values.get("is_active") is False or values.get("is_admin") is False):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不可停用自己的帳號或移除自己的管理員權限")
     if "display_name" in values:

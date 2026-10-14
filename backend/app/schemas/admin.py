@@ -22,11 +22,23 @@ class MemberWrite(BaseModel):
 
 
 class MemberUpdate(BaseModel):
+    email: EmailStr | None = None
     display_name: str | None = Field(default=None, max_length=100)
     expires_at: date | None = None
     is_admin: bool | None = None
     admin_password: str | None = Field(default=None, min_length=12, max_length=200)
     is_active: bool | None = None
+
+
+class MemberImportRow(BaseModel):
+    display_name: str
+    email: str
+    row_number: int = Field(ge=2)
+
+
+class MemberImport(BaseModel):
+    expires_at: date
+    rows: list[MemberImportRow] = Field(min_length=1, max_length=2000)
 
 
 class AdminUserSummary(BaseModel):
