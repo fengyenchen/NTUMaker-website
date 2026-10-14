@@ -35,6 +35,7 @@ from app.schemas.admin import (
 )
 from app.schemas.content import CourseSeriesSummary, CourseSessionSummary
 from app.services.memberships import taipei_today
+from app.services.course_schedule import scheduled_start, TAIPEI
 from app.services.passwords import hash_password
 from app.services.r2 import delete_image, read_image, upload_announcement_image, upload_image, upload_resource_file
 from app.services.social_publisher import SocialPublishError, dry_run_social_post, publish_social_post
@@ -66,9 +67,16 @@ def get_overview(db: Session = Depends(get_db)) -> dict:
     ) or 0
     published_resources = db.scalar(select(func.count(Resource.id))) or 0
     member_resources = db.scalar(select(func.count(Resource.id)).where(Resource.visibility == Visibility.MEMBER)) or 0
-    next_session = db.scalar(
-        select(CourseSession).join(CourseSeries).where(CourseSeries.semester == current_semester, CourseSession.starts_at >= datetime.now(timezone.utc)).order_by(CourseSession.starts_at).limit(1)
+    now = datetime.now(timezone.utc)
+    candidates = db.execute(
+        select(CourseSession, CourseSeries.time).join(CourseSeries)
+        .where(CourseSeries.semester == current_semester, CourseSession.starts_at >= datetime.combine(today, datetime.min.time(), tzinfo=TAIPEI))
+    ).all()
+    upcoming = sorted(
+        ((scheduled_start(session.starts_at, class_time), session, class_time) for session, class_time in candidates),
+        key=lambda item: item[0],
     )
+    next_class = next((item for item in upcoming if item[0] >= now), None)
     recent = [
         {"title": item.title, "type": "公告", "visibility": "公開", "status": PUBLISH_STATUS_LABELS[item.status], "updated_at": item.updated_at}
         for item in db.scalars(select(Announcement).order_by(Announcement.updated_at.desc()).limit(3))
@@ -85,7 +93,7 @@ def get_overview(db: Session = Depends(get_db)) -> dict:
         "semester_sessions": semester_sessions,
         "published_resources": published_resources,
         "member_resources": member_resources,
-        "next_session": {"title": next_session.title, "starts_at": next_session.starts_at} if next_session else None,
+        "next_session": {"title": next_class[1].title, "starts_at": next_class[0], "time": next_class[2]} if next_class else None,
         "recent": recent[:5],
     }
 

@@ -12,7 +12,7 @@ type Overview = {
   semester_sessions: number;
   published_resources: number;
   member_resources: number;
-  next_session: { title: string; starts_at: string } | null;
+  next_session: { title: string; starts_at: string; time: string } | null;
   recent: Array<{
     title: string;
     type: string;
@@ -58,7 +58,7 @@ export default function AdminPage() {
           value: overview.semester_sessions,
           icon: CalendarDays,
           note: overview.next_session
-            ? `下一堂：${formatDateTime(overview.next_session.starts_at)}`
+            ? `下一堂：${new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", month: "2-digit", day: "2-digit" }).format(new Date(overview.next_session.starts_at))} ${overview.next_session.time}`
             : "目前沒有未來課堂",
         },
         {
@@ -170,6 +170,7 @@ export default function AdminPage() {
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("zh-TW", {
+    timeZone: "Asia/Taipei",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
