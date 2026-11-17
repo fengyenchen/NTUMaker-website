@@ -35,9 +35,12 @@ export default async function HomePage() {
   const sectionOrder = settings.home_section_order.split(",");
   const sectionPosition = (key: string) => ({ order: Math.max(sectionOrder.indexOf(key), 0) });
   const nextSession = courseTracks
-    .flatMap((track) => track.sessions)
-    .filter((session) => session.startsAt && new Date(session.startsAt).getTime() >= Date.now())
-    .sort((a, b) => new Date(a.startsAt!).getTime() - new Date(b.startsAt!).getTime())[0];
+    .flatMap((track) => track.sessions.map((session) => ({
+      ...session,
+      scheduledAt: session.startsAt ? getScheduledClassStart(session.startsAt, track.time) : null,
+    })))
+    .filter((session) => session.scheduledAt && session.scheduledAt.getTime() >= Date.now())
+    .sort((a, b) => a.scheduledAt!.getTime() - b.scheduledAt!.getTime())[0];
   return (
     <HomeMotion>
       <SiteHeader />
@@ -76,7 +79,7 @@ export default async function HomePage() {
             </div>
             <div className="absolute bottom-[8%] right-0 max-w-52 rotate-3 rounded-2xl border border-warm-accent bg-surface px-5 py-4 text-foreground shadow-[3px_3px_0_var(--color-warm-accent)]">
               <p className="text-xs font-bold opacity-70">NEXT CLASS</p>
-              <p className="mt-1 font-bold">{nextSession?.startsAt ? formatNextClassTime(nextSession.startsAt) : "尚未安排"}</p>
+              <p className="mt-1 font-bold">{nextSession?.scheduledAt ? formatNextClassTime(nextSession.scheduledAt) : "尚未安排"}</p>
               <p className="truncate text-sm" title={nextSession?.title}>{nextSession ? `${nextSession.trackTitle ? `${nextSession.trackTitle} · ` : ""}${nextSession.title}` : "敬請期待"}</p>
             </div>
           </div>
@@ -158,14 +161,28 @@ export default async function HomePage() {
 
 function formatShortDate(value: string) { return new Intl.DateTimeFormat("zh-TW", { month: "2-digit", day: "2-digit" }).format(new Date(value)).replace("/", " / "); }
 
-function formatNextClassTime(value: string) {
-  const date = new Date(value);
-  const weekday = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"][date.getDay()];
-  const dateLabel = new Intl.DateTimeFormat("zh-TW", { month: "2-digit", day: "2-digit" }).format(date).replace("/", " / ");
+function getScheduledClassStart(value: string, classTime: string) {
+  const sourceDate = new Date(value);
+  const dateParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(sourceDate);
+  const part = (type: string) => dateParts.find((item) => item.type === type)?.value;
+  const timeMatch = classTime.match(/(?<!\d)([01]?\d|2[0-3]):([0-5]\d)/);
+  if (!part("year") || !part("month") || !part("day") || !timeMatch) return sourceDate;
+  return new Date(`${part("year")}-${part("month")}-${part("day")}T${timeMatch[1].padStart(2, "0")}:${timeMatch[2]}:00+08:00`);
+}
+
+function formatNextClassTime(date: Date) {
+  const weekday = new Intl.DateTimeFormat("zh-TW", { weekday: "short", timeZone: "Asia/Taipei" }).format(date);
+  const dateLabel = new Intl.DateTimeFormat("zh-TW", { month: "2-digit", day: "2-digit", timeZone: "Asia/Taipei" }).format(date).replace("/", " / ");
   const time = new Intl.DateTimeFormat("zh-TW", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
+    timeZone: "Asia/Taipei",
   }).format(date);
   return `${dateLabel}・${weekday} ${time}`;
 }
